@@ -1,4 +1,6 @@
+import * as Sentry from "@sentry/tanstackstart-react";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+
 import { DefaultCatchBoundary } from "./components/DefaultCatchBoundary";
 import { NotFound } from "./components/NotFound";
 import { routeTree } from "./routeTree.gen";
@@ -50,6 +52,37 @@ export function getRouter() {
 			}
 		}
 	});
+
+	// Initialize Sentry on the client side only
+	if (!router.isServer) {
+		Sentry.init({
+			dsn: "https://2329b254512d6d56a4ab76bfb7868c4d@o4510799912108032.ingest.us.sentry.io/4510800437968896",
+
+			// Tunnel to avoid ad blockers
+			tunnel: "/tunnel",
+
+			// Adds request headers and IP for users
+			sendDefaultPii: true,
+
+			integrations: [
+				// Performance monitoring
+				Sentry.tanstackRouterBrowserTracingIntegration(router),
+				// Session Replay
+				Sentry.replayIntegration(),
+			],
+
+			// Enable logs to be sent to Sentry
+			enableLogs: true,
+
+			// Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing
+			// Adjust this value in production
+			tracesSampleRate: 1.0,
+
+			// Capture Replay for 10% of all sessions, plus 100% of sessions with an error
+			replaysSessionSampleRate: 0.1,
+			replaysOnErrorSampleRate: 1.0,
+		});
+	}
 
 	return router;
 }

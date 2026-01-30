@@ -11,9 +11,14 @@ wrangler.jsonc
 .DS_Store
 .cache
 .env
+.env.production
 .vercel
 .output
 .vinxi
+
+# Yandex Cloud deployment artifacts
+function.zip
+.yandex-cloud/
 
 .dev.vars
 
@@ -45,3 +50,4 @@ migration/data
 .env.development.local
 .vercelignore
 .DS_Store
+.yandex-deploy

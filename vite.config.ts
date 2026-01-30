@@ -1,3 +1,4 @@
+import { sentryTanstackStart } from "@sentry/tanstackstart-react";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
@@ -31,6 +32,11 @@ export default defineConfig({
 		}),
 		viteReact(),
 		tailwindcss(),
+		sentryTanstackStart({
+			org: "rublevsky",
+			project: "bfloor",
+			authToken: process.env.SENTRY_AUTH_TOKEN,
+		}),
 	],
 	resolve: {
 		alias: {

@@ -1,0 +1,28 @@
+openapi: 3.0.0
+info:
+  title: BeautyFloor API Gateway (Serverless Container)
+  version: 1.0.0
+  description: Routes all traffic to Serverless Container (handles static + dynamic)
+
+paths:
+  /{proxy+}:
+    x-yc-apigateway-any-method:
+      summary: Route all requests to container
+      x-yc-apigateway-integration:
+        type: serverless_containers
+        container_id: bbafnj3vgqg71piorop8
+        service_account_id: ajefvh83utr8ehkhkkos
+      parameters:
+        - name: proxy
+          in: path
+          required: false
+          schema:
+            type: string
+
+  /:
+    x-yc-apigateway-any-method:
+      summary: Route root to container
+      x-yc-apigateway-integration:
+        type: serverless_containers
+        container_id: bbafnj3vgqg71piorop8
+        service_account_id: ajefvh83utr8ehkhkkos
