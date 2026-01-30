@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TunnelRouteImport } from './routes/tunnel'
 import { Route as RedirectRouteImport } from './routes/redirect'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DeliveryRouteImport } from './routes/delivery'
@@ -34,6 +35,11 @@ import { Route as DashboardProductsNewRouteImport } from './routes/dashboard/pro
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as DashboardProductsProductIdEditRouteImport } from './routes/dashboard/products.$productId.edit'
 
+const TunnelRoute = TunnelRouteImport.update({
+  id: '/tunnel',
+  path: '/tunnel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RedirectRoute = RedirectRouteImport.update({
   id: '/redirect',
   path: '/redirect',
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
   '/redirect': typeof RedirectRoute
+  '/tunnel': typeof TunnelRoute
   '/dashboard/attributes': typeof DashboardAttributesRoute
   '/dashboard/brands': typeof DashboardBrandsRoute
   '/dashboard/categories': typeof DashboardCategoriesRoute
@@ -190,6 +197,7 @@ export interface FileRoutesByTo {
   '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
   '/redirect': typeof RedirectRoute
+  '/tunnel': typeof TunnelRoute
   '/dashboard/attributes': typeof DashboardAttributesRoute
   '/dashboard/brands': typeof DashboardBrandsRoute
   '/dashboard/categories': typeof DashboardCategoriesRoute
@@ -217,6 +225,7 @@ export interface FileRoutesById {
   '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
   '/redirect': typeof RedirectRoute
+  '/tunnel': typeof TunnelRoute
   '/dashboard/attributes': typeof DashboardAttributesRoute
   '/dashboard/brands': typeof DashboardBrandsRoute
   '/dashboard/categories': typeof DashboardCategoriesRoute
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/login'
     | '/redirect'
+    | '/tunnel'
     | '/dashboard/attributes'
     | '/dashboard/brands'
     | '/dashboard/categories'
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/login'
     | '/redirect'
+    | '/tunnel'
     | '/dashboard/attributes'
     | '/dashboard/brands'
     | '/dashboard/categories'
@@ -295,6 +306,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/login'
     | '/redirect'
+    | '/tunnel'
     | '/dashboard/attributes'
     | '/dashboard/brands'
     | '/dashboard/categories'
@@ -322,12 +334,20 @@ export interface RootRouteChildren {
   DeliveryRoute: typeof DeliveryRoute
   LoginRoute: typeof LoginRoute
   RedirectRoute: typeof RedirectRoute
+  TunnelRoute: typeof TunnelRoute
   OrderOrderIdRoute: typeof OrderOrderIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tunnel': {
+      id: '/tunnel'
+      path: '/tunnel'
+      fullPath: '/tunnel'
+      preLoaderRoute: typeof TunnelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/redirect': {
       id: '/redirect'
       path: '/redirect'
@@ -565,6 +585,7 @@ const rootRouteChildren: RootRouteChildren = {
   DeliveryRoute: DeliveryRoute,
   LoginRoute: LoginRoute,
   RedirectRoute: RedirectRoute,
+  TunnelRoute: TunnelRoute,
   OrderOrderIdRoute: OrderOrderIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
