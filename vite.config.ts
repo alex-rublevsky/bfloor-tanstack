@@ -7,47 +7,43 @@ import { resolve } from "node:path";
 import { defineConfig } from "vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig(() => {
-	return {
-		server: {
-			port: 3000,
-			watch: {
-				ignored: [
-					"**/src/routeTree.gen.ts",
-					"**/.tanstack/**",
-					"**/node_modules/**",
-				],
-			},
+export default defineConfig({
+	server: {
+		port: 3000,
+		watch: {
+			ignored: [
+				"**/src/routeTree.gen.ts",
+				"**/.tanstack/**",
+				"**/node_modules/**",
+			],
 		},
-		plugins: [
-			tsConfigPaths({
-				projects: ["./tsconfig.json"],
-			}),
-			tanstackStart(),
-			nitro(),
-			tanstackRouter({
-				target: "react",
-				autoCodeSplitting: true,
-				generatedRouteTree: "./src/routeTree.gen.ts",
-			}),
-			viteReact(),
-			tailwindcss(),
-		],
-		resolve: {
-			alias: {
-				"@": resolve(__dirname, "./src"),
-			},
+	},
+	plugins: [
+		tsConfigPaths({
+			projects: ["./tsconfig.json"],
+		}),
+		tanstackStart(),
+		nitro(),
+		tanstackRouter({
+			target: "react",
+			autoCodeSplitting: true,
+			generatedRouteTree: "./src/routeTree.gen.ts",
+		}),
+		viteReact(),
+		tailwindcss(),
+	],
+	resolve: {
+		alias: {
+			"@": resolve(__dirname, "./src"),
 		},
-		esbuild: {
-			keepNames: true,
+	},
+	esbuild: {
+		keepNames: true,
+	},
+	nitro: {
+		preset: "node-server",
+		output: {
+			dir: ".output",
 		},
-		nitro: {
-			preset: "vercel",
-			vercel: {
-				functions: {
-					maxDuration: 19,
-				},
-			},
-		},
-	};
+	},
 });
