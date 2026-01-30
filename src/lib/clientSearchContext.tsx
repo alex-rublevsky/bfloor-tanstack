@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
 interface ClientSearchContextType {
 	searchTerm: string;
@@ -16,13 +16,17 @@ interface ClientSearchProviderProps {
 export function ClientSearchProvider({ children }: ClientSearchProviderProps) {
 	const [searchTerm, setSearchTerm] = useState("");
 
+	// Memoize the context value to prevent unnecessary re-renders
+	const value = useMemo(
+		() => ({
+			searchTerm,
+			setSearchTerm,
+		}),
+		[searchTerm],
+	);
+
 	return (
-		<ClientSearchContext.Provider
-			value={{
-				searchTerm,
-				setSearchTerm,
-			}}
-		>
+		<ClientSearchContext.Provider value={value}>
 			{children}
 		</ClientSearchContext.Provider>
 	);
