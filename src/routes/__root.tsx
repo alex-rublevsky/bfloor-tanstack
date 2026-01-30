@@ -9,9 +9,9 @@ import {
 	Scripts,
 	useRouterState,
 } from "@tanstack/react-router";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
+
 import type * as React from "react";
+import { memo } from "react";
 import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary";
 import { NotFound } from "~/components/NotFound";
 import { Footer } from "~/components/ui/shared/Footer";
@@ -106,18 +106,27 @@ function RootComponent() {
 	);
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
-	const routerState = useRouterState();
-	const pathname = routerState.location.pathname;
+// Memoized Footer component to prevent re-renders
+const MemoizedFooter = memo(Footer);
+MemoizedFooter.displayName = "MemoizedFooter";
 
+function RootDocument({ children }: { children: React.ReactNode }) {
+	// Only subscribe to pathname changes, not all router state
+	// This prevents re-renders when Link preload triggers on hover
+	const pathname = useRouterState({
+		select: (state) => state.location.pathname,
+	});
+
+	// Simple computed values - no need to memoize these cheap operations
 	const isStore = pathname.startsWith("/store");
 	const isDashboard = pathname.startsWith("/dashboard");
 	const isLogin = pathname === "/login";
+	const isHome = pathname === "/";
 
 	return (
 		<html
 			lang="en"
-			className={`${pathname === "/" ? "scroll-smooth" : ""} bg-background`}
+			className={`${isHome ? "scroll-smooth" : ""} bg-background`}
 			suppressHydrationWarning
 		>
 			<head>
@@ -127,12 +136,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<NavBar />
 
 				<main className="flex-1 min-h-0 flex flex-col">{children}</main>
-				{!isStore && !isDashboard && !isLogin && <Footer />}
+				{!isStore && !isDashboard && !isLogin && <MemoizedFooter />}
 				<Toaster className="fixed top-4 right-4 z-50" />
 				{/* <TanStackRouterDevtools position="bottom-right" /> */}
 				<Scripts />
-				<SpeedInsights />
-				<Analytics />
+				{/* <Analytics /> */}
 			</body>
 		</html>
 	);
