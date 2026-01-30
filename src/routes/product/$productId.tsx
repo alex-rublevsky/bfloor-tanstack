@@ -32,7 +32,6 @@ import { useVariationSelection } from "~/hooks/useVariationSelection";
 import { useCart } from "~/lib/cartContext";
 import { productQueryOptions, userDataQueryOptions } from "~/lib/queryOptions";
 import type {
-	Product,
 	ProductAttribute,
 	ProductVariationWithAttributes,
 	ProductWithDetails,
@@ -539,7 +538,13 @@ function ProductPage() {
 			console.error("Error adding to cart:", error);
 			toast.error("Не удалось добавить товар в корзину");
 		}
-	}, [productWithDetails, quantity, selectedVariation, canAddToCart, addToCart]);
+	}, [
+		productWithDetails,
+		quantity,
+		selectedVariation,
+		canAddToCart,
+		addToCart,
+	]);
 
 	// Calculate total price for display
 	// For flooring products: price per m² × square meters per pack × quantity
@@ -759,11 +764,11 @@ function ProductPage() {
 													</div>
 													{currentDiscount && currentDiscount > 0 && (
 														<div className="text-sm line-through text-muted-foreground mb-1">
-															{currentPrice.toLocaleString()} р
+															{Math.round(currentPrice).toLocaleString()} р
 														</div>
 													)}
 													<div className="text-2xl font-bold text-foreground leading-tight!">
-														{displayPrice.toLocaleString()} р
+														{Math.round(displayPrice).toLocaleString()} р
 													</div>
 												</div>
 
@@ -858,11 +863,12 @@ function ProductPage() {
 													{/* Discount Row */}
 													<div className="flex items-baseline gap-4">
 														<div className="text-left">Скидка</div>
-														<span className="text-lg line-through">
-															{originalTotalPrice.toLocaleString()} р
+														<span className="text-lg line-through whitespace-nowrap">
+															{Math.round(originalTotalPrice).toLocaleString()}{" "}
+															р
 														</span>
-														<span className="px-2 py-1 bg-accent text-accent-foreground text-sm font-semibold rounded-[5px]">
-															{currentDiscount}%
+														<span className="px-2 py-1 bg-accent text-accent-foreground! text-sm font-semibold rounded-[5px] whitespace-nowrap">
+															-{currentDiscount}%
 														</span>
 													</div>
 
@@ -881,8 +887,8 @@ function ProductPage() {
 													{/* Total Row */}
 													<div className="flex items-baseline gap-4">
 														<div className="text-left">Итого</div>
-														<span className="text-3xl font-bold">
-															{totalPrice.toLocaleString()} р
+														<span className="text-3xl font-bold whitespace-nowrap">
+															{Math.round(totalPrice).toLocaleString()} р
 														</span>
 													</div>
 												</div>
@@ -895,7 +901,7 @@ function ProductPage() {
 															Итого
 														</div>
 														<h5 className="">
-															{totalPrice.toLocaleString()} р
+															{Math.round(totalPrice).toLocaleString()} р
 														</h5>
 													</div>
 
@@ -1285,11 +1291,11 @@ function ProductPage() {
 												</div>
 												{currentDiscount && currentDiscount > 0 && (
 													<div className="text-sm line-through text-muted-foreground mb-1">
-														{currentPrice.toLocaleString()} р
+														{Math.round(currentPrice).toLocaleString()} р
 													</div>
 												)}
 												<div className="text-2xl font-bold text-gray-800">
-													{displayPrice.toLocaleString()} р
+													{Math.round(displayPrice).toLocaleString()} р
 												</div>
 											</div>
 
@@ -1386,11 +1392,11 @@ function ProductPage() {
 												{/* Discount Row */}
 												<div className="flex items-baseline gap-4">
 													<div className="text-left">Скидка</div>
-													<span className="text-lg line-through">
-														{originalTotalPrice.toLocaleString()} р
+													<span className="text-lg line-through whitespace-nowrap">
+														{Math.round(originalTotalPrice).toLocaleString()} р
 													</span>
-													<span className="px-2 py-1 bg-accent text-accent-foreground text-sm font-semibold rounded-[5px]">
-														{currentDiscount}%
+													<span className="px-2 py-1 bg-accent text-accent-foreground! text-sm font-semibold rounded-[5px] whitespace-nowrap">
+														-{currentDiscount}%
 													</span>
 												</div>
 
@@ -1409,8 +1415,8 @@ function ProductPage() {
 												{/* Total Row */}
 												<div className="flex items-baseline gap-4">
 													<div className="text-left">Итого</div>
-													<span className="text-xl font-bold">
-														{totalPrice.toLocaleString()} р
+													<span className="text-xl font-bold whitespace-nowrap">
+														{Math.round(totalPrice).toLocaleString()} р
 													</span>
 												</div>
 											</div>
@@ -1423,7 +1429,7 @@ function ProductPage() {
 														Итого
 													</div>
 													<span className="text-xl font-bold">
-														{totalPrice.toLocaleString()} р
+														{Math.round(totalPrice).toLocaleString()} р
 													</span>
 												</div>
 
@@ -1691,10 +1697,10 @@ function ProductPage() {
 							<div className="flex items-baseline gap-2 flex-wrap">
 								<div className="text-left whitespace-nowrap">Скидка</div>
 								<span className="text-sm line-through whitespace-nowrap">
-									{originalTotalPrice.toLocaleString()} р
+									{Math.round(originalTotalPrice).toLocaleString()} р
 								</span>
-								<span className="px-2 py-1 bg-accent text-accent-foreground text-xs font-semibold rounded-[5px] whitespace-nowrap">
-									{currentDiscount}%
+								<span className="px-2 py-1 bg-accent text-accent-foreground! text-xs font-semibold rounded-[5px] whitespace-nowrap">
+									-{currentDiscount}%
 								</span>
 							</div>
 
@@ -1703,7 +1709,7 @@ function ProductPage() {
 								<div className="flex items-baseline gap-2 min-w-0">
 									<div className="text-left whitespace-nowrap">Итого</div>
 									<span className="text-xl font-bold whitespace-nowrap">
-										{totalPrice.toLocaleString()} р
+										{Math.round(totalPrice).toLocaleString()} р
 									</span>
 								</div>
 								<div className="flex items-baseline gap-1 text-xs text-muted-foreground whitespace-nowrap shrink-0">
@@ -1753,7 +1759,7 @@ function ProductPage() {
 							</div>
 							<div className="flex items-baseline">
 								<span className="text-xl font-bold whitespace-nowrap">
-									{totalPrice.toLocaleString()} р
+									{Math.round(totalPrice).toLocaleString()} р
 								</span>
 							</div>
 						</div>
