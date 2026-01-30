@@ -1,11 +1,9 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { memo, useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "~/components/ui/dashboard/skeleton";
 import { Button } from "~/components/ui/shared/Button";
 import { ASSETS_BASE_URL } from "~/constants/urls";
-import { useIsMobile } from "~/hooks/useDevice";
 import { usePrefetch } from "~/hooks/usePrefetch";
 import {
 	getAttributeDisplayName,
@@ -15,13 +13,12 @@ import {
 import { useVariationSelection } from "~/hooks/useVariationSelection";
 import { useCart } from "~/lib/cartContext";
 import type {
-	Product,
 	ProductAttribute,
-	ProductVariation,
-	ProductWithDetails,
+	ProductVariationWithAttributes,
+	ProductWithVariations,
 	VariationAttribute,
 } from "~/types";
-import { parseImages, parseProductAttributes } from "~/utils/productParsing";
+import { parseImages } from "~/utils/productParsing";
 import { sortVariationsForDisplay } from "~/utils/variationSort";
 import { FilterGroup } from "../shared/FilterGroup";
 import { Icon } from "../shared/Icon";
@@ -37,14 +34,7 @@ const BrokenImageFallback = memo(() => (
 ));
 BrokenImageFallback.displayName = "BrokenImageFallback";
 
-// Extended product interface with variations
-interface ProductWithVariations extends Product {
-	variations?: ProductVariationWithAttributes[];
-}
-
-interface ProductVariationWithAttributes extends ProductVariation {
-	attributes: VariationAttribute[];
-}
+// Types are now imported from ~/types
 
 const calculateUniqueAttributeValues = (
 	variations: ProductVariationWithAttributes[] | undefined,
@@ -132,29 +122,26 @@ const getVariationSearchParams = (
 	return params;
 };
 
-function ProductCard({
-	product,
-	disableViewTransition = false,
-}: {
-	product: ProductWithVariations;
-	disableViewTransition?: boolean;
-}) {
-	const [isAddingToCart, setIsAddingToCart] = useState(false);
-	const [isHovering, setIsHovering] = useState(false);
-	const { addToCart } = useCart();
-	const { prefetchProduct } = usePrefetch();
-	const queryClient = useQueryClient();
-	const { data: attributes } = useProductAttributes();
+// Memoize the entire ProductCard component to prevent unnecessary re-renders
+const ProductCard = memo(
+	({
+		product,
+		disableViewTransition = false,
+	}: {
+		product: ProductWithVariations;
+		disableViewTransition?: boolean;
+	}) => {
+		const [isAddingToCart, setIsAddingToCart] = useState(false);
+		const { addToCart } = useCart();
+		const { prefetchProduct } = usePrefetch();
+		const { data: attributes } = useProductAttributes();
 
-	// Get device type - hover is only available on desktop (!isMobile)
-	const isMobile = useIsMobile();
-
-	// Use the variation selection hook
-	const { selectedVariation, selectedAttributes, selectVariation } =
-		useVariationSelection({
-			product,
-			attributes: attributes || [], // Pass attributes for proper display
-		});
+		// Use the variation selection hook
+		const { selectedVariation, selectedAttributes, selectVariation } =
+			useVariationSelection({
+				product,
+				attributes: attributes || [], // Pass attributes for proper display
+			});
 
 	// Calculate default variation and search params for the Link
 	const defaultVariation = useMemo(
@@ -167,32 +154,15 @@ function ProductCard({
 		() => parseImages(product.images),
 		[product.images],
 	);
-	const parsedProductAttributes = useMemo(
-		() => parseProductAttributes(product.productAttributes),
-		[product.productAttributes],
-	);
-	const seededProduct = useMemo<ProductWithDetails>(
-		() => ({
-			...product,
-			images: imageArray,
-			productAttributes: parsedProductAttributes,
-			category: null,
-			brand: null,
-			collection: null,
-			storeLocations: [],
-		}),
-		[product, imageArray, parsedProductAttributes],
-	);
 
+	// Link search params should NOT include hover state to prevent re-renders
+	// The imageIndex will be handled by the product page based on its own state
 	const linkSearchParams = useMemo(() => {
 		const params = getVariationSearchParams(defaultVariation, attributes || []);
-		// Only add imageIndex on desktop (!isMobile) when hovering and there are multiple images
-		// On mobile, always use the first image (no hover capability)
-		if (!isMobile && isHovering && imageArray.length > 1) {
-			params.imageIndex = "1"; // Second image (0-indexed)
-		}
+		// Don't add imageIndex here - it causes unnecessary re-renders
+		// The product page will handle image selection
 		return params;
-	}, [defaultVariation, isHovering, imageArray.length, attributes, isMobile]);
+	}, [defaultVariation, attributes]);
 
 	// Get unique attribute values for a specific attribute ID - memoized
 	const getUniqueAttributeValues = useCallback(
@@ -272,45 +242,34 @@ function ProductCard({
 		[isAvailable, addToCart, product, selectedVariation],
 	);
 
-	// Check if product is coming soon (not in the type, so we'll use a placeholder)
+		// Memoize the prefetch handler to prevent re-creating on every render
+		// Use useCallback instead of useMemo for event handlers
+		const handleMouseEnter = useCallback(() => {
+			// Only prefetch - don't seed the cache as it causes re-renders
+			// The prefetch will fetch the full product data from the server
+			prefetchProduct(product.slug);
+		}, [prefetchProduct, product.slug]);
 
-	return (
-		<Link
-			to="/product/$productId"
-			params={{
-				productId: product.slug,
-			}}
-			search={linkSearchParams}
-			className="block h-full relative"
-			preload="intent"
-			viewTransition={true}
-			onMouseEnter={() => {
-				prefetchProduct(product.slug);
-				queryClient.setQueryData(
-					["bfloorProduct", product.slug],
-					(existing) => existing ?? seededProduct,
-				);
-			}}
-		>
+		// Check if product is coming soon (not in the type, so we'll use a placeholder)
+
+		return (
+			<Link
+				to="/product/$productId"
+				params={{
+					productId: product.slug,
+				}}
+				search={linkSearchParams}
+				className="block h-full relative"
+				preload="intent"
+				viewTransition={true}
+				onMouseEnter={handleMouseEnter}
+			>
 			<div
 				className="w-full product-card overflow-hidden  group"
 				id={styles.productCard}
 			>
 				<div className="bg-background flex flex-col">
-					{/* biome-ignore lint/a11y/noStaticElementInteractions: Hover detection for view transitions only */}
-					<div
-						className="relative aspect-square overflow-hidden"
-						onMouseEnter={() => {
-							if (!isMobile) {
-								setIsHovering(true);
-							}
-						}}
-						onMouseLeave={() => {
-							if (!isMobile) {
-								setIsHovering(false);
-							}
-						}}
-					>
+					<div className="relative aspect-square overflow-hidden">
 						<div>
 							{/* Primary Image */}
 							<div className="relative aspect-square flex items-center justify-center overflow-hidden">
@@ -333,13 +292,11 @@ function ProductCard({
 											style={
 												disableViewTransition
 													? undefined
-													: // On mobile (no hover), always use primary image for transition
-														// On desktop (!isMobile), use primary image when NOT hovering or when there's no secondary image
-														isMobile || !isHovering || imageArray.length === 1
-														? {
+													: // Always use primary image for view transition
+														// The secondary image hover effect is handled by CSS only
+														{
 																viewTransitionName: `product-image-${product.slug}`,
 															}
-														: undefined
 											}
 											onLoad={(e) => {
 												const parent = e.currentTarget.parentElement;
@@ -371,16 +328,6 @@ function ProductCard({
 												alt={product.name}
 												loading="eager"
 												className="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ease-in-out opacity-0 group-hover:opacity-100 hidden md:block"
-												style={
-													disableViewTransition
-														? undefined
-														: // Apply view transition to secondary image only on desktop (!isMobile) when hovering
-															!isMobile && isHovering
-															? {
-																	viewTransitionName: `product-image-${product.slug}`,
-																}
-															: undefined
-												}
 												onError={(e) => {
 													const t = e.currentTarget;
 													t.style.display = "none";
@@ -447,10 +394,10 @@ function ProductCard({
 											<>
 												<div className="whitespace-nowrap flex items-baseline gap-0.5">
 													<span className="text-xl font-light">
-														{(
+														{Math.round(
 															currentPrice *
 															(1 - product.discount / 100)
-														).toFixed(2)}
+														)}
 													</span>
 													<span className="text-xs  font-light text-muted-foreground">
 														р
@@ -458,7 +405,7 @@ function ProductCard({
 												</div>
 												<div className="flex items-center gap-1">
 													<span className="text-sm line-through text-muted-foreground">
-														{currentPrice?.toFixed(2)}
+														{Math.round(currentPrice)}
 													</span>
 													<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
 														-{product.discount}%
@@ -477,7 +424,7 @@ function ProductCard({
 												}
 											>
 												<span className="text-xl font-light">
-													{currentPrice?.toFixed(2)}
+													{Math.round(currentPrice)}
 												</span>
 												<span className="text-xs font-light text-muted-foreground">
 													р
@@ -596,6 +543,8 @@ function ProductCard({
 			</div>
 		</Link>
 	);
-}
+	},
+);
+ProductCard.displayName = "ProductCard";
 
 export default ProductCard;
