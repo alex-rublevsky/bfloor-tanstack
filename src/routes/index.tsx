@@ -49,10 +49,10 @@ function App() {
 	return (
 		<>
 			<Banner />
-			<BenefitsSection />
 			<ProductSlider mode="tabs" title="Товары по категориям" />
 			<ProductSlider mode="simple" title="Скидки" />
 			<LogoLoop fetchBrands={true} />
+			<BenefitsSection />
 			<TestimonialSliderSection />
 			<AboutSection />
 		</>
