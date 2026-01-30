@@ -90,8 +90,6 @@
 		"@types/node": "^22.15.30",
 		"@types/react": "^19.1.6",
 		"@types/react-dom": "^19.1.6",
-		"@yandex-cloud/function-types": "^2.1.2",
-		"@yandex-cloud/nodejs-sdk": "^2.9.0",
 		"autoprefixer": "^10.4.21",
 		"drizzle-kit": "^0.31.5",
 		"nitro": "^3.0.1-alpha.1",

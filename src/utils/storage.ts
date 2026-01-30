@@ -1,8 +1,8 @@
 /**
  * Storage Utility
  *
- * Provides a unified storage interface compatible with R2 API
- * Uses AWS S3 SDK under the hood for Vercel/Nitro deployments
+ * Provides a unified storage interface for Yandex Object Storage
+ * Uses AWS S3 SDK for S3-compatible API access
  */
 
 import {
@@ -18,100 +18,18 @@ import { env } from "./env";
 let s3Client: S3Client | null = null;
 
 /**
- * Valid R2 region codes
+ * Valid region code for Yandex Object Storage
+ * According to official Yandex Cloud documentation, always use "ru-central1"
+ * @see https://yandex.cloud/en/docs/storage/
  */
-const VALID_R2_REGIONS = [
-	"wnam",
-	"enam",
-	"weur",
-	"eeur",
-	"apac",
-	"oc",
-	"auto",
-] as const;
+const YANDEX_REGION = "ru-central1" as const;
 
 /**
- * Maps AWS region names to R2 region codes
- * If the region is already a valid R2 code, returns it as-is
+
  */
-function mapToR2Region(region: string | null): string {
-	if (!region) {
-		return "auto";
-	}
-
-	// If already a valid R2 region code, return it
-	if (
-		VALID_R2_REGIONS.includes(
-			region.toLowerCase() as (typeof VALID_R2_REGIONS)[number],
-		)
-	) {
-		return region.toLowerCase();
-	}
-
-	// Map AWS region names to R2 region codes
-	const awsToR2Map: Record<string, string> = {
-		// Asia Pacific
-		"ap-northeast-1": "apac", // Tokyo
-		"ap-northeast-2": "apac", // Seoul
-		"ap-northeast-3": "apac", // Osaka
-		"ap-south-1": "apac", // Mumbai
-		"ap-southeast-1": "apac", // Singapore
-		"ap-southeast-2": "oc", // Sydney
-		"ap-southeast-3": "apac", // Jakarta
-		"ap-east-1": "apac", // Hong Kong
-
-		// Oceania
-		"ap-southeast-4": "oc", // Melbourne
-
-		// US East
-		"us-east-1": "enam", // N. Virginia
-		"us-east-2": "enam", // Ohio
-
-		// US West
-		"us-west-1": "wnam", // N. California
-		"us-west-2": "wnam", // Oregon
-
-		// Europe
-		"eu-west-1": "weur", // Ireland
-		"eu-west-2": "weur", // London
-		"eu-west-3": "weur", // Paris
-		"eu-central-1": "eeur", // Frankfurt
-		"eu-central-2": "eeur", // Zurich
-		"eu-north-1": "eeur", // Stockholm
-		"eu-south-1": "eeur", // Milan
-		"eu-south-2": "eeur", // Spain
-
-		// South America
-		"sa-east-1": "enam", // São Paulo
-
-		// Canada
-		"ca-central-1": "enam", // Canada
-
-		// Middle East
-		"me-south-1": "eeur", // Bahrain
-		"me-central-1": "eeur", // UAE
-
-		// Africa
-		"af-south-1": "eeur", // Cape Town
-	};
-
-	const normalizedRegion = region.toLowerCase();
-	const r2Region = awsToR2Map[normalizedRegion];
-
-	if (r2Region) {
-		return r2Region;
-	}
-
-	// Default to "auto" if no mapping found
-	console.warn(
-		`Unknown region "${region}", defaulting to "auto". Valid R2 regions: ${VALID_R2_REGIONS.join(", ")}`,
-	);
-	return "auto";
-}
-
 function getS3Client(): S3Client {
 	if (!s3Client) {
-		const r2Region = mapToR2Region(env.AWS_REGION);
+		// Yandex Object Storage requires specific configuration
 		const config: {
 			region: string;
 			credentials?: {
@@ -121,12 +39,14 @@ function getS3Client(): S3Client {
 			endpoint?: string;
 			forcePathStyle: boolean;
 		} = {
-			region: r2Region,
-			// R2's S3-compatible API requires path-style addressing
-			// This ensures bucket name is in the path, not the subdomain
+			// Always use ru-central1 for Yandex Object Storage
+			region: YANDEX_REGION,
+			// Yandex Object Storage requires path-style addressing
+			// Format: https://storage.yandexcloud.net/bucket-name/object-key
 			forcePathStyle: true,
 		};
 
+		// Set credentials (required for Yandex Object Storage)
 		if (env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY) {
 			config.credentials = {
 				accessKeyId: env.AWS_ACCESS_KEY_ID,
@@ -134,16 +54,15 @@ function getS3Client(): S3Client {
 			};
 		}
 
+		// Set Yandex Object Storage endpoint
 		if (env.AWS_S3_ENDPOINT) {
-			// Ensure endpoint doesn't include bucket name in the path
-			// R2 endpoint should be: https://<account-id>.r2.cloudflarestorage.com
-			// NOT: https://<account-id>.r2.cloudflarestorage.com/bucket-name
+			// Standard Yandex endpoint: https://storage.yandexcloud.net
 			let endpoint = env.AWS_S3_ENDPOINT.trim();
 
 			// Remove trailing slash
 			endpoint = endpoint.replace(/\/+$/, "");
 
-			// If bucket name is configured and endpoint ends with it, remove it
+			// Ensure endpoint doesn't include bucket name in path
 			if (bucketName) {
 				const bucketNamePattern = new RegExp(
 					`/${bucketName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/?$`,
@@ -172,7 +91,8 @@ if (!bucketName) {
 }
 
 /**
- * Storage interface compatible with R2Bucket API
+ * Storage interface for Yandex Object Storage
+ * Compatible with S3-like bucket operations
  */
 export interface StorageBucket {
 	put(
@@ -479,12 +399,8 @@ class S3StorageBucket implements StorageBucket {
 }
 
 /**
- * Get the storage bucket instance
- * Compatible with R2Bucket interface
+ * Get the storage bucket instance for Yandex Object Storage
  */
 export function getStorageBucket(): StorageBucket {
 	return new S3StorageBucket();
 }
-
-// For backward compatibility with R2Bucket type
-export type R2Bucket = StorageBucket;

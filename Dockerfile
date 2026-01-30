@@ -16,7 +16,9 @@ FROM base AS dependencies
 COPY package.json pnpm-lock.yaml ./
 
 # Install all dependencies (including dev for build)
-RUN pnpm install --frozen-lockfile
+# Use cache mount for pnpm store to speed up installs
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # ============================================================================
 # Builder Stage - Build the application
@@ -49,7 +51,9 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml ./
 
 # Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
+# Use cache mount for pnpm store to speed up installs
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --prod
 
 # Copy built application from builder
 COPY --from=builder /app/.output ./.output

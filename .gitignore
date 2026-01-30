@@ -19,6 +19,9 @@ wrangler.jsonc
 # Yandex Cloud deployment artifacts
 function.zip
 .yandex-cloud/
+.yandex-cache
+api-gateway-configured.yaml
+yandex-function.yaml
 
 .dev.vars
 

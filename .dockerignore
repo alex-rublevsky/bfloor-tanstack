@@ -33,12 +33,18 @@ Thumbs.db
 
 # Yandex Cloud
 .yandex-deploy
+.yandex-cache
 function.zip
 api-gateway-configured.yaml
+api-gateway-container.yaml
+yandex-function.yaml
 
 # Documentation
 *.md
 !README.md
+
+# Deployment analysis
+DEPLOYMENT_ANALYSIS.md
 
 # Test files
 test-*.ts
