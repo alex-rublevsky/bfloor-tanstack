@@ -22,21 +22,23 @@ export const env = {
 	// Database (no longer needed with Turso, but kept for compatibility)
 	// DB is now accessed via db.ts
 
-	// Storage (R2 bucket name - supports multiple naming conventions)
+	// Yandex Object Storage Configuration
+	// Supports R2_* variable names for backward compatibility (mapped from .env)
 	BFLOOR_STORAGE_BUCKET:
 		getEnvOptional("BFLOOR_STORAGE_BUCKET") ||
 		getEnvOptional("R2_BUCKET_NAME") ||
 		getEnvOptional("R2_BUCKET") ||
 		getEnvOptional("AWS_S3_BUCKET_NAME"),
 
-	// R2 Storage Configuration (supports both R2 and AWS variable names)
 	AWS_ACCESS_KEY_ID:
 		getEnvOptional("R2_ACCESS_KEY_ID") || getEnvOptional("AWS_ACCESS_KEY_ID"),
 	AWS_SECRET_ACCESS_KEY:
 		getEnvOptional("R2_SECRET_ACCESS_KEY") ||
 		getEnvOptional("AWS_SECRET_ACCESS_KEY"),
 	AWS_REGION:
-		getEnvOptional("R2_REGION") || getEnvOptional("AWS_REGION") || "auto",
+		getEnvOptional("R2_REGION") ||
+		getEnvOptional("AWS_REGION") ||
+		"ru-central1",
 	AWS_S3_ENDPOINT:
 		getEnvOptional("R2_ENDPOINT") || getEnvOptional("AWS_S3_ENDPOINT"),
 
