@@ -181,10 +181,10 @@ export function AdminProductCard({
 															viewTransitionName: `product-price-${product.id}`,
 														}}
 													>
-														{(
+														{Math.round(
 															displayPrice *
 															(1 - product.discount / 100)
-														).toFixed(2)}
+														)}
 													</span>
 													<span className="text-xs font-light text-muted-foreground">
 														р
@@ -192,7 +192,7 @@ export function AdminProductCard({
 												</div>
 												<div className="flex items-center gap-1">
 													<span className="text-sm line-through text-muted-foreground">
-														{displayPrice.toFixed(2)}
+														{Math.round(displayPrice)}
 													</span>
 													<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
 														-{product.discount}%
@@ -207,7 +207,7 @@ export function AdminProductCard({
 														viewTransitionName: `product-price-${product.id}`,
 													}}
 												>
-													{displayPrice.toFixed(2)}
+													{Math.round(displayPrice)}
 												</span>
 												<span className="text-xs font-light text-muted-foreground">
 													р
