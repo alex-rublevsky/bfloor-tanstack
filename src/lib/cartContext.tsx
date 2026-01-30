@@ -11,6 +11,7 @@
 import type React from "react";
 import {
 	createContext,
+	useCallback,
 	useContext,
 	useEffect,
 	useMemo,
@@ -149,7 +150,8 @@ export function CartProvider({ children }: CartProviderProps) {
 
 	// Add item to cart (or update quantity if exists)
 	// Stores enriched data for instant display without fetching
-	const addToCart = (data: AddToCartData) => {
+	// These functions are stable - they only depend on setCart/setCartOpen which are stable from useState
+	const addToCart = useCallback((data: AddToCartData) => {
 		setCart((prevCart) => {
 			const existingIndex = prevCart.items.findIndex(
 				(item) =>
@@ -204,10 +206,10 @@ export function CartProvider({ children }: CartProviderProps) {
 		// Open cart drawer
 		setCartOpen(true);
 		toast.success("Товар добавлен в корзину");
-	};
+	}, []);
 
 	// Remove item from cart
-	const removeFromCart = (productId: number, variationId?: number) => {
+	const removeFromCart = useCallback((productId: number, variationId?: number) => {
 		setCart((prevCart) => ({
 			items: prevCart.items.filter(
 				(item) =>
@@ -215,10 +217,10 @@ export function CartProvider({ children }: CartProviderProps) {
 			),
 			lastUpdated: Date.now(),
 		}));
-	};
+	}, []);
 
 	// Update item quantity
-	const updateQuantity = (
+	const updateQuantity = useCallback((
 		productId: number,
 		quantity: number,
 		variationId?: number,
@@ -236,32 +238,34 @@ export function CartProvider({ children }: CartProviderProps) {
 			),
 			lastUpdated: Date.now(),
 		}));
-	};
+	}, [removeFromCart]);
 
 	// Clear cart
-	const clearCart = () => {
+	const clearCart = useCallback(() => {
 		setCart({
 			items: [],
 			lastUpdated: Date.now(),
 		});
-	};
+	}, []);
 
-	return (
-		<CartContext.Provider
-			value={{
-				cart,
-				cartOpen,
-				setCartOpen,
-				addToCart,
-				removeFromCart,
-				updateQuantity,
-				clearCart,
-				itemCount,
-			}}
-		>
-			{children}
-		</CartContext.Provider>
+	// Memoize the context value to prevent unnecessary re-renders
+	// The functions are now stable (wrapped in useCallback with empty deps)
+	// so we can safely include them in dependencies
+	const value = useMemo(
+		() => ({
+			cart,
+			cartOpen,
+			setCartOpen,
+			addToCart,
+			removeFromCart,
+			updateQuantity,
+			clearCart,
+			itemCount,
+		}),
+		[cart, cartOpen, addToCart, removeFromCart, updateQuantity, clearCart, itemCount],
 	);
+
+	return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {
