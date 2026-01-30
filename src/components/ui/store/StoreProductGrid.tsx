@@ -7,7 +7,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useElementScrollRestoration } from "@tanstack/react-router";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActiveFiltersDisplay } from "~/components/ui/shared/ActiveFiltersDisplay";
 import { EmptyState } from "~/components/ui/shared/EmptyState";
 import { ProductGridSkeleton } from "~/components/ui/shared/ProductGridSkeleton";
@@ -31,6 +31,143 @@ import {
 
 // Cache for virtualizer measurements - persists across navigations
 const measurementCache = new Map<string, number>();
+
+// Separate component for the virtualized product list
+// This isolates the virtualizer re-renders from the parent component
+const VirtualizedProductList = memo(({
+	displayProducts,
+	columnsPerRow,
+	scrollEntry,
+	cacheKey,
+	fetchNextPage,
+	hasNextPage,
+	isFetchingNextPage,
+}: {
+	displayProducts: ProductWithVariations[];
+	columnsPerRow: number;
+	scrollEntry: { scrollY?: number } | null | undefined;
+	cacheKey: string;
+	fetchNextPage: () => void;
+	hasNextPage: boolean;
+	isFetchingNextPage: boolean;
+}) => {
+		const itemHeight = 365;
+		const rowCount = Math.ceil(displayProducts.length / columnsPerRow);
+		
+		// Track last checked row index for infinite scroll
+		// Use cacheKey as part of ref key to reset on navigation
+		const lastCheckRef = useRef<{ cacheKey: string; index: number }>({
+			cacheKey,
+			index: 0,
+		});
+		
+		// Reset index if cacheKey changed (new query/navigation)
+		if (lastCheckRef.current.cacheKey !== cacheKey) {
+			lastCheckRef.current = { cacheKey, index: 0 };
+		}
+
+		const virtualizer = useWindowVirtualizer({
+			count: rowCount,
+			estimateSize: useCallback(
+				(index: number) => {
+					const cached = measurementCache.get(`${cacheKey}-${index}`);
+					return cached ?? itemHeight;
+				},
+				[cacheKey],
+			),
+			overscan: 8,
+			initialOffset: scrollEntry?.scrollY,
+			measureElement: useCallback(
+				(element: Element, entry: ResizeObserverEntry | undefined) => {
+					const index = element.getAttribute("data-index");
+					if (index === null) return itemHeight;
+
+					// Prefer ResizeObserver entry over getBoundingClientRect for performance
+					// ResizeObserver is more efficient and doesn't force layout
+					const height = entry?.borderBoxSize?.[0]?.blockSize ?? itemHeight;
+
+					measurementCache.set(`${cacheKey}-${index}`, height);
+					return height;
+				},
+				[cacheKey],
+			),
+		});
+
+		// Re-measure rows when the number of columns changes
+		// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally re-measure when columns change
+		useEffect(() => {
+			// Measure immediately - virtualizer's ResizeObserver handles optimization
+			virtualizer.measure();
+		}, [columnsPerRow, virtualizer]);
+
+		// Helper function to get products for a specific row
+		const getProductsForRow = useCallback(
+			(rowIndex: number) => {
+				const startIndex = rowIndex * columnsPerRow;
+				const endIndex = Math.min(
+					startIndex + columnsPerRow,
+					displayProducts.length,
+				);
+				return displayProducts.slice(startIndex, endIndex);
+			},
+			[columnsPerRow, displayProducts],
+		);
+
+		// Infinite scroll - load more products when user scrolls near the end
+		const virtualItems = virtualizer.getVirtualItems();
+		
+		useEffect(() => {
+			const lastItem = virtualItems[virtualItems.length - 1];
+
+			if (!lastItem || !hasNextPage || isFetchingNextPage) return;
+
+			// Fetch when within 4 rows of the end
+			const threshold = rowCount - 4;
+
+			// Fetch if we're past the threshold and haven't fetched for this threshold yet
+			if (lastItem.index >= threshold && lastCheckRef.current.index < threshold) {
+				lastCheckRef.current.index = threshold;
+				fetchNextPage();
+			}
+		}, [virtualItems, hasNextPage, isFetchingNextPage, rowCount, fetchNextPage]);
+
+		return (
+			<div
+				className="relative py-4"
+				style={{
+					height: `${virtualizer.getTotalSize()}px`,
+					width: "100%",
+					position: "relative",
+					animation: "fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+				}}
+			>
+				{virtualizer.getVirtualItems().map((virtualRow) => {
+					const rowProducts = getProductsForRow(virtualRow.index);
+					return (
+						<div
+							key={virtualRow.key}
+							data-index={virtualRow.index}
+							ref={virtualizer.measureElement}
+							style={{
+								position: "absolute",
+								top: 0,
+								left: 0,
+								width: "100%",
+								transform: `translateY(${virtualRow.start}px)`,
+							}}
+						>
+							<div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 md:gap-3">
+								{rowProducts.map((product) => (
+									<ProductCard key={product.id} product={product} />
+								))}
+							</div>
+						</div>
+					);
+				})}
+			</div>
+		);
+});
+VirtualizedProductList.displayName = "VirtualizedProductList";
 
 interface StoreProductGridProps {
 	/**
@@ -75,7 +212,7 @@ interface StoreProductGridProps {
 	}) => void;
 }
 
-export function StoreProductGrid({
+export const StoreProductGrid = memo(function StoreProductGrid({
 	categorySlug,
 	categoryName = null,
 	brandSlug,
@@ -292,15 +429,9 @@ export function StoreProductGrid({
 	);
 
 	// Scroll restoration for virtualized list
-	// Following TanStack Router docs: https://tanstack.com/router/v1/docs/framework/react/guide/scroll-restoration#manual-scroll-restoration
 	const scrollEntry = useElementScrollRestoration({
 		getElement: () => (typeof window !== "undefined" ? window : null),
 	});
-
-	// Virtualizer configuration - responsive columns based on screen size
-	// Following TanStack Virtual dynamic example pattern: https://tanstack.com/virtual/latest/docs/framework/react/examples/dynamic
-	const itemHeight = 365;
-	const rowCount = Math.ceil(displayProducts.length / columnsPerRow);
 
 	// Create a stable cache key based on current filters and search
 	const cacheKey = useMemo(() => {
@@ -322,80 +453,6 @@ export function StoreProductGrid({
 		sortBy,
 		columnsPerRow,
 	]);
-
-	const virtualizer = useWindowVirtualizer({
-		count: rowCount,
-		estimateSize: useCallback(
-			(index: number) => {
-				// Try to get cached measurement first
-				const cached = measurementCache.get(`${cacheKey}-${index}`);
-				return cached ?? itemHeight;
-			},
-			[cacheKey],
-		),
-		overscan: 8,
-		initialOffset: scrollEntry?.scrollY,
-		measureElement: useCallback(
-			(element: Element, entry: ResizeObserverEntry | undefined) => {
-				const index = element.getAttribute("data-index");
-				if (index === null) return itemHeight;
-
-				// Get the actual height
-				const height =
-					entry?.borderBoxSize?.[0]?.blockSize ??
-					element.getBoundingClientRect().height;
-
-				// Cache the measurement
-				measurementCache.set(`${cacheKey}-${index}`, height);
-
-				return height;
-			},
-			[cacheKey],
-		),
-	});
-
-	// Re-measure rows when the number of columns changes
-	// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally re-measure when columns change
-	useEffect(() => {
-		virtualizer.measure();
-	}, [columnsPerRow, virtualizer]);
-
-	// Re-measure on container width changes
-	useEffect(() => {
-		const el = containerRef.current;
-		if (!el || typeof ResizeObserver === "undefined") return;
-		const ro = new ResizeObserver(() => {
-			virtualizer.measure();
-		});
-		ro.observe(el);
-		return () => ro.disconnect();
-	}, [virtualizer]);
-
-	// Helper function to get products for a specific row
-	const getProductsForRow = (rowIndex: number) => {
-		const startIndex = rowIndex * columnsPerRow;
-		const endIndex = Math.min(
-			startIndex + columnsPerRow,
-			displayProducts.length,
-		);
-		return displayProducts.slice(startIndex, endIndex);
-	};
-
-	// Infinite scroll - load more products when user scrolls near the end
-	const virtualItems = virtualizer.getVirtualItems();
-	useEffect(() => {
-		const lastItem = virtualItems[virtualItems.length - 1];
-
-		// Don't fetch if already fetching, no next page, or no items rendered
-		if (!lastItem || !hasNextPage || isFetchingNextPage) return;
-
-		// Fetch next page when user scrolls near the end
-		const threshold = rowCount - 4;
-
-		if (lastItem.index >= threshold) {
-			fetchNextPage();
-		}
-	}, [virtualItems, hasNextPage, isFetchingNextPage, rowCount, fetchNextPage]);
 
 	// Determine if we should show the skeleton
 	// Show skeleton only when:
@@ -465,41 +522,16 @@ export function StoreProductGrid({
 					/>
 				) : (
 					<>
-						<div
+						<VirtualizedProductList
 							key={categorySlug ?? brandSlug ?? "all"}
-							className="relative py-4"
-							style={{
-								height: `${virtualizer.getTotalSize()}px`,
-								width: "100%",
-								position: "relative",
-								animation: "fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-							}}
-						>
-							{/* Following TanStack Virtual dynamic example pattern for useWindowVirtualizer */}
-							{virtualizer.getVirtualItems().map((virtualRow) => {
-								const rowProducts = getProductsForRow(virtualRow.index);
-								return (
-									<div
-										key={virtualRow.key}
-										data-index={virtualRow.index}
-										ref={virtualizer.measureElement}
-										style={{
-											position: "absolute",
-											top: 0,
-											left: 0,
-											width: "100%",
-											transform: `translateY(${virtualRow.start}px)`,
-										}}
-									>
-										<div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 md:gap-3">
-											{rowProducts.map((product) => (
-												<ProductCard key={product.id} product={product} />
-											))}
-										</div>
-									</div>
-								);
-							})}
-						</div>
+							displayProducts={displayProducts}
+							columnsPerRow={columnsPerRow}
+							scrollEntry={scrollEntry}
+							cacheKey={cacheKey}
+							fetchNextPage={fetchNextPage}
+							hasNextPage={hasNextPage ?? false}
+							isFetchingNextPage={isFetchingNextPage}
+						/>
 						{/* Loading indicator for next page */}
 						{isFetchingNextPage && (
 							<div className="w-full flex items-center justify-center p-8">
@@ -511,4 +543,4 @@ export function StoreProductGrid({
 			</div>
 		</>
 	);
-}
+});
