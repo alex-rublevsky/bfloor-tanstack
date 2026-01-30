@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import type React from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Skeleton } from "~/components/ui/dashboard/skeleton";
 import {
 	Drawer,
 	DrawerContent,
@@ -21,6 +22,7 @@ import {
 	productCategoryCountsQueryOptions,
 	userDataQueryOptions,
 } from "~/lib/queryOptions";
+import type { Category } from "~/types";
 import { signOut } from "~/utils/auth-client";
 import { cn } from "~/utils/utils";
 import { CartDrawerContent } from "../store/CartDrawerContent";
@@ -69,43 +71,46 @@ const dashboardSecondaryItems: NavItem[] = [
 	{ name: "Назад на сайт", url: "/", icon: ArrowLeftFromLine },
 ];
 
-// Reusable dashboard navigation component
-const DashboardNavLinks = ({
-	className = "",
-	dashboardNavItems,
-	pathname,
-	prefetchDashboardOrders,
-}: {
-	className?: string;
-	dashboardNavItems: NavItem[];
-	pathname: string;
-	prefetchDashboardOrders: () => void;
-}) => (
-	<div
-		className={cn(
-			"flex gap-[0.25rem] rounded-[1.1875rem] border border-border bg-background p-[0.25rem]",
-			className,
-		)}
-	>
-		{dashboardNavItems.map((item) => (
-			<Button
-				key={item.url}
-				to={item.url}
-				onMouseEnter={() => {
-					// Prefetch orders data on hover
-					if (item.url === "/dashboard/orders") {
-						prefetchDashboardOrders();
-					}
-				}}
-				variant={pathname === item.url ? "default" : "secondary"}
-				size="sm"
-				className={pathname === item.url ? "" : "border-0"}
-			>
-				{item.name}
-			</Button>
-		))}
-	</div>
+// Reusable dashboard navigation component - memoized to prevent re-renders
+const DashboardNavLinks = memo(
+	({
+		className = "",
+		dashboardNavItems,
+		pathname,
+		prefetchDashboardOrders,
+	}: {
+		className?: string;
+		dashboardNavItems: NavItem[];
+		pathname: string;
+		prefetchDashboardOrders: () => void;
+	}) => (
+		<div
+			className={cn(
+				"flex gap-[0.25rem] rounded-[1.1875rem] border border-border bg-background p-[0.25rem]",
+				className,
+			)}
+		>
+			{dashboardNavItems.map((item) => (
+				<Button
+					key={item.url}
+					to={item.url}
+					onMouseEnter={() => {
+						// Prefetch orders data on hover
+						if (item.url === "/dashboard/orders") {
+							prefetchDashboardOrders();
+						}
+					}}
+					variant={pathname === item.url ? "default" : "secondary"}
+					size="sm"
+					className={pathname === item.url ? "" : "border-0"}
+				>
+					{item.name}
+				</Button>
+			))}
+		</div>
+	),
 );
+DashboardNavLinks.displayName = "DashboardNavLinks";
 
 const DropdownNavMenu = ({
 	items,
@@ -300,8 +305,8 @@ const DropdownNavMenu = ({
 	);
 };
 
-// Cart Button Component (copied from CartNav)
-const CartButton = () => {
+// Cart Button Component (copied from CartNav) - memoized to prevent re-renders
+const CartButton = memo(() => {
 	const { cartOpen, setCartOpen, itemCount } = useCart();
 
 	return (
@@ -348,17 +353,21 @@ const CartButton = () => {
 			</DrawerContent>
 		</Drawer>
 	);
-};
+});
+CartButton.displayName = "CartButton";
 
-// Mobile Menu Button Component
-const MobileMenuButton = () => {
+// Mobile Menu Button Component - memoized to prevent re-renders
+const MobileMenuButton = memo(() => {
 	const [isOpen, setIsOpen] = useState(false);
 
-	const menuItems = [
-		{ name: "О компании", url: "/about" },
-		{ name: "Контакты и адреса", url: "/contact" },
-		{ name: "Доставка и оплата", url: "/delivery" },
-	];
+	const menuItems = useMemo(
+		() => [
+			{ name: "О компании", url: "/about" },
+			{ name: "Контакты и адреса", url: "/contact" },
+			{ name: "Доставка и оплата", url: "/delivery" },
+		],
+		[],
+	);
 
 	return (
 		<Drawer open={isOpen} onOpenChange={setIsOpen}>
@@ -394,7 +403,8 @@ const MobileMenuButton = () => {
 			</DrawerContent>
 		</Drawer>
 	);
-};
+});
+MobileMenuButton.displayName = "MobileMenuButton";
 
 // Modern hover dropdown component with safe triangle for gap bridging
 const HoverDropdown = ({
@@ -507,8 +517,8 @@ const HoverDropdown = ({
 	);
 };
 
-// Address Dropdown Component
-const AddressDropdown = () => {
+// Address Dropdown Component - memoized to prevent re-renders
+const AddressDropdown = memo(() => {
 	return (
 		<HoverDropdown
 			menuClassName="catalog-dropdown-menu-single-column"
@@ -580,10 +590,11 @@ const AddressDropdown = () => {
 			</div>
 		</HoverDropdown>
 	);
-};
+});
+AddressDropdown.displayName = "AddressDropdown";
 
-// Phone Dropdown Component
-const PhoneDropdown = () => {
+// Phone Dropdown Component - memoized to prevent re-renders
+const PhoneDropdown = memo(() => {
 	return (
 		<HoverDropdown
 			menuClassName="catalog-dropdown-menu-single-column"
@@ -678,16 +689,37 @@ const PhoneDropdown = () => {
 			</div>
 		</HoverDropdown>
 	);
+});
+PhoneDropdown.displayName = "PhoneDropdown";
+
+// Catalog Dropdown Skeleton - shows 18 skeleton items matching category link structure
+const CatalogDropdownSkeleton = () => {
+	return (
+		<>
+			{Array.from({ length: 18 }, (_, index) => `skeleton-item-${index}`).map(
+				(key) => (
+					<div
+						key={key}
+						className="flex items-center justify-between w-full px-4 py-2 text-sm"
+					>
+						<Skeleton className="h-4 flex-1 max-w-[60%]" />
+						<Skeleton className="h-3 w-6" />
+					</div>
+				),
+			)}
+		</>
+	);
 };
 
 // Catalog Dropdown Component - dropdown on hover at all screen sizes (safe triangle for gap bridging)
-const CatalogDropdown = () => {
+// Memoized to prevent re-renders
+const CatalogDropdown = memo(() => {
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const menuRef = useRef<HTMLDivElement>(null);
 	const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-	const { data: categories = [] } = useQuery({
+	const { data: categories = [], isLoading: categoriesLoading } = useQuery({
 		...categoriesQueryOptions(),
 	});
 
@@ -701,12 +733,12 @@ const CatalogDropdown = () => {
 	// Exclude categories with count 0 or errors (missing from counts when counts is loaded)
 	const activeCategories = useMemo(() => {
 		return categories
-			.filter((cat) => cat.isActive)
-			.map((category) => ({
+			.filter((cat: Category) => cat.isActive)
+			.map((category: Category) => ({
 				...category,
 				productCount: counts?.[category.slug] ?? null, // null = still loading or missing
 			}))
-			.filter((category) => {
+			.filter((category: Category & { productCount: number | null }) => {
 				// If counts haven't loaded yet, show all categories
 				if (counts === undefined) return true;
 				// If counts have loaded, only show categories with count > 0
@@ -714,7 +746,12 @@ const CatalogDropdown = () => {
 				const count = counts[category.slug];
 				return count !== undefined && count > 0;
 			})
-			.sort((a, b) => a.order - b.order);
+			.sort(
+				(
+					a: Category & { productCount: number | null },
+					b: Category & { productCount: number | null },
+				) => a.order - b.order,
+			);
 	}, [categories, counts]);
 
 	// Handle mouse enter - open dropdown and prefetch catalog (categories)
@@ -772,68 +809,84 @@ const CatalogDropdown = () => {
 				onMouseLeave={handleMouseLeave}
 				role="menu"
 			>
-				{activeCategories.length === 0 ? (
+				{categoriesLoading ? (
+					<CatalogDropdownSkeleton />
+				) : activeCategories.length === 0 ? (
 					<div className="px-4 py-2 text-sm text-muted-foreground">
 						Нет категорий
 					</div>
 				) : (
-					activeCategories.map((category) => (
-						<Link
-							key={category.slug}
-							href={`/store/${category.slug}`}
-							variant="category"
-							disableAnimation={true}
-							onMouseEnter={() => {
-								// Prefetch store data for this category on hover
-								prefetchStoreWithCategory(category.slug);
-							}}
-						>
-							<span className="flex-1 min-w-0 pr-3 wrap-break-word">
-								{category.name}
-							</span>
-							{category.productCount !== null && (
-								<span className="text-xs opacity-70 shrink-0">
-									{category.productCount}
+					activeCategories.map(
+						(category: Category & { productCount: number | null }) => (
+							<Link
+								key={category.slug}
+								href={`/store/${category.slug}`}
+								variant="category"
+								disableAnimation={true}
+								onMouseEnter={() => {
+									// Prefetch store data for this category on hover
+									prefetchStoreWithCategory(category.slug);
+								}}
+							>
+								<span className="flex-1 min-w-0 pr-3 wrap-break-word">
+									{category.name}
 								</span>
-							)}
-						</Link>
-					))
+								{category.productCount !== null && (
+									<span className="text-xs opacity-70 shrink-0">
+										{category.productCount}
+									</span>
+								)}
+							</Link>
+						),
+					)
 				)}
 			</div>
 		</div>
 	);
-};
+});
+CatalogDropdown.displayName = "CatalogDropdown";
 
 // Dashboard search input component - extracted to reduce duplication
-const DashboardSearchInput = ({
-	placeholder,
-	value,
-	onChange,
-	className = "w-full",
-}: {
-	placeholder: string;
-	value: string;
-	onChange: (value: string) => void;
-	className?: string;
-}) => {
-	return (
-		<SearchInput
-			placeholder={placeholder}
-			value={value}
-			onChange={onChange}
-			className={className}
-		/>
-	);
-};
+// Memoized to prevent re-renders
+const DashboardSearchInput = memo(
+	({
+		placeholder,
+		value,
+		onChange,
+		className = "w-full",
+	}: {
+		placeholder: string;
+		value: string;
+		onChange: (value: string) => void;
+		className?: string;
+	}) => {
+		return (
+			<SearchInput
+				placeholder={placeholder}
+				value={value}
+				onChange={onChange}
+				className={className}
+			/>
+		);
+	},
+);
+DashboardSearchInput.displayName = "DashboardSearchInput";
 
 export function NavBar({ className }: Omit<NavBarProps, "items">) {
-	const routerState = useRouterState();
-	const pathname = routerState.location.pathname;
+	// Only subscribe to pathname, not all router state
+	// This prevents re-renders when Link preload triggers on hover
+	const pathname = useRouterState({
+		select: (state) => state.location.pathname,
+	});
 	const { prefetchDashboardOrders } = usePrefetch();
 	const dynamicPlaceholder = useSearchPlaceholderWithCount();
 
-	const isDashboard = pathname.startsWith("/dashboard");
-	const isMiscPage = pathname === "/dashboard/misc";
+	// Memoize pathname checks to prevent unnecessary re-renders
+	const isDashboard = useMemo(
+		() => pathname.startsWith("/dashboard"),
+		[pathname],
+	);
+	const isMiscPage = useMemo(() => pathname === "/dashboard/misc", [pathname]);
 
 	// Smart navbar: hides on scroll down, shows on scroll up
 	const { shouldShowNavbar } = useScrollDirection(300);
@@ -844,17 +897,25 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 		...userDataQueryOptions(),
 	});
 
-	// Check if user is admin
-	const isAdmin = userData?.isAdmin ?? false;
+	// Check if user is admin - memoized to prevent unnecessary re-renders
+	const isAdmin = useMemo(
+		() => userData?.isAdmin ?? false,
+		[userData?.isAdmin],
+	);
 
 	// Client-side search context (for store page)
 	const clientSearch = useClientSearch();
 	const navigate = useNavigate();
 
 	// Dashboard search - read from URL and update URL directly
-	const currentSearchParam = (
-		routerState.location.search as unknown as Record<string, unknown>
-	)?.search;
+	// Use a separate selector to avoid subscribing to all router state
+	const currentSearchParam = useRouterState({
+		select: (state) =>
+			(state.location.search as unknown as Record<string, unknown>)?.search as
+				| string
+				| number
+				| undefined,
+	});
 
 	// Local state for input value (for immediate UI feedback)
 	const [dashboardSearchInput, setDashboardSearchInput] = useState(() => {
@@ -900,9 +961,15 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 		return () => clearTimeout(handle);
 	}, [isDashboard, isMiscPage, dashboardSearchInput, navigate, pathname]);
 
-	// Get action buttons from configuration
-	const actionButtons = getActionButtonsForRoute(pathname);
-	const actionButton = actionButtons.length === 1 ? actionButtons[0] : null;
+	// Get action buttons from configuration - memoized to prevent unnecessary re-renders
+	const actionButtons = useMemo(
+		() => getActionButtonsForRoute(pathname),
+		[pathname],
+	);
+	const actionButton = useMemo(
+		() => (actionButtons.length === 1 ? actionButtons[0] : null),
+		[actionButtons],
+	);
 
 	// Dashboard navigation layout
 	if (isDashboard) {
