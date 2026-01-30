@@ -81,7 +81,9 @@ export function useVariationSelection({
 	// Create lookup maps for efficient attribute resolution
 	const attributeSlugToIdMap = useMemo(() => {
 		const map = new Map<string, string>();
-		attributes.forEach((attr) => {
+		(
+			attributes as Array<ProductAttribute & { id: number; slug: string }>
+		).forEach((attr) => {
 			map.set(attr.slug, attr.id.toString());
 			map.set(attr.id.toString(), attr.id.toString()); // Also support numeric ID
 		});
@@ -90,7 +92,9 @@ export function useVariationSelection({
 
 	const attributeIdToSlugMap = useMemo(() => {
 		const map = new Map<string, string>();
-		attributes.forEach((attr) => {
+		(
+			attributes as Array<ProductAttribute & { id: number; slug: string }>
+		).forEach((attr) => {
 			map.set(attr.id.toString(), attr.slug);
 		});
 		return map;
@@ -177,15 +181,18 @@ export function useVariationSelection({
 
 	// Auto-select defaults for product cards (local state mode)
 	useEffect(() => {
-		if (useUrlState || !product?.hasVariations || !sortedVariations.length)
+		// Skip if using URL state or no variations
+		if (useUrlState || !product?.variations?.length || !sortedVariations.length)
 			return;
+
+		// Skip if already has selections or no defaults
 		if (Object.keys(localSelectedAttributes).length > 0) return;
 		if (Object.keys(defaultAttributes).length === 0) return;
 
 		setLocalSelectedAttributes(defaultAttributes);
 	}, [
 		useUrlState,
-		product?.hasVariations,
+		product?.variations?.length,
 		sortedVariations.length,
 		localSelectedAttributes,
 		defaultAttributes,
@@ -193,7 +200,11 @@ export function useVariationSelection({
 
 	// Auto-select missing defaults for product page (URL state mode)
 	useEffect(() => {
-		if (!useUrlState || !product?.hasVariations || !sortedVariations.length)
+		if (
+			!useUrlState ||
+			!product?.variations?.length ||
+			!sortedVariations.length
+		)
 			return;
 
 		const requiredIds = Array.from(allAttributeIds);
@@ -228,7 +239,7 @@ export function useVariationSelection({
 		});
 	}, [
 		useUrlState,
-		product?.hasVariations,
+		product?.variations?.length,
 		sortedVariations.length,
 		allAttributeIds,
 		urlSelectedAttributes,
@@ -241,8 +252,7 @@ export function useVariationSelection({
 	// Find selected variation using lookup map (O(1) instead of O(n*m*k))
 	const selectedVariation = useMemo(() => {
 		if (
-			!product?.variations ||
-			!product.hasVariations ||
+			!product?.variations?.length ||
 			Object.keys(selectedAttributes).length === 0
 		) {
 			return null;
