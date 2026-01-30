@@ -26,7 +26,7 @@ function AboutSection() {
 					основания основным видом деятельности является продажа качественных
 					напольных покрытий и комплектующих к ним.
 				</p>
-				<Button variant="secondary" className="self-start">
+				<Button variant="secondary" className="self-start" to="/about">
 					Подробнее
 				</Button>
 			</div>
