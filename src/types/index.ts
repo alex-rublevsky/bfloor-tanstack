@@ -16,17 +16,55 @@ export interface Product extends InferSelectModel<typeof products> {}
 export type NewProduct = InferInsertModel<typeof products>;
 
 // Product Attributes
-export interface ProductAttribute
-	extends InferSelectModel<typeof productAttributes> {}
+export interface ProductAttribute {
+	id: number;
+	name: string;
+	slug: string;
+	valueType: string;
+	allowMultipleValues: boolean;
+}
 export type NewProductAttribute = InferInsertModel<typeof productAttributes>;
 
 // Product variation with attributes
-export interface ProductVariationWithAttributes extends ProductVariation {
+export interface ProductVariationWithAttributes {
+	id: number;
+	productId: number | null;
+	sku: string;
+	price: number;
+	discount: number | null;
+	sort: number | null;
+	variationAttributes: string | null;
+	createdAt: Date;
 	attributes: VariationAttribute[];
 }
 
 // Extended product type with variations
-export interface ProductWithVariations extends Product {
+export interface ProductWithVariations {
+	// Base Product fields
+	id: number;
+	categorySlug: string | null;
+	brandSlug: string | null;
+	collectionSlug: string | null;
+	storeLocationId: number | null;
+	name: string;
+	slug: string;
+	sku: string | null;
+	images: string | null;
+	description: string | null;
+	importantNote: string | null;
+	tags: string | null;
+	price: number;
+	squareMetersPerPack: number | null;
+	unitOfMeasurement: string;
+	isActive: boolean;
+	isFeatured: boolean;
+	discount: number | null;
+	hasVariations: boolean;
+	productAttributes: string | null;
+	dimensions: string | null;
+	viewCount: number;
+	createdAt: Date | null;
+	// Extended fields
 	variations?: ProductVariationWithAttributes[];
 }
 
@@ -228,9 +266,31 @@ export interface CartItem {
 	addedAt: number; // Timestamp for sorting/debugging
 }
 
-export interface ProductWithDetails
-	extends Omit<Product, "productAttributes" | "images"> {
-	images: string[];
+export interface ProductWithDetails {
+	// Base Product fields
+	id: number;
+	categorySlug: string | null;
+	brandSlug: string | null;
+	collectionSlug: string | null;
+	storeLocationId: number | null;
+	name: string;
+	slug: string;
+	sku: string | null;
+	images: string[]; // Overridden from Product (string | null -> string[])
+	description: string | null;
+	importantNote: string | null;
+	tags: string | null;
+	price: number;
+	squareMetersPerPack: number | null;
+	unitOfMeasurement: string;
+	isActive: boolean;
+	isFeatured: boolean;
+	discount: number | null;
+	hasVariations: boolean;
+	dimensions: string | null;
+	viewCount: number;
+	createdAt: Date | null;
+	// Extended fields
 	category?: {
 		name: string;
 		slug: string;
