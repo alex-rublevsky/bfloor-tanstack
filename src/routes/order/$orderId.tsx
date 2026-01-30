@@ -198,11 +198,11 @@ function OrderPage() {
 														-{item.discountPercentage}%
 													</Badge>
 													<p className="line-through text-muted-foreground">
-														CA${(item.unitAmount * item.quantity).toFixed(2)}
+														CA${Math.round(item.unitAmount * item.quantity)}
 													</p>
 												</>
 											) : null}
-											<h6 className="">CA${item.finalAmount.toFixed(2)}</h6>
+											<h6 className="">CA${Math.round(item.finalAmount)}</h6>
 										</div>
 									</div>
 								</div>
@@ -215,13 +215,13 @@ function OrderPage() {
 				<div className="space-y-2">
 					<div className="flex justify-between">
 						<p>Subtotal</p>
-						<p>CA${order.subtotalAmount.toFixed(2)}</p>
+						<p>CA${Math.round(order.subtotalAmount)}</p>
 					</div>
 					{order.discountAmount > 0 && (
 						<div className="flex justify-between text-green-600">
 							<p>Discount</p>
 							<Badge variant="green" className="self-end">
-								-CA${order.discountAmount.toFixed(2)}
+								-CA${Math.round(order.discountAmount)}
 							</Badge>
 						</div>
 					)}
@@ -229,13 +229,13 @@ function OrderPage() {
 						<p>Shipping</p>
 						<p className="text-muted-foreground">
 							{order.shippingAmount
-								? `CA$${order.shippingAmount.toFixed(2)}`
+								? `CA$${Math.round(order.shippingAmount)}`
 								: "To be determined"}
 						</p>
 					</div>
 					<div className="flex justify-between items-baseline text-lg pt-2 border-t">
 						<h5>Total</h5>
-						<h3>CA${order.totalAmount.toFixed(2)}</h3>
+						<h3>CA${Math.round(order.totalAmount)}</h3>
 					</div>
 				</div>
 

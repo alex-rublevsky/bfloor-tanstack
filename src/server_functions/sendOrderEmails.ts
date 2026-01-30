@@ -382,12 +382,12 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
 				email: data.customerInfo.shippingAddress?.email,
 				orderId: data.orderId.toString(),
 				orderDate: orderDate,
-				subtotal: `CA$${data.orderAmounts.subtotalAmount.toFixed(2)}`,
+				subtotal: `CA$${Math.round(data.orderAmounts.subtotalAmount)}`,
 				totalDiscount:
 					data.orderAmounts.discountAmount > 0
-						? `CA$${data.orderAmounts.discountAmount.toFixed(2)}`
+						? `CA$${Math.round(data.orderAmounts.discountAmount)}`
 						: undefined,
-				orderTotal: `CA$${data.totalAmount.toFixed(2)}`,
+				orderTotal: `CA$${Math.round(data.totalAmount)}`,
 				orderStatus: "Pending",
 				shippingMethod: data.customerInfo.shippingMethod || "Standard",
 				shippingAddress: data.customerInfo.shippingAddress,
@@ -396,9 +396,9 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
 					name: item.productName,
 					quantity: item.quantity,
 					price: item.discount
-						? `CA$${(item.price * (1 - item.discount / 100) * item.quantity).toFixed(2)}`
-						: `CA$${(item.price * item.quantity).toFixed(2)}`,
-					originalPrice: `CA$${(item.price * item.quantity).toFixed(2)}`,
+						? `CA$${Math.round(item.price * (1 - item.discount / 100) * item.quantity)}`
+						: `CA$${Math.round(item.price * item.quantity)}`,
+					originalPrice: `CA$${Math.round(item.price * item.quantity)}`,
 					discount: item.discount ?? undefined,
 					image:
 						item.image && typeof item.image === "string"

@@ -131,17 +131,15 @@ export function CartItem({ item }: CartItemProps) {
 							Скидка {item.discount}%
 						</Badge>
 						<span className="line-through text-sm text-muted-foreground">
-							{(item.price * item.quantity).toFixed(2)} р
+							{Math.round(item.price * item.quantity)} р
 						</span>
 						<h6>
-							{(item.price * (1 - item.discount / 100) * item.quantity).toFixed(
-								2,
-							)}{" "}
+							{Math.round(item.price * (1 - item.discount / 100) * item.quantity)}{" "}
 							р
 						</h6>
 					</div>
 				) : (
-					<h6>{(item.price * item.quantity).toFixed(2)} р</h6>
+					<h6>{Math.round(item.price * item.quantity)} р</h6>
 				)}
 			</div>
 		</div>

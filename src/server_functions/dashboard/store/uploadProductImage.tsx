@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { ASSETS_BASE_URL } from "~/constants/urls";
-import { getStorageBucket, type R2Bucket } from "~/utils/storage";
+import { getStorageBucket, type StorageBucket } from "~/utils/storage";
 
 const MAX_FILE_SIZE = 1.5 * 1024 * 1024; // 1.5MB
 const MAX_SVG_SIZE = 5 * 1024 * 1024; // 5MB for SVG files (they can be larger)
@@ -19,7 +19,7 @@ const ALLOWED_TYPES = [
  * This runs on every staging upload to ensure cleanup without cron triggers
  */
 async function cleanupOldStagingFiles(
-	bucket: R2Bucket,
+	bucket: StorageBucket,
 	folder: string,
 ): Promise<void> {
 	try {

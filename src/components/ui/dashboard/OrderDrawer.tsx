@@ -78,23 +78,23 @@ export function OrderDrawer({ order, isOpen, onClose }: OrderDrawerProps) {
 							<div className="space-y-2">
 								<p className="text-sm">
 									<span className="font-medium">Subtotal:</span>{" "}
-									{order.currency} {order.subtotalAmount.toFixed(2)}
+									{order.currency} {Math.round(order.subtotalAmount)}
 								</p>
 								{order.discountAmount > 0 && (
 									<p className="text-sm">
 										<span className="font-medium">Discount:</span> -
-										{order.currency} {order.discountAmount.toFixed(2)}
+										{order.currency} {Math.round(order.discountAmount)}
 									</p>
 								)}
 								{order.shippingAmount > 0 && (
 									<p className="text-sm">
 										<span className="font-medium">Shipping:</span>{" "}
-										{order.currency} {order.shippingAmount.toFixed(2)}
+										{order.currency} {Math.round(order.shippingAmount)}
 									</p>
 								)}
 								<p className="text-sm font-semibold">
 									<span className="font-medium">Total:</span> {order.currency}{" "}
-									{order.totalAmount.toFixed(2)}
+									{Math.round(order.totalAmount)}
 								</p>
 								<p className="text-sm">
 									<span className="font-medium">Status:</span>{" "}
@@ -165,11 +165,11 @@ export function OrderDrawer({ order, isOpen, onClose }: OrderDrawerProps) {
 														</p>
 													)}
 												<p className="text-sm text-muted-foreground">
-													Qty: {item.quantity} × ${item.unitAmount.toFixed(2)}
+													Qty: {item.quantity} × ${Math.round(item.unitAmount)}
 												</p>
 											</div>
 											<p className="font-semibold">
-												${item.finalAmount.toFixed(2)}
+												${Math.round(item.finalAmount)}
 											</p>
 										</div>
 									))}

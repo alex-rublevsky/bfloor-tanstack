@@ -143,11 +143,11 @@ export function OrderCard({
 									{item.product.name}
 								</p>
 								<p className="text-xs text-muted-foreground">
-									Qty: {item.quantity} × ${item.unitAmount.toFixed(2)}
+									Qty: {item.quantity} × ${Math.round(item.unitAmount)}
 								</p>
 							</div>
 							<p className="text-xs font-medium shrink-0">
-								${item.finalAmount.toFixed(2)}
+								${Math.round(item.finalAmount)}
 							</p>
 						</div>
 					))}
@@ -159,7 +159,7 @@ export function OrderCard({
 				<div>
 					<div className="flex items-baseline gap-0.5">
 						<span className="text-xl font-light">
-							{(order.totalAmount || 0).toFixed(2)}
+							{Math.round(order.totalAmount || 0)}
 						</span>
 						<span className="text-xs font-light text-muted-foreground">
 							{order.currency}
