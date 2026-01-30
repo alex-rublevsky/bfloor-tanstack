@@ -1,2 +1,4 @@
+// Yandex Object Storage public URL for images
+// Images are stored in bfloor-static bucket under /images/ prefix
 export const ASSETS_BASE_URL =
-	"https://pub-aecfacef31684b0aa951c03db5f14d4e.r2.dev";
+	"https://storage.yandexcloud.net/bfloor-static/images";

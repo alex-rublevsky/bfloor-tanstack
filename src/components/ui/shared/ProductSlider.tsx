@@ -226,7 +226,7 @@ export default function ProductSlider({
 	}
 
 	const section = (
-		<section className="embla pb-42 product-slider-section no-padding">
+		<section className="embla product-slider-section no-padding">
 			{/* Header Row - Title/Tags and Arrows */}
 			<div className="product-slider__header">
 				<div className="product-slider__header-content">

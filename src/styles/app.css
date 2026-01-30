@@ -306,7 +306,7 @@ input.field-sizing-content[type="number"] {
 @layer utilities {
 	section {
 		background-color: var(--background);
-		padding-bottom: 6rem;
+		padding-bottom: 3rem;
 		padding-left: var(--section-padding-x);
 		z-index: 1;
 		padding-right: var(--section-padding-x);
