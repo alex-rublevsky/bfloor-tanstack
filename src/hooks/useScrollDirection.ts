@@ -10,6 +10,11 @@ export function useScrollDirection(threshold: number) {
 	const [shouldShowNavbar, setShouldShowNavbar] = useState(true);
 	const lastScrollY = useRef(0);
 	const ticking = useRef(false);
+	// Track current navbar state to avoid reading stale state in closure
+	const shouldShowNavbarRef = useRef(true);
+
+	// Keep ref in sync with state
+	shouldShowNavbarRef.current = shouldShowNavbar;
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -22,13 +27,15 @@ export function useScrollDirection(threshold: number) {
 
 			// At top: always show
 			if (currentScrollY < 10) {
-				setShouldShowNavbar(true);
+				if (!shouldShowNavbarRef.current) {
+					setShouldShowNavbar(true);
+				}
 				lastScrollY.current = currentScrollY;
 				ticking.current = false;
 				return;
 			}
 
-			// Ignore tiny scroll changes (< 3px)
+			// Ignore tiny scroll changes (< 3px) for stability
 			if (Math.abs(scrollDiff) < 3) {
 				lastScrollY.current = currentScrollY;
 				ticking.current = false;
@@ -37,11 +44,15 @@ export function useScrollDirection(threshold: number) {
 
 			// Scrolling down: hide if past threshold
 			if (scrollDiff > 0 && currentScrollY > threshold) {
-				setShouldShowNavbar(false);
+				if (shouldShowNavbarRef.current) {
+					setShouldShowNavbar(false);
+				}
 			}
 			// Scrolling up: show (regardless of position)
 			else if (scrollDiff < 0) {
-				setShouldShowNavbar(true);
+				if (!shouldShowNavbarRef.current) {
+					setShouldShowNavbar(true);
+				}
 			}
 
 			lastScrollY.current = currentScrollY;
