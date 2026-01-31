@@ -63,11 +63,7 @@ export function SlugField({
 			<div>
 				<div className="flex items-center justify-between mb-2">
 					<div className="flex items-center gap-2">
-						{isCustomSlug && (
-							<Badge className="" variant="default">
-								пользовательский
-							</Badge>
-						)}
+						{isCustomSlug && <Badge variant="default">Пользовательский</Badge>}
 					</div>
 					<div className="flex items-center space-x-2">
 						<Switch
