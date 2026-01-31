@@ -73,24 +73,54 @@
 ============================================ */
 
 .product-info-overlay {
-	background: oklch(from var(--background) l c h / 0.85);
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
+	/* Fallback for browsers without backdrop-filter support */
+	background: oklch(from var(--background) l c h / 0.95);
 	border: 1px solid oklch(from var(--border) l c h / 0.5);
 	position: relative;
 	/* High z-index to stay above view transitions */
 	z-index: 9999;
-	/* Smooth slide-up and fade-in animation */
-	animation: product-card-reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-@keyframes product-card-reveal {
+/* Backdrop blur for modern browsers - standardized with navbar */
+@supports (
+		(-webkit-backdrop-filter: blur(8px)) or
+		(backdrop-filter: blur(8px))
+	) {
+	.product-info-overlay {
+		background: oklch(from var(--background) l c h / 0.8);
+		-webkit-backdrop-filter: blur(8px);
+		backdrop-filter: blur(8px);
+	}
+}
+
+/* Reveal animation for product info overlay on initial page load */
+/* This creates a smooth fade-in effect when the page first loads */
+@keyframes product-info-reveal {
 	from {
 		opacity: 0;
-		transform: translateY(1.2rem);
+		transform: translateY(1rem);
 	}
 	to {
 		opacity: 1;
 		transform: translateY(0);
+	}
+}
+
+/* Apply reveal animation only on initial load, not during view transitions */
+.product-info-reveal {
+	/* Start hidden */
+	opacity: 0;
+	/* Animate in after a short delay */
+	animation: product-info-reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards;
+}
+
+/* Disable the reveal animation during view transitions */
+/* The view transition will handle the animation instead */
+@supports selector(::view-transition) {
+	html:has(::view-transition) .product-info-reveal {
+		/* Remove the initial opacity and animation during view transitions */
+		opacity: 1;
+		animation: none;
+		transform: none;
 	}
 }

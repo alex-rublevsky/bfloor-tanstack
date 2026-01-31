@@ -819,8 +819,11 @@ span {
 }
 ::view-transition {
 	navigation: auto;
-	/* Lower the view transition layer below the product info card */
-	z-index: 1000;
+	/* View transition layer must be below product info overlay (z-index: 9999) */
+	/* Set to a lower value to ensure product info stays on top */
+	z-index: 100;
+	/* Ensure proper stacking context for all view transition groups */
+	isolation: isolate;
 }
 
 /* View transition for elements that actually transition */
@@ -832,9 +835,10 @@ span {
 }
 
 /* Smoother, slower transitions for product images */
+/* Synced with product-info-container duration for coordinated animation */
 ::view-transition-old(product-image),
 ::view-transition-new(product-image) {
-	animation-duration: 0.6s;
+	animation-duration: 0.5s;
 	animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -847,18 +851,51 @@ span {
 
 /* Control z-index stacking during view transitions */
 /* Ensure product images stay below the product info card */
+/* Product info has z-index: 9999, so view transition must stay below */
 ::view-transition-group(product-image) {
+	/* Explicitly set lower z-index to stay below product info */
 	z-index: 0;
+	/* Create stacking context */
+	isolation: isolate;
+	/* Ensure it respects the parent view-transition z-index */
+	position: relative;
 }
 
 ::view-transition-old(product-image),
 ::view-transition-new(product-image) {
+	/* Keep images at lower z-index during entire transition */
 	z-index: 0;
+	/* Ensure they don't overlap the product info */
+	contain: layout style paint;
+	/* Force lower stacking order */
+	position: relative;
 }
 
-/* Product info container should be at the highest level in view transitions */
+/* Product info container view transition rules */
+/* The key is to NOT preserve the blur - let it fade naturally with opacity */
+
+/* Ensure product info overlay stays above view transitions */
 ::view-transition-group(product-info-container) {
 	z-index: 100;
+	/* Ensure it's always on top */
+	isolation: isolate;
+}
+
+/* Preserve only structural properties, NOT the blur */
+/* The blur will fade naturally as the element fades in/out */
+::view-transition-old(product-info-container),
+::view-transition-new(product-info-container) {
+	/* Preserve rounded corners */
+	border-radius: 0.5rem;
+	/* Sync animation timing */
+	animation-duration: 0.5s;
+	animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+	/* Maintain z-index */
+	z-index: 100;
+	/* Prevent overflow for clean corners */
+	overflow: hidden;
+	/* Let the blur fade naturally - don't force it */
+	/* The browser will capture the element's actual state including blur */
 }
 
 /* Persisted navbars should always stay above view transition layer */
@@ -1006,7 +1043,10 @@ input[type="number"] {
 }
 
 /* Backdrop blur for modern browsers - with enhanced browser support */
-@supports ((-webkit-backdrop-filter: blur(8px)) or (backdrop-filter: blur(8px))) {
+@supports (
+		(-webkit-backdrop-filter: blur(8px)) or
+		(backdrop-filter: blur(8px))
+	) {
 	.navbar-scroll-aware {
 		background-color: color-mix(in oklch, var(--background) 80%, transparent);
 		-webkit-backdrop-filter: blur(8px);

@@ -132,6 +132,9 @@ const ProductCard = memo(
 		disableViewTransition?: boolean;
 	}) => {
 		const [isAddingToCart, setIsAddingToCart] = useState(false);
+		// Track hover state to determine which image is visible
+		// When hovering on desktop with 2+ images, the second image is shown
+		const [isHovering, setIsHovering] = useState(false);
 		const { addToCart } = useCart();
 		const { prefetchProduct } = usePrefetch();
 		const { data: attributes } = useProductAttributes();
@@ -155,14 +158,19 @@ const ProductCard = memo(
 		[product.images],
 	);
 
-	// Link search params should NOT include hover state to prevent re-renders
-	// The imageIndex will be handled by the product page based on its own state
+	// Link search params - include imageIndex when hovering to ensure smooth transition
+	// When user hovers and sees second image, clicking should open that same image
 	const linkSearchParams = useMemo(() => {
 		const params = getVariationSearchParams(defaultVariation, attributes || []);
-		// Don't add imageIndex here - it causes unnecessary re-renders
-		// The product page will handle image selection
+		
+		// Add imageIndex if hovering and product has multiple images
+		// This ensures the view transition goes from the visible image (second) to the same image on detail page
+		if (isHovering && imageArray.length > 1) {
+			params.imageIndex = "1"; // Second image (0-indexed)
+		}
+		
 		return params;
-	}, [defaultVariation, attributes]);
+	}, [defaultVariation, attributes, isHovering, imageArray.length]);
 
 	// Get unique attribute values for a specific attribute ID - memoized
 	const getUniqueAttributeValues = useCallback(
@@ -245,10 +253,17 @@ const ProductCard = memo(
 		// Memoize the prefetch handler to prevent re-creating on every render
 		// Use useCallback instead of useMemo for event handlers
 		const handleMouseEnter = useCallback(() => {
+			// Track hover state for image index in link params
+			setIsHovering(true);
 			// Only prefetch - don't seed the cache as it causes re-renders
 			// The prefetch will fetch the full product data from the server
 			prefetchProduct(product.slug);
 		}, [prefetchProduct, product.slug]);
+
+		const handleMouseLeave = useCallback(() => {
+			// Reset hover state when mouse leaves
+			setIsHovering(false);
+		}, []);
 
 		// Check if product is coming soon (not in the type, so we'll use a placeholder)
 
@@ -263,6 +278,7 @@ const ProductCard = memo(
 				preload="intent"
 				viewTransition={true}
 				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
 			>
 			<div
 				className="w-full product-card overflow-hidden  group"
@@ -292,11 +308,13 @@ const ProductCard = memo(
 											style={
 												disableViewTransition
 													? undefined
-													: // Always use primary image for view transition
-														// The secondary image hover effect is handled by CSS only
-														{
-																viewTransitionName: `product-image-${product.slug}`,
-															}
+													: // Only apply view transition name when NOT hovering or when there's only one image
+														// When hovering with multiple images, the secondary image gets the transition name
+														!isHovering || imageArray.length === 1
+															? {
+																	viewTransitionName: `product-image-${product.slug}`,
+																}
+															: undefined
 											}
 											onLoad={(e) => {
 												const parent = e.currentTarget.parentElement;
@@ -328,6 +346,17 @@ const ProductCard = memo(
 												alt={product.name}
 												loading="eager"
 												className="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ease-in-out opacity-0 group-hover:opacity-100 hidden md:block"
+												style={
+													disableViewTransition
+														? undefined
+														: // When hovering, the secondary image (which is visible) gets the view transition name
+															// This ensures smooth transition from the visible hovered image to the detail page
+															isHovering
+																? {
+																		viewTransitionName: `product-image-${product.slug}`,
+																	}
+																: undefined
+												}
 												onError={(e) => {
 													const t = e.currentTarget;
 													t.style.display = "none";

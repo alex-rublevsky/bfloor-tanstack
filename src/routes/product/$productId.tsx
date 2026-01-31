@@ -615,12 +615,16 @@ function ProductPage() {
 						className="absolute top-0 right-0 w-full h-full pointer-events-none"
 						style={{
 							zIndex: 9999,
-							//viewTransitionName: "product-info-container",
 						}}
 					>
 						<div className="sticky top-16 w-full lg:w-2/5 min-w-0 h-fit ml-auto pointer-events-auto">
 							<div className="flex items-start justify-end p-8 min-w-0">
-								<div className="product-info-overlay p-6 max-w-[45vw] rounded-lg shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] min-w-0 w-fit border border-border relative">
+								<div
+									className="product-info-overlay product-info-reveal p-6 max-w-[45vw] rounded-lg shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] min-w-0 w-fit border border-border relative"
+									style={{
+										viewTransitionName: "product-info-container",
+									}}
+								>
 									{/* Admin Edit Button - Top Right Corner */}
 									{isAdmin && productWithDetails?.id && (
 										<div className="absolute top-4 right-4">
