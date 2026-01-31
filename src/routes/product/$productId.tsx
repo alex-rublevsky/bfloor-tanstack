@@ -615,7 +615,7 @@ function ProductPage() {
 						className="absolute top-0 right-0 w-full h-full pointer-events-none"
 						style={{
 							zIndex: 9999,
-							viewTransitionName: "product-info-container",
+							//viewTransitionName: "product-info-container",
 						}}
 					>
 						<div className="sticky top-16 w-full lg:w-2/5 min-w-0 h-fit ml-auto pointer-events-auto">
