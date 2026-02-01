@@ -9,6 +9,15 @@
 	font-display: swap;
 }
 
+/* Digital Mono Font Declaration */
+@font-face {
+	font-family: "Digital Mono";
+	src: url("/fonts/ditial_mono.woff2") format("woff2");
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+
 /* Apply font globally */
 html,
 body {
@@ -56,6 +65,22 @@ input.field-sizing-content {
 /* Quantity inputs should be able to grow larger */
 input.field-sizing-content[type="number"] {
 	max-inline-size: none;
+}
+
+/* Digital mono font for quantity inputs */
+.font-digital-mono {
+	font-family: "Digital Mono", monospace;
+}
+
+/* NumberFlow styling for calculator-style animations */
+.font-digital-mono number-flow {
+	font-family: "Digital Mono", monospace;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Customize NumberFlow animation timing for calculator feel */
+number-flow {
+	--number-flow-char-height: 0.85em;
 }
 
 /* Product Description HTML Styles */

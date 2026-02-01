@@ -1,6 +1,8 @@
+import NumberFlow from "@number-flow/react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
+import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
@@ -270,6 +272,270 @@ export const Route = createFileRoute("/product/$productId")({
 		middlewares: [stripSearchParams({})],
 	},
 });
+
+// Reusable Add to Cart section component props
+type AddToCartSectionProps = {
+	size?: "sm" | "lg";
+	className?: string;
+	currentDiscount: number | null;
+	originalTotalPrice: number;
+	totalPrice: number;
+	handleAddToCart: () => void;
+	canAddToCart: boolean;
+};
+
+// Reusable Add to Cart section component
+function AddToCartSection({
+	size = "lg",
+	className = "",
+	currentDiscount,
+	originalTotalPrice,
+	totalPrice,
+	handleAddToCart,
+	canAddToCart,
+}: AddToCartSectionProps) {
+	if (currentDiscount && currentDiscount > 0) {
+		// With discount: Grid layout with button spanning both rows
+		return (
+			<motion.div
+				className={`bg-muted rounded-lg p-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 items-stretch ${className}`}
+				layout
+				transition={{ duration: 0.3, ease: "easeInOut" }}
+			>
+				{/* Discount Row */}
+				<div className="flex items-baseline gap-4">
+					<div className="text-left">Скидка</div>
+					<span className="text-xl line-through whitespace-nowrap font-digital-mono">
+						<NumberFlow
+							value={Math.round(originalTotalPrice)}
+							format={{ useGrouping: true }}
+							suffix=" p"
+						/>
+					</span>
+					<span className="px-2 py-1 bg-accent text-accent-foreground! text-base font-semibold rounded-[5px] whitespace-nowrap font-digital-mono">
+						-{currentDiscount}%
+					</span>
+				</div>
+
+				{/* Add to Cart Button - spans both rows */}
+				<motion.div
+					className="row-span-2 flex"
+					layout
+					transition={{ duration: 0.3, ease: "easeInOut" }}
+				>
+					<Button
+						onClick={handleAddToCart}
+						disabled={!canAddToCart}
+						size={size}
+						className="w-full h-full"
+					>
+						{!canAddToCart ? "Недоступно" : "В корзину"}
+					</Button>
+				</motion.div>
+
+				{/* Total Row */}
+				<div className="flex items-baseline gap-4">
+					<div className="text-left">Итого</div>
+					<span
+						className={`${size === "lg" ? "text-4xl" : "text-2xl"} font-bold whitespace-nowrap font-digital-mono`}
+					>
+						<NumberFlow
+							value={Math.round(totalPrice)}
+							format={{ useGrouping: true }}
+							suffix=" p"
+						/>
+					</span>
+				</div>
+			</motion.div>
+		);
+	}
+
+	// Without discount: Label above price
+	return (
+		<motion.div
+			className={`bg-muted rounded-lg p-2 flex flex-row gap-4 items-stretch ${className}`}
+			layout
+			transition={{ duration: 0.3, ease: "easeInOut" }}
+		>
+			{/* Price Display - stacked vertically */}
+			<div className="flex flex-col">
+				<div className="text-sm text-muted-foreground">Итого</div>
+				<div
+					className={`${size === "lg" ? "text-4xl" : "text-2xl"} font-bold font-digital-mono`}
+				>
+					<NumberFlow
+						value={Math.round(totalPrice)}
+						format={{ useGrouping: true }}
+						suffix=" p"
+					/>
+				</div>
+			</div>
+
+			{/* Add to Cart Button */}
+			<motion.div
+				className="flex-1 flex"
+				layout
+				transition={{ duration: 0.3, ease: "easeInOut" }}
+			>
+				<Button
+					onClick={handleAddToCart}
+					disabled={!canAddToCart}
+					size={size}
+					className="w-full h-full"
+				>
+					{!canAddToCart ? "Недоступно" : "В корзину"}
+				</Button>
+			</motion.div>
+		</motion.div>
+	);
+}
+
+// Mobile fixed bar component props
+type MobileFixedCartBarProps = {
+	currentDiscount: number | null;
+	originalTotalPrice: number;
+	totalPrice: number;
+	quantity: number;
+	isFlooringProduct: boolean;
+	getUnitShortLabel: (unit: string | undefined) => string;
+	handleAddToCart: () => void;
+	canAddToCart: boolean;
+	productWithDetails: ProductWithDetails | null | undefined;
+};
+
+// Mobile fixed bar component (different layout - no rounded corners, compact)
+function MobileFixedCartBar({
+	currentDiscount,
+	originalTotalPrice,
+	totalPrice,
+	quantity,
+	isFlooringProduct,
+	getUnitShortLabel,
+	handleAddToCart,
+	canAddToCart,
+	productWithDetails,
+}: MobileFixedCartBarProps) {
+	if (currentDiscount && currentDiscount > 0) {
+		return (
+			<motion.div
+				className="bg-muted grid grid-cols-[auto_1fr] grid-rows-2 items-stretch shadow-lg border-t border-border"
+				layout
+				transition={{ duration: 0.3, ease: "easeInOut" }}
+			>
+				{/* Left column - Price info with padding, spans both rows */}
+				<div className="row-span-2 px-2 py-2 flex flex-col justify-center space-y-1 min-w-0">
+					{/* Discount Row */}
+					<div className="flex items-baseline gap-2 flex-wrap">
+						<div className="text-left whitespace-nowrap">Скидка</div>
+						<span className="text-base line-through whitespace-nowrap font-digital-mono">
+							<NumberFlow
+								value={Math.round(originalTotalPrice)}
+								format={{ useGrouping: true }}
+								suffix=" p"
+							/>
+						</span>
+						<span className="px-2 py-1 bg-accent text-accent-foreground! text-sm font-semibold rounded-[5px] whitespace-nowrap font-digital-mono">
+							-{currentDiscount}%
+						</span>
+					</div>
+
+					{/* Total Row with quantity */}
+					<div className="flex items-baseline justify-between gap-2 min-w-0">
+						<div className="flex items-baseline gap-2 min-w-0">
+							<div className="text-left whitespace-nowrap">Итого</div>
+							<span className="text-2xl font-bold whitespace-nowrap font-digital-mono">
+								<NumberFlow
+									value={Math.round(totalPrice)}
+									format={{ useGrouping: true }}
+									suffix=" p"
+								/>
+							</span>
+						</div>
+						<div className="flex items-baseline gap-1 text-sm text-muted-foreground whitespace-nowrap shrink-0 font-digital-mono">
+							<span>
+								<NumberFlow value={quantity} />
+							</span>
+							<span>
+								{isFlooringProduct
+									? "упак"
+									: getUnitShortLabel(productWithDetails?.unitOfMeasurement)}
+							</span>
+						</div>
+					</div>
+				</div>
+
+				{/* Add to Cart Button - spans both rows, flush with edges */}
+				<motion.div
+					className="row-span-2 flex"
+					layout
+					transition={{ duration: 0.3, ease: "easeInOut" }}
+				>
+					<Button
+						onClick={handleAddToCart}
+						disabled={!canAddToCart}
+						size="sm"
+						className="w-full h-full rounded-none"
+					>
+						{!canAddToCart ? "Недоступно" : "В корзину"}
+					</Button>
+				</motion.div>
+			</motion.div>
+		);
+	}
+
+	// Without discount
+	return (
+		<motion.div
+			className="bg-muted flex flex-row items-stretch shadow-lg border-t border-border"
+			layout
+			transition={{ duration: 0.3, ease: "easeInOut" }}
+		>
+			{/* Price Display with quantity */}
+			<div className="flex flex-col px-2 py-2 min-w-0">
+				<div className="flex items-baseline justify-between gap-2">
+					<div className="text-sm text-muted-foreground whitespace-nowrap">
+						Итого
+					</div>
+					<div className="flex items-baseline gap-1 text-sm text-muted-foreground whitespace-nowrap shrink-0 font-digital-mono">
+						<span>
+							<NumberFlow value={quantity} />
+						</span>
+						<span>
+							{isFlooringProduct
+								? "упак"
+								: getUnitShortLabel(productWithDetails?.unitOfMeasurement)}
+						</span>
+					</div>
+				</div>
+				<div className="flex items-baseline">
+					<span className="text-2xl font-bold whitespace-nowrap font-digital-mono">
+						<NumberFlow
+							value={Math.round(totalPrice)}
+							format={{ useGrouping: true }}
+							suffix=" p"
+						/>
+					</span>
+				</div>
+			</div>
+
+			{/* Add to Cart Button - flush with edges */}
+			<motion.div
+				className="flex-1 flex"
+				layout
+				transition={{ duration: 0.3, ease: "easeInOut" }}
+			>
+				<Button
+					onClick={handleAddToCart}
+					disabled={!canAddToCart}
+					size="sm"
+					className="w-full h-full rounded-none"
+				>
+					{!canAddToCart ? "Недоступно" : "В корзину"}
+				</Button>
+			</motion.div>
+		</motion.div>
+	);
+}
 
 function ProductPage() {
 	const { productId } = Route.useParams();
@@ -652,7 +918,7 @@ function ProductPage() {
 														<BreadcrumbLink asChild>
 															<Link
 																href="/"
-																className="text-gray-400 hover:text-gray-600"
+																className="text-muted-foreground hover:text-foreground"
 															>
 																Главная
 															</Link>
@@ -663,7 +929,7 @@ function ProductPage() {
 														<BreadcrumbLink asChild>
 															<Link
 																href="/store"
-																className="text-gray-400 hover:text-gray-600"
+																className="text-muted-foreground hover:text-foreground"
 															>
 																Ламинат
 															</Link>
@@ -671,7 +937,7 @@ function ProductPage() {
 													</BreadcrumbItem>
 													<BreadcrumbSeparator />
 													<BreadcrumbItem>
-														<BreadcrumbPage className="text-gray-400">
+														<BreadcrumbPage className="text-muted-foreground">
 															{productWithDetails?.name}
 														</BreadcrumbPage>
 													</BreadcrumbItem>
@@ -756,7 +1022,7 @@ function ProductPage() {
 											<div className="flex flex-wrap items-stretch gap-0 min-w-0 w-full">
 												{/* Price Box */}
 												<div className="bg-muted px-4 py-3 rounded-lg flex flex-col justify-center items-center @[38ch]:items-start w-full @[38ch]:w-auto text-center @[38ch]:text-left">
-													<div className="text-sm text-gray-500 mb-1">
+													<div className="text-sm text-muted-foreground mb-1">
 														Цена за{" "}
 														<span className="whitespace-nowrap">
 															{isFlooringProduct
@@ -767,12 +1033,20 @@ function ProductPage() {
 														</span>
 													</div>
 													{currentDiscount && currentDiscount > 0 && (
-														<div className="text-sm line-through text-muted-foreground mb-1">
-															{Math.round(currentPrice).toLocaleString()} р
+														<div className="text-base line-through text-muted-foreground mb-1 font-digital-mono">
+															<NumberFlow
+																value={Math.round(currentPrice)}
+																format={{ useGrouping: true }}
+																suffix=" p"
+															/>
 														</div>
 													)}
-													<div className="text-2xl font-bold text-foreground leading-tight!">
-														{Math.round(displayPrice).toLocaleString()} р
+													<div className="text-3xl font-bold text-foreground leading-tight! font-digital-mono">
+														<NumberFlow
+															value={Math.round(displayPrice)}
+															format={{ useGrouping: true }}
+															suffix=" p"
+														/>
 													</div>
 												</div>
 
@@ -809,15 +1083,23 @@ function ProductPage() {
 															<div className="flex flex-col items-center gap-1 w-full justify-center">
 																{productWithDetails?.squareMetersPerPack && (
 																	<div className="flex flex-col items-center justify-center w-full gap-0">
-																		<div className="text-lg sm:text-xl font-normal whitespace-nowrap text-foreground">
-																			{(
-																				quantity *
-																				productWithDetails.squareMetersPerPack
-																			).toFixed(2)}{" "}
-																			м²
+																		<div className="text-xl sm:text-2xl font-normal whitespace-nowrap text-foreground font-digital-mono">
+																			<NumberFlow
+																				value={
+																					quantity *
+																					productWithDetails.squareMetersPerPack
+																				}
+																				format={{
+																					minimumFractionDigits: 2,
+																					maximumFractionDigits: 2,
+																				}}
+																			/>
 																		</div>
 																		<div className="text-xs sm:text-sm font-normal whitespace-nowrap text-muted-foreground -mt-1">
-																			Площадь
+																			Площадь{" "}
+																			<span className="text-foreground">
+																				м²
+																			</span>
 																		</div>
 																	</div>
 																)}
@@ -827,7 +1109,7 @@ function ProductPage() {
 																		min={1}
 																		value={quantity}
 																		onChange={handleQuantityChange}
-																		className="text-lg sm:text-xl font-normal text-center border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] field-sizing-content [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+																		className="text-xl sm:text-2xl font-normal text-center border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] field-sizing-content [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-digital-mono"
 																	/>
 																	{isFlooringProduct && (
 																		<div className="text-xs sm:text-sm font-normal whitespace-nowrap text-muted-foreground -mt-3.5">
@@ -861,67 +1143,14 @@ function ProductPage() {
 											)}
 
 											{/* Price and Add to Cart */}
-											{currentDiscount && currentDiscount > 0 ? (
-												/* With discount: Grid layout with button spanning both rows */
-												<div className="bg-muted rounded-lg p-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 items-stretch">
-													{/* Discount Row */}
-													<div className="flex items-baseline gap-4">
-														<div className="text-left">Скидка</div>
-														<span className="text-lg line-through whitespace-nowrap">
-															{Math.round(originalTotalPrice).toLocaleString()}{" "}
-															р
-														</span>
-														<span className="px-2 py-1 bg-accent text-accent-foreground! text-sm font-semibold rounded-[5px] whitespace-nowrap">
-															-{currentDiscount}%
-														</span>
-													</div>
-
-													{/* Add to Cart Button - spans both rows */}
-													<div className="row-span-2 flex">
-														<Button
-															onClick={handleAddToCart}
-															disabled={!canAddToCart}
-															size="lg"
-															className="w-full h-full"
-														>
-															{!canAddToCart ? "Недоступно" : "В корзину"}
-														</Button>
-													</div>
-
-													{/* Total Row */}
-													<div className="flex items-baseline gap-4">
-														<div className="text-left">Итого</div>
-														<span className="text-3xl font-bold whitespace-nowrap">
-															{Math.round(totalPrice).toLocaleString()} р
-														</span>
-													</div>
-												</div>
-											) : (
-												/* Without discount: Label above price */
-												<div className="bg-muted rounded-lg p-2 flex flex-row gap-4 items-stretch">
-													{/* Price Display - stacked vertically */}
-													<div className="flex flex-col">
-														<div className="text-sm text-muted-foreground">
-															Итого
-														</div>
-														<h5 className="">
-															{Math.round(totalPrice).toLocaleString()} р
-														</h5>
-													</div>
-
-													{/* Add to Cart Button */}
-													<div className="flex-1 flex">
-														<Button
-															onClick={handleAddToCart}
-															disabled={!canAddToCart}
-															size="lg"
-															className="w-full h-full"
-														>
-															{!canAddToCart ? "Недоступно" : "В корзину"}
-														</Button>
-													</div>
-												</div>
-											)}
+											<AddToCartSection
+												size="lg"
+												currentDiscount={currentDiscount}
+												originalTotalPrice={originalTotalPrice}
+												totalPrice={totalPrice}
+												handleAddToCart={handleAddToCart}
+												canAddToCart={canAddToCart}
+											/>
 
 											{/* Store Locations */}
 											{productWithDetails?.storeLocations &&
@@ -1184,7 +1413,7 @@ function ProductPage() {
 												<BreadcrumbLink asChild>
 													<Link
 														href="/"
-														className="text-gray-400 hover:text-gray-600"
+														className="text-muted-foreground hover:text-foreground"
 													>
 														Главная
 													</Link>
@@ -1195,7 +1424,7 @@ function ProductPage() {
 												<BreadcrumbLink asChild>
 													<Link
 														href="/store"
-														className="text-gray-400 hover:text-gray-600"
+														className="text-muted-foreground hover:text-foreground"
 													>
 														Ламинат
 													</Link>
@@ -1203,7 +1432,7 @@ function ProductPage() {
 											</BreadcrumbItem>
 											<BreadcrumbSeparator />
 											<BreadcrumbItem>
-												<BreadcrumbPage className="text-gray-400">
+												<BreadcrumbPage className="text-muted-foreground">
 													{productWithDetails?.name}
 												</BreadcrumbPage>
 											</BreadcrumbItem>
@@ -1283,7 +1512,7 @@ function ProductPage() {
 										<div className="flex flex-wrap items-stretch gap-0 min-w-0 w-full">
 											{/* Price Box */}
 											<div className="bg-muted px-4 py-3 rounded-lg flex flex-col justify-center items-center @[38ch]:items-start w-full @[38ch]:w-auto text-center @[38ch]:text-left">
-												<div className="text-sm text-gray-500 mb-1">
+												<div className="text-sm text-muted-foreground mb-1">
 													Цена за{" "}
 													<span className="whitespace-nowrap">
 														{isFlooringProduct
@@ -1294,12 +1523,20 @@ function ProductPage() {
 													</span>
 												</div>
 												{currentDiscount && currentDiscount > 0 && (
-													<div className="text-sm line-through text-muted-foreground mb-1">
-														{Math.round(currentPrice).toLocaleString()} р
+													<div className="text-base line-through text-muted-foreground mb-1 font-digital-mono">
+														<NumberFlow
+															value={Math.round(currentPrice)}
+															format={{ useGrouping: true }}
+															suffix=" p"
+														/>
 													</div>
 												)}
-												<div className="text-2xl font-bold text-gray-800">
-													{Math.round(displayPrice).toLocaleString()} р
+												<div className="text-3xl font-bold text-gray-800 font-digital-mono">
+													<NumberFlow
+														value={Math.round(displayPrice)}
+														format={{ useGrouping: true }}
+														suffix=" p"
+													/>
 												</div>
 											</div>
 
@@ -1336,15 +1573,21 @@ function ProductPage() {
 														<div className="flex flex-col items-center gap-1 w-full justify-center">
 															{productWithDetails?.squareMetersPerPack && (
 																<div className="flex flex-col items-center justify-center w-full gap-0">
-																	<div className="text-lg sm:text-xl font-normal whitespace-nowrap text-foreground">
-																		{(
-																			quantity *
-																			productWithDetails.squareMetersPerPack
-																		).toFixed(2)}{" "}
-																		м²
+																	<div className="text-xl sm:text-2xl font-normal whitespace-nowrap text-foreground font-digital-mono">
+																		<NumberFlow
+																			value={
+																				quantity *
+																				productWithDetails.squareMetersPerPack
+																			}
+																			format={{
+																				minimumFractionDigits: 2,
+																				maximumFractionDigits: 2,
+																			}}
+																		/>
 																	</div>
 																	<div className="text-xs sm:text-sm font-normal whitespace-nowrap text-muted-foreground -mt-1">
-																		Площадь
+																		Площадь{" "}
+																		<span className="text-foreground">м²</span>
 																	</div>
 																</div>
 															)}
@@ -1354,7 +1597,7 @@ function ProductPage() {
 																	min={1}
 																	value={quantity}
 																	onChange={handleQuantityChange}
-																	className="text-lg sm:text-xl font-normal text-center border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] field-sizing-content [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+																	className="text-xl sm:text-2xl font-normal text-center border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] field-sizing-content [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-digital-mono"
 																/>
 																{isFlooringProduct && (
 																	<div className="text-xs sm:text-sm font-normal whitespace-nowrap text-muted-foreground -mt-3.5">
@@ -1390,66 +1633,14 @@ function ProductPage() {
 
 									{/* Price and Add to Cart - Hidden on mobile (shown in fixed bar), visible on tablet */}
 									<div className="hidden md:block">
-										{currentDiscount && currentDiscount > 0 ? (
-											/* With discount: Grid layout with button spanning both rows */
-											<div className="bg-muted rounded-lg p-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 items-stretch">
-												{/* Discount Row */}
-												<div className="flex items-baseline gap-4">
-													<div className="text-left">Скидка</div>
-													<span className="text-lg line-through whitespace-nowrap">
-														{Math.round(originalTotalPrice).toLocaleString()} р
-													</span>
-													<span className="px-2 py-1 bg-accent text-accent-foreground! text-sm font-semibold rounded-[5px] whitespace-nowrap">
-														-{currentDiscount}%
-													</span>
-												</div>
-
-												{/* Add to Cart Button - spans both rows */}
-												<div className="row-span-2 flex">
-													<Button
-														onClick={handleAddToCart}
-														disabled={!canAddToCart}
-														size="sm"
-														className="w-full h-full"
-													>
-														{!canAddToCart ? "Недоступно" : "В корзину"}
-													</Button>
-												</div>
-
-												{/* Total Row */}
-												<div className="flex items-baseline gap-4">
-													<div className="text-left">Итого</div>
-													<span className="text-xl font-bold whitespace-nowrap">
-														{Math.round(totalPrice).toLocaleString()} р
-													</span>
-												</div>
-											</div>
-										) : (
-											/* Without discount: Label above price */
-											<div className="bg-muted rounded-lg p-2 flex flex-row gap-4 items-stretch">
-												{/* Price Display - stacked vertically */}
-												<div className="flex flex-col">
-													<div className="text-sm text-muted-foreground">
-														Итого
-													</div>
-													<span className="text-xl font-bold">
-														{Math.round(totalPrice).toLocaleString()} р
-													</span>
-												</div>
-
-												{/* Add to Cart Button */}
-												<div className="flex-1 flex">
-													<Button
-														onClick={handleAddToCart}
-														disabled={!canAddToCart}
-														size="sm"
-														className="w-full h-full"
-													>
-														{!canAddToCart ? "Недоступно" : "В корзину"}
-													</Button>
-												</div>
-											</div>
-										)}
+										<AddToCartSection
+											size="sm"
+											currentDiscount={currentDiscount}
+											originalTotalPrice={originalTotalPrice}
+											totalPrice={totalPrice}
+											handleAddToCart={handleAddToCart}
+											canAddToCart={canAddToCart}
+										/>
 									</div>
 
 									{/* Store Locations */}
@@ -1692,95 +1883,17 @@ function ProductPage() {
 
 			{/* Fixed Price and Add to Cart Bar - Mobile only (< 768px), positioned above bottom nav */}
 			<div className="md:hidden fixed bottom-[72px] left-0 right-0 z-9999">
-				{currentDiscount && currentDiscount > 0 ? (
-					/* With discount: Grid layout with button spanning both rows */
-					<div className="bg-muted grid grid-cols-[auto_1fr] grid-rows-2 items-stretch shadow-lg border-t border-border">
-						{/* Left column - Price info with padding, spans both rows, content-sized */}
-						<div className="row-span-2 px-2 py-2 flex flex-col justify-center space-y-1 min-w-0">
-							{/* Discount Row - adapts to price width */}
-							<div className="flex items-baseline gap-2 flex-wrap">
-								<div className="text-left whitespace-nowrap">Скидка</div>
-								<span className="text-sm line-through whitespace-nowrap">
-									{Math.round(originalTotalPrice).toLocaleString()} р
-								</span>
-								<span className="px-2 py-1 bg-accent text-accent-foreground! text-xs font-semibold rounded-[5px] whitespace-nowrap">
-									-{currentDiscount}%
-								</span>
-							</div>
-
-							{/* Total Row - with quantity on the right, price determines width */}
-							<div className="flex items-baseline justify-between gap-2 min-w-0">
-								<div className="flex items-baseline gap-2 min-w-0">
-									<div className="text-left whitespace-nowrap">Итого</div>
-									<span className="text-xl font-bold whitespace-nowrap">
-										{Math.round(totalPrice).toLocaleString()} р
-									</span>
-								</div>
-								<div className="flex items-baseline gap-1 text-xs text-muted-foreground whitespace-nowrap shrink-0">
-									<span>{quantity}</span>
-									<span>
-										{isFlooringProduct
-											? "упак"
-											: getUnitShortLabel(
-													productWithDetails?.unitOfMeasurement,
-												)}
-									</span>
-								</div>
-							</div>
-						</div>
-
-						{/* Add to Cart Button - spans both rows, flush with edges */}
-						<div className="row-span-2 flex">
-							<Button
-								onClick={handleAddToCart}
-								disabled={!canAddToCart}
-								size="sm"
-								className="w-full h-full rounded-none"
-							>
-								{!canAddToCart ? "Недоступно" : "В корзину"}
-							</Button>
-						</div>
-					</div>
-				) : (
-					/* Without discount: Label above price */
-					<div className="bg-muted flex flex-row items-stretch shadow-lg border-t border-border">
-						{/* Price Display - stacked vertically with padding, content-sized */}
-						<div className="flex flex-col px-2 py-2 min-w-0">
-							<div className="flex items-baseline justify-between gap-2">
-								<div className="text-sm text-muted-foreground whitespace-nowrap">
-									Итого
-								</div>
-								<div className="flex items-baseline gap-1 text-xs text-muted-foreground whitespace-nowrap shrink-0">
-									<span>{quantity}</span>
-									<span>
-										{isFlooringProduct
-											? "упак"
-											: getUnitShortLabel(
-													productWithDetails?.unitOfMeasurement,
-												)}
-									</span>
-								</div>
-							</div>
-							<div className="flex items-baseline">
-								<span className="text-xl font-bold whitespace-nowrap">
-									{Math.round(totalPrice).toLocaleString()} р
-								</span>
-							</div>
-						</div>
-
-						{/* Add to Cart Button - flush with edges */}
-						<div className="flex-1 flex">
-							<Button
-								onClick={handleAddToCart}
-								disabled={!canAddToCart}
-								size="sm"
-								className="w-full h-full rounded-none"
-							>
-								{!canAddToCart ? "Недоступно" : "В корзину"}
-							</Button>
-						</div>
-					</div>
-				)}
+				<MobileFixedCartBar
+					currentDiscount={currentDiscount}
+					originalTotalPrice={originalTotalPrice}
+					totalPrice={totalPrice}
+					quantity={quantity}
+					isFlooringProduct={isFlooringProduct}
+					getUnitShortLabel={getUnitShortLabel}
+					handleAddToCart={handleAddToCart}
+					canAddToCart={canAddToCart}
+					productWithDetails={productWithDetails}
+				/>
 			</div>
 		</div>
 	);
