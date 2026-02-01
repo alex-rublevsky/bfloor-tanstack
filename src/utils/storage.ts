@@ -12,6 +12,7 @@ import {
 	ListObjectsV2Command,
 	PutObjectCommand,
 	S3Client,
+	type S3ClientConfig,
 } from "@aws-sdk/client-s3";
 import { env } from "./env";
 
@@ -30,15 +31,7 @@ const YANDEX_REGION = "ru-central1" as const;
 function getS3Client(): S3Client {
 	if (!s3Client) {
 		// Yandex Object Storage requires specific configuration
-		const config: {
-			region: string;
-			credentials?: {
-				accessKeyId: string;
-				secretAccessKey: string;
-			};
-			endpoint?: string;
-			forcePathStyle: boolean;
-		} = {
+		const config: S3ClientConfig = {
 			// Always use ru-central1 for Yandex Object Storage
 			region: YANDEX_REGION,
 			// Yandex Object Storage requires path-style addressing
