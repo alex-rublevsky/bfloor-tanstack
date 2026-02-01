@@ -116,20 +116,26 @@ interface CartProviderProps {
 }
 
 export function CartProvider({ children }: CartProviderProps) {
-	// Initialize cart - try to load from cookie immediately on client
-	const [cart, setCart] = useState<Cart>(() => {
-		if (typeof window !== "undefined") {
-			const saved = getCartFromCookie();
-			if (saved) return saved;
-		}
-		return {
-			items: [],
-			lastUpdated: Date.now(),
-		};
+	// Initialize cart with empty state for SSR consistency
+	// Cart will be hydrated from cookie after mount
+	// Use 0 for lastUpdated to ensure SSR/client consistency
+	const [cart, setCart] = useState<Cart>({
+		items: [],
+		lastUpdated: 0,
 	});
 
 	const [cartOpen, setCartOpen] = useState(false);
 	const isInitialMount = useRef(true);
+
+	// Hydrate cart from cookie on client mount (after SSR)
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			const saved = getCartFromCookie();
+			if (saved) {
+				setCart(saved);
+			}
+		}
+	}, []);
 
 	// Save to cookie whenever cart changes (skip initial mount)
 	useEffect(() => {

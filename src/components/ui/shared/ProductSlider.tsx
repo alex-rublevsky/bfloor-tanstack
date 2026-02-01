@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useSuspenseInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import type { UseEmblaCarouselType } from "embla-carousel-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
@@ -55,13 +55,12 @@ export default function ProductSlider({
 		return discountedProductsInfiniteQueryOptions();
 	}, [mode, selectedTag, recentlyVisitedProductIds]);
 
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-		useInfiniteQuery({
-			...(queryOptions as ReturnType<
-				typeof discountedProductsInfiniteQueryOptions
-			>),
-			enabled: mode !== "recentlyVisited" && !(mode === "tabs" && !selectedTag),
-		});
+	// Use Suspense query for server-fetched data (modern TanStack approach)
+	// This guarantees data is available during SSR - no loading states needed!
+	// Remove 'enabled' property as it's not supported by useSuspenseInfiniteQuery
+	const { enabled: _enabled, ...suspenseQueryOptions } = queryOptions as typeof queryOptions & { enabled?: boolean };
+	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+		useSuspenseInfiniteQuery(suspenseQueryOptions as ReturnType<typeof discountedProductsInfiniteQueryOptions>);
 
 	// Merge products from all pages
 	const products = useMemo(() => {
@@ -91,9 +90,12 @@ export default function ProductSlider({
 				);
 		}
 
+		// With useSuspenseInfiniteQuery, data is ALWAYS available (never undefined)
+		// No need for cache fallbacks or loading checks!
+		type PageData = { products?: ProductWithVariations[]; pagination?: unknown };
 		const allProducts =
 			data?.pages
-				?.flatMap((page) => page?.products ?? [])
+				?.flatMap((page: PageData) => page?.products ?? [])
 				?.filter((product: ProductWithVariations) => product.isActive) ?? [];
 		return allProducts;
 	}, [mode, data, queryClient, recentlyVisitedProductIds]);
@@ -205,15 +207,16 @@ export default function ProductSlider({
 
 	// Reinitialize Embla when products load to ensure proper layout
 	// This fixes issues where items stack vertically due to initialization timing
+	// With Suspense, data is always loaded, so no need to check isLoading
 	useEffect(() => {
-		if (emblaApi && products.length > 0 && !isLoading) {
+		if (emblaApi && products.length > 0) {
 			// Small delay to ensure DOM has proper dimensions
 			const timeoutId = setTimeout(() => {
 				emblaApi.reInit();
 			}, 0);
 			return () => clearTimeout(timeoutId);
 		}
-	}, [emblaApi, products.length, isLoading]);
+	}, [emblaApi, products.length]);
 
 	// Navigation handled by EmblaArrowButtons component
 
@@ -267,23 +270,16 @@ export default function ProductSlider({
 					)}
 				</div>
 
-				{/* Carousel Controls - shown when products are loaded */}
-				{!isLoading && products.length > 0 && (
-					<div className="product-slider__controls">
-						<EmblaArrowButtons emblaApi={emblaApi} />
-					</div>
-				)}
-			</div>
-
-			{/* Loading State */}
-			{isLoading && (
-				<div className="product-slider__loading">
-					<p className="text-muted-foreground">Загрузка товаров...</p>
+			{/* Carousel Controls - only show when there are products */}
+			{products.length > 0 && (
+				<div className="product-slider__controls">
+					<EmblaArrowButtons emblaApi={emblaApi} />
 				</div>
 			)}
+			</div>
 
-			{/* Empty State */}
-			{!isLoading && products.length === 0 && (
+			{/* Empty State - with Suspense, data is always loaded, so no loading state needed */}
+			{products.length === 0 ? (
 				<div className="product-slider__empty">
 					<p className="text-muted-foreground">
 						{mode === "tabs"
@@ -293,10 +289,7 @@ export default function ProductSlider({
 								: "Нет товаров"}
 					</p>
 				</div>
-			)}
-
-			{/* Carousel */}
-			{!isLoading && products.length > 0 && (
+			) : (
 				<>
 					{/* Carousel Viewport */}
 					<div className="embla__viewport" ref={emblaRef}>

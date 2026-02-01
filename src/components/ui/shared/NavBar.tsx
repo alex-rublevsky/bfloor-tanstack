@@ -719,40 +719,47 @@ const CatalogDropdown = memo(() => {
 	const menuRef = useRef<HTMLDivElement>(null);
 	const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-	const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+	const { data: categories = [] } = useQuery({
 		...categoriesQueryOptions(),
 	});
 
-	// Load category counts separately (streams in after categories)
-	const { data: counts } = useQuery(productCategoryCountsQueryOptions());
+	// Load category counts - prefetched in root loader
+	const { data: counts = {} } = useQuery(productCategoryCountsQueryOptions());
 
 	// Get prefetch hook for category hover
 	const { prefetchStoreWithCategory, prefetchStoreCatalog } = usePrefetch();
 
+	// Check if counts are actually loaded (not just default empty object)
+	// This ensures consistent SSR/client rendering
+	const countsLoaded = counts && Object.keys(counts).length > 0;
+
 	// Filter active categories and sort by order
-	// Exclude categories with count 0 or errors (missing from counts when counts is loaded)
+	// Only show categories with products (count > 0)
+	// If counts not loaded, return empty array to show skeleton
 	const activeCategories = useMemo(() => {
+		// If counts not loaded, return empty to show skeleton
+		// This prevents hydration mismatch
+		if (!countsLoaded) {
+			return [];
+		}
+
 		return categories
 			.filter((cat: Category) => cat.isActive)
 			.map((category: Category) => ({
 				...category,
-				productCount: counts?.[category.slug] ?? null, // null = still loading or missing
+				productCount: counts[category.slug] ?? 0,
 			}))
-			.filter((category: Category & { productCount: number | null }) => {
-				// If counts haven't loaded yet, show all categories
-				if (counts === undefined) return true;
-				// If counts have loaded, only show categories with count > 0
-				// Missing from counts object means 0 products or error
-				const count = counts[category.slug];
-				return count !== undefined && count > 0;
+			.filter((category: Category & { productCount: number }) => {
+				// Only show categories with products
+				return category.productCount > 0;
 			})
 			.sort(
 				(
-					a: Category & { productCount: number | null },
-					b: Category & { productCount: number | null },
+					a: Category & { productCount: number },
+					b: Category & { productCount: number },
 				) => a.order - b.order,
 			);
-	}, [categories, counts]);
+	}, [categories, counts, countsLoaded]);
 
 	// Handle mouse enter - open dropdown and prefetch catalog (categories)
 	const handleMouseEnter = () => {
@@ -809,15 +816,11 @@ const CatalogDropdown = memo(() => {
 				onMouseLeave={handleMouseLeave}
 				role="menu"
 			>
-				{categoriesLoading ? (
+				{activeCategories.length === 0 ? (
 					<CatalogDropdownSkeleton />
-				) : activeCategories.length === 0 ? (
-					<div className="px-4 py-2 text-sm text-muted-foreground">
-						Нет категорий
-					</div>
 				) : (
 					activeCategories.map(
-						(category: Category & { productCount: number | null }) => (
+						(category: Category & { productCount: number }) => (
 							<Link
 								key={category.slug}
 								href={`/store/${category.slug}`}
@@ -831,11 +834,9 @@ const CatalogDropdown = memo(() => {
 								<span className="flex-1 min-w-0 pr-3 wrap-break-word">
 									{category.name}
 								</span>
-								{category.productCount !== null && (
-									<span className="text-xs opacity-70 shrink-0">
-										{category.productCount}
-									</span>
-								)}
+								<span className="text-xs opacity-70 shrink-0">
+									{category.productCount}
+								</span>
 							</Link>
 						),
 					)
