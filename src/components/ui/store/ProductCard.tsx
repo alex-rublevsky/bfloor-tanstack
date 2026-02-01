@@ -417,57 +417,53 @@ const ProductCard = memo(
 						<div className="px-4 pt-4 md:px-0 md:pt-0 flex flex-col h-auto md:h-full">
 							{/* Price */}
 							<div className="flex flex-col mb-2">
-								<div className="flex flex-wrap items-center w-full gap-2">
-									<div className="flex flex-col items-baseline gap-0 shrink-0">
-										{product.discount ? (
-											<>
-												<div className="whitespace-nowrap flex items-baseline gap-0.5">
-													<span className="text-xl font-light">
-														{Math.round(
-															currentPrice *
-															(1 - product.discount / 100)
-														)}
-													</span>
-													<span className="text-xs  font-light text-muted-foreground">
-														р
-													</span>
-												</div>
-												<div className="flex items-center gap-1">
-													<span className="text-sm line-through text-muted-foreground">
-														{Math.round(currentPrice)}
-													</span>
-													<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-														-{product.discount}%
-													</span>
-												</div>
-											</>
-										) : (
-											<div
-												className="whitespace-nowrap flex items-baseline gap-0.5"
-												style={
-													disableViewTransition
-														? undefined
-														: {
-																viewTransitionName: `product-price-${product.slug}`,
-															}
-												}
-											>
-												<span className="text-xl font-light">
-													{Math.round(currentPrice)}
+								<div className="flex flex-wrap items-baseline w-full gap-3">
+									{product.discount ? (
+										<>
+											<div className="whitespace-nowrap flex items-baseline gap-0.5">
+												<span className="text-xl font-medium">
+													{Math.round(
+														currentPrice *
+														(1 - product.discount / 100)
+													)}
 												</span>
-												<span className="text-xs font-light text-muted-foreground">
-													р
+												<span className="text-xl font-medium">
+													Р
 												</span>
 											</div>
-										)}
-									</div>
+											<span className="text-base font-semibold" style={{ color: 'var(--primary)' }}>
+												-{product.discount}%
+											</span>
+											<span className="text-sm line-through" style={{ color: 'var(--muted-foreground)' }}>
+												{Math.round(currentPrice)}
+											</span>
+										</>
+									) : (
+										<div
+											className="whitespace-nowrap flex items-baseline gap-0.5"
+											style={
+												disableViewTransition
+													? undefined
+													: {
+															viewTransitionName: `product-price-${product.slug}`,
+														}
+											}
+										>
+											<span className="text-xl font-medium">
+												{Math.round(currentPrice)}
+											</span>
+											<span className="text-xl font-medium">
+												Р
+											</span>
+										</div>
+									)}
 
 									{/* Coming Soon removed */}
 								</div>
 
 								{/* Product Name */}
 								<p
-									className="text-foreground"
+									className="text-foreground mt-2"
 									style={
 										disableViewTransition
 											? undefined

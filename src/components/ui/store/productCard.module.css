@@ -20,21 +20,27 @@
 /* Only enable hover effects on desktop */
 @media (min-width: 768px) and (hover: hover) {
 	.categoryCard:hover {
-		transform: scale(1.02) translateZ(1rem);
-		box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+		/* Use scale3d for GPU acceleration instead of scale */
+		transform: scale3d(1.02, 1.02, 1) translateZ(1rem);
+		/* Use filter for shadow to avoid layout recalculation */
+		filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
 	}
 
 	.categoryCard:hover img {
-		transform: scale(1.05);
+		/* Use scale3d for GPU acceleration */
+		transform: scale3d(1.05, 1.05, 1) translateZ(0);
 	}
 
 	#productCard:hover {
-		transform: scale(1.02) translateZ(1rem);
-		box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+		/* Use scale3d for GPU acceleration instead of scale */
+		transform: scale3d(1.02, 1.02, 1) translateZ(1rem);
+		/* Use filter for shadow to avoid layout recalculation */
+		filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
 	}
 
 	#productCard:hover img {
-		transform: scale(1.05);
+		/* Use scale3d for GPU acceleration */
+		transform: scale3d(1.05, 1.05, 1) translateZ(0);
 	}
 }
 
