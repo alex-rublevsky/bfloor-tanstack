@@ -42,11 +42,8 @@ export const env = {
 	AWS_S3_ENDPOINT:
 		getEnvOptional("R2_ENDPOINT") || getEnvOptional("AWS_S3_ENDPOINT"),
 
-	// Admin emails
-	SUPER_ADMIN_EMAIL: getEnvOptional("SUPER_ADMIN_EMAIL"),
-	ADMIN_EMAIL: getEnvOptional("ADMIN_EMAIL"),
-	ADMIN_EMAIL_2: getEnvOptional("ADMIN_EMAIL_2"),
-	ADMIN_EMAIL_3: getEnvOptional("ADMIN_EMAIL_3"),
+	// Admin emails (comma-separated list)
+	ADMIN_EMAILS: getEnvOptional("ADMIN_EMAILS"),
 
 	// Auth
 	BETTER_AUTH_URL:

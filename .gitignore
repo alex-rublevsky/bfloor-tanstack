@@ -20,6 +20,8 @@ wrangler.jsonc
 function.zip
 .yandex-cloud/
 .yandex-cache
+.last-deploy-hash
+.last-build-hash
 api-gateway-configured.yaml
 yandex-function.yaml
 

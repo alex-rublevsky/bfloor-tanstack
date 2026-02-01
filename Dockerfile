@@ -13,7 +13,9 @@ WORKDIR /app
 # ============================================================================
 FROM base AS dependencies
 
-COPY package.json pnpm-lock.yaml ./
+# Copy ONLY dependency files first (better cache hit rate)
+# This layer will only rebuild when dependencies change, not when code changes
+COPY package.json pnpm-lock.yaml .npmrc* ./
 
 # Install all dependencies (including dev for build)
 # Use cache mount for pnpm store to speed up installs
@@ -25,7 +27,8 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 # ============================================================================
 FROM dependencies AS builder
 
-# Copy source code
+# Copy source code AFTER dependencies are installed
+# This way, code changes don't invalidate the dependency layer
 COPY . .
 
 # Build for production (node-server preset)
@@ -48,15 +51,24 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml .npmrc* ./
 
 # Install production dependencies only
 # Use cache mount for pnpm store to speed up installs
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile --prod
 
-# Copy built application from builder
+# Clean up in separate layer (after cache mount is unmounted)
+RUN rm -rf /root/.npm /tmp/* /root/.cache
+
+# Copy ONLY the built output from builder (not source code)
 COPY --from=builder /app/.output ./.output
+
+# Remove unnecessary files from node_modules to reduce image size
+RUN find node_modules -name "*.md" -delete && \
+    find node_modules -name "*.ts" -not -path "*/node_modules/@types/*" -delete && \
+    find node_modules -name "test" -type d -exec rm -rf {} + 2>/dev/null || true && \
+    find node_modules -name "*.map" -delete
 
 # Expose port 8080 (required by Yandex Serverless Containers)
 EXPOSE 8080

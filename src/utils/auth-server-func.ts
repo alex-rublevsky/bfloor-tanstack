@@ -14,8 +14,20 @@ type AuthContext = {
 };
 
 /**
+ * Parse and cache admin emails from environment variable.
+ * Creates a Set for O(1) lookup performance.
+ * ADMIN_EMAILS should be a comma-separated list: "email1@example.com,email2@example.com"
+ */
+const adminEmailsSet = new Set(
+	(env.ADMIN_EMAILS || '')
+		.split(',')
+		.map((email) => email.trim().toLowerCase())
+		.filter((email) => email.length > 0),
+);
+
+/**
  * Check if a user email matches any of the admin emails.
- * Checks SUPER_ADMIN_EMAIL, ADMIN_EMAIL, and ADMIN_EMAIL_2.
+ * Uses Set for O(1) lookup performance.
  *
  * @param userEmail - The user's email address (normalized)
  * @returns true if the email matches any admin email, false otherwise
@@ -25,18 +37,8 @@ function isAdminEmail(userEmail: string | null): boolean {
 		return false;
 	}
 
-	// Get all admin emails from environment variables
-	const adminEmails = [
-		env.SUPER_ADMIN_EMAIL,
-		env.ADMIN_EMAIL,
-		env.ADMIN_EMAIL_2,
-		env.ADMIN_EMAIL_3,
-	]
-		.filter((email): email is string => !!email) // Filter out null/undefined
-		.map((email) => email.trim().toLowerCase()); // Normalize (trim and lowercase)
-
-	// Check if user email matches any admin email
-	return adminEmails.includes(userEmail);
+	// O(1) Set lookup (much faster than array.includes)
+	return adminEmailsSet.has(userEmail.trim().toLowerCase());
 }
 
 /**
