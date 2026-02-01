@@ -13,7 +13,6 @@ export function getRouter() {
 		context: {},
 		scrollRestoration: true,
 		defaultStructuralSharing: true, //TODO: what is this?
-		defaultPreloadStaleTime: 0,
 		defaultViewTransition: true,
 		scrollRestorationBehavior: "instant", // Instant scroll for better UX with virtualized lists and view transitions
 		defaultErrorComponent: DefaultCatchBoundary,
@@ -55,8 +54,16 @@ export function getRouter() {
 
 	// Initialize Sentry on the client side only
 	if (!router.isServer) {
+		const isDevelopment = import.meta.env.DEV;
+
 		Sentry.init({
 			dsn: "https://2329b254512d6d56a4ab76bfb7868c4d@o4510799912108032.ingest.us.sentry.io/4510800437968896",
+
+			// Set environment to distinguish between dev and production
+			environment: isDevelopment ? "development" : "production",
+
+			// Enable debug mode in development to see what Sentry is doing
+			debug: isDevelopment,
 
 			// Tunnel to avoid ad blockers
 			tunnel: "/tunnel",

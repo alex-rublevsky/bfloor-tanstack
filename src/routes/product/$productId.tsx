@@ -546,10 +546,6 @@ function ProductPage() {
 	const { addToCart } = useCart();
 	const { data: attributes } = useProductAttributes();
 	const queryClient = useQueryClient();
-	const cachedProduct = useMemo(
-		() => getCachedProductForDetails(queryClient, productId),
-		[queryClient, productId],
-	);
 
 	// Parse initial image index from search params (for view transitions)
 	const initialImageIndex = useMemo(() => {
@@ -572,8 +568,11 @@ function ProductPage() {
 		| undefined;
 	const isAdmin = userData?.isAdmin ?? false;
 
-	// Use suspense query - data is guaranteed to be available by the loader
-	// No need for manual cache access or fallback logic!
+	const cachedProduct = useMemo(
+		() => getCachedProductForDetails(queryClient, productId),
+		[queryClient, productId],
+	);
+
 	const { data: productWithDetails, isFetching: isFetchingProduct } =
 		useSuspenseQuery(productQueryOptions(productId, cachedProduct));
 

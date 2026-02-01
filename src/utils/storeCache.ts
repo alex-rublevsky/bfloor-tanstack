@@ -8,14 +8,29 @@ type StoreCacheEntry = {
 
 const storeCacheByClient = new WeakMap<QueryClient, StoreCacheEntry>();
 
+/**
+ * Get all products from infinite query caches
+ * Aggregates products from all infinite queries (store, carousels, etc.)
+ */
 export const getStoreProductsFromInfiniteCache = (
 	queryClient: QueryClient,
 ): ProductWithVariations[] => {
-	const storeQueries = queryClient
+	const allProductQueries = queryClient
 		.getQueryCache()
-		.findAll({ queryKey: ["bfloorStoreDataInfinite"] });
+		.findAll({ 
+			predicate: (query) => {
+				const key = query.queryKey[0];
+				return typeof key === 'string' && (
+					key === 'bfloorStoreDataInfinite' ||
+					key === 'bfloorProductsByTagInfinite' ||
+					key === 'bfloorDiscountedProductsInfinite' ||
+					key === 'bfloorRecentlyVisitedProductsInfinite' ||
+					key === 'bfloorDashboardProductsInfinite'
+				);
+			}
+		});
 
-	const cacheKey = storeQueries
+	const cacheKey = allProductQueries
 		.map((query) => `${query.queryHash}:${query.state.dataUpdatedAt ?? 0}`)
 		.sort()
 		.join("|");
@@ -27,7 +42,7 @@ export const getStoreProductsFromInfiniteCache = (
 
 	const productMap = new Map<number, ProductWithVariations>();
 
-	for (const query of storeQueries) {
+	for (const query of allProductQueries) {
 		const data = query.state.data as
 			| { pages?: Array<{ products?: ProductWithVariations[] }> }
 			| undefined;

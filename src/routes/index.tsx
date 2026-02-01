@@ -25,17 +25,18 @@ export const Route = createFileRoute("/")({
 		],
 	}),
 
-	// Loader ensures data is loaded before component renders
-	// This prevents hydration mismatches by guaranteeing data availability during SSR
+	// Loader prefetches categories and counts before component renders
+	// This ensures the catalog dropdown shows counts immediately on page load
+	// Also prefetches product carousels for instant display
 	loader: async ({ context: { queryClient } }) => {
-		// Ensure categories and product data are loaded before rendering
-		// Use ensureInfiniteQueryData to guarantee data is available during SSR
+		// Prefetch categories and counts to ensure consistent server/client rendering
+		// Prefetch first tag products (default for tabs carousel) and discounted products
 		await Promise.all([
 			queryClient.ensureQueryData(categoriesQueryOptions()),
-			queryClient.ensureInfiniteQueryData(
+			queryClient.prefetchInfiniteQuery(
 				productsByTagInfiniteQueryOptions(PRODUCT_TAGS[0]),
 			),
-			queryClient.ensureInfiniteQueryData(
+			queryClient.prefetchInfiniteQuery(
 				discountedProductsInfiniteQueryOptions(),
 			),
 		]);
