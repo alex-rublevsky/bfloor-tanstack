@@ -64,9 +64,9 @@ export const Route = createFileRoute("/dashboard/orders")({
 	},
 	errorComponent: ({ error }) => {
 		return (
-			<div className="flex-1 flex flex-col justify-center items-center gap-4 p-8">
-				<h2 className="text-2xl font-semibold">Не удалось загрузить заказы</h2>
-				<p className="text-muted-foreground text-center max-w-md">
+			<div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
+				<h2 className="font-semibold text-2xl">Не удалось загрузить заказы</h2>
+				<p className="max-w-md text-center text-muted-foreground">
 					{error instanceof Error
 						? error.message
 						: "Произошла непредвиденная ошибка"}
@@ -241,7 +241,7 @@ function OrderList() {
 
 	if (allOrders.length === 0) {
 		return (
-			<div className="h-full w-full flex justify-center items-center">
+			<div className="flex h-full w-full items-center justify-center">
 				<EmptyState entityType="orders" isSearchResult={!!searchTerm} />
 			</div>
 		);
@@ -326,9 +326,9 @@ function OrderList() {
 							<div key={group.title} className="space-y-4">
 								{/* Group Title */}
 								<div className="px-4">
-									<h2 className="text-2xl font-semibold text-foreground flex items-baseline gap-1">
+									<h2 className="flex items-baseline gap-1 font-semibold text-2xl text-foreground">
 										{group.title}
-										<span className="text-sm text-muted-foreground">
+										<span className="text-muted-foreground text-sm">
 											{group.orders.length}{" "}
 											{group.orders.length === 1 ? "заказ" : "заказов"}
 										</span>
@@ -336,7 +336,7 @@ function OrderList() {
 								</div>
 
 								{/* Orders Grid */}
-								<div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 md:gap-3 px-4">
+								<div className="grid grid-cols-1 gap-2 px-4 sm:grid-cols-1 md:grid-cols-2 md:gap-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
 									{group.orders.map((order: Order) => (
 										<OrderCard
 											key={order.id}

@@ -226,7 +226,7 @@ export default function ProductAttributesForm({
 		return (
 			<div className="p-4 text-center text-muted-foreground">
 				<p>Нет доступных атрибутов</p>
-				<p className="text-sm mt-1">Создайте атрибуты в разделе "Атрибуты"</p>
+				<p className="mt-1 text-sm">Создайте атрибуты в разделе "Атрибуты"</p>
 			</div>
 		);
 	}
@@ -277,14 +277,14 @@ export default function ProductAttributesForm({
 
 	return (
 		<div className="space-y-6">
-			<h3 className="text-sm font-medium text-foreground mb-2">
+			<h3 className="mb-2 font-medium text-foreground text-sm">
 				Атрибуты товара
 			</h3>
 
 			{/* Out-of-scope attributes (from old database) */}
 			{outOfScopeAttributes.length > 0 && (
 				<div className="space-y-3">
-					<div className="flex items-center gap-2 text-xs font-medium text-amber-600 dark:text-amber-400">
+					<div className="flex items-center gap-2 font-medium text-amber-600 text-xs dark:text-amber-400">
 						<AlertCircle className="h-4 w-4" />
 						<span>Атрибуты из старой базы данных</span>
 					</div>
@@ -293,10 +293,10 @@ export default function ProductAttributesForm({
 							key={attr.attributeId}
 							className="rounded-md border border-destructive/40 bg-destructive/10 p-3 shadow-sm"
 						>
-							<div className="flex items-start justify-between gap-2 mb-2">
+							<div className="mb-2 flex items-start justify-between gap-2">
 								<div className="flex items-center gap-2 text-destructive">
 									<AlertCircle className="h-4 w-4" />
-									<span className="text-sm font-medium">
+									<span className="font-medium text-sm">
 										Атрибут из старой базы данных
 									</span>
 								</div>
@@ -320,18 +320,18 @@ export default function ProductAttributesForm({
 								}
 								className={cn(
 									"text-sm",
-									"bg-destructive/5 border-destructive/30 focus-visible:ring-destructive",
+									"border-destructive/30 bg-destructive/5 focus-visible:ring-destructive",
 								)}
 							/>
 						</div>
 					))}
-					<div className="border-t border-amber-200 dark:border-amber-900" />
+					<div className="border-amber-200 border-t dark:border-amber-900" />
 				</div>
 			)}
 
 			{/* First sub-block: Input fields (text inputs) in two columns on mobile, three on desktop */}
 			{allInputAttributes.length > 0 && (
-				<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+				<div className="grid grid-cols-2 gap-4 md:grid-cols-3">
 					{allInputAttributes.map((item) => {
 						return (
 							<Input
@@ -352,7 +352,7 @@ export default function ProductAttributesForm({
 			{/* Second sub-block: Checkbox lists (standardized attributes) in full width */}
 			{/* Always show all standardized attributes (like "Вид профиля") */}
 			{availableCheckboxAttributes.length > 0 && (
-				<div className="flex flex-wrap items-start gap-4 justify-between">
+				<div className="flex flex-wrap items-start justify-between gap-4">
 					{availableCheckboxAttributes.map((attributeInfo) => {
 						const allowMultiple = attributeInfo.allowMultipleValues === true;
 						const selectedValues = getSelectedValues(attributeInfo.id);
@@ -361,15 +361,15 @@ export default function ProductAttributesForm({
 						return (
 							<div
 								key={attributeInfo.id}
-								className="space-y-2 min-w-fit flex-shrink-0"
+								className="min-w-fit flex-shrink-0 space-y-2"
 							>
 								<label
 									htmlFor={`attr-${attributeInfo.id}`}
-									className="block text-sm font-medium text-foreground whitespace-nowrap"
+									className="block whitespace-nowrap font-medium text-foreground text-sm"
 								>
 									{attributeInfo.name}
 									{allowMultiple && (
-										<span className="text-xs text-muted-foreground ml-2">
+										<span className="ml-2 text-muted-foreground text-xs">
 											(можно выбрать несколько)
 										</span>
 									)}

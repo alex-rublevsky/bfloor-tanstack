@@ -27,5 +27,7 @@ export interface EnrichedCartItem extends CartItem {
 export function useEnrichedCart(cartItems: CartItem[]): EnrichedCartItem[] {
 	// Cart items already have all display data from cookie
 	// Just return them - no fetching, no complexity!
-	return cartItems.filter((item): item is EnrichedCartItem => !!item.productName);
+	return cartItems.filter(
+		(item): item is EnrichedCartItem => !!item.productName,
+	);
 }

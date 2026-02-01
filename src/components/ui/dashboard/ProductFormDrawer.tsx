@@ -55,14 +55,14 @@ export function ProductFormDrawer({
 
 				<DrawerBody className="w-full p-0">
 					{error && (
-						<div className="bg-destructive/20 border border-destructive text-destructive-foreground px-4 sm:px-6 lg:px-8 py-3 mb-4">
+						<div className="mb-4 border border-destructive bg-destructive/20 px-4 py-3 text-destructive-foreground sm:px-6 lg:px-8">
 							{error}
 						</div>
 					)}
 					{children}
 				</DrawerBody>
 
-				<DrawerFooter className="border-t border-border bg-background px-4 sm:px-6 lg:px-8">
+				<DrawerFooter className="border-border border-t bg-background px-4 sm:px-6 lg:px-8">
 					<div className="flex justify-end space-x-2">
 						<Button
 							variant="secondaryInverted"

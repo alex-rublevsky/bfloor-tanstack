@@ -32,7 +32,7 @@ export function CheckboxList({
 		: items;
 
 	const content = (
-		<div className="grid grid-cols-1 gap-0 w-fit">
+		<div className="grid w-fit grid-cols-1 gap-0">
 			{filteredItems.map((item) => {
 				const isChecked = selectedIds.includes(item.id);
 
@@ -40,7 +40,7 @@ export function CheckboxList({
 					<label
 						key={item.id}
 						htmlFor={`${idPrefix}-${item.id}`}
-						className="flex items-center space-x-2 cursor-pointer p-2 rounded-md hover:bg-muted transition-colors"
+						className="flex cursor-pointer items-center space-x-2 rounded-md p-2 transition-colors hover:bg-muted"
 					>
 						<Checkbox
 							id={`${idPrefix}-${item.id}`}
@@ -51,9 +51,9 @@ export function CheckboxList({
 							}}
 						/>
 						<div className="flex flex-col">
-							<span className="text-sm font-medium">{item.label}</span>
+							<span className="font-medium text-sm">{item.label}</span>
 							{item.description && (
-								<span className="text-xs text-muted-foreground">
+								<span className="text-muted-foreground text-xs">
 									{item.description}
 								</span>
 							)}
@@ -66,7 +66,7 @@ export function CheckboxList({
 
 	if (scrollable) {
 		return (
-			<div className="overflow-y-auto pr-2 w-fit" style={{ maxHeight }}>
+			<div className="w-fit overflow-y-auto pr-2" style={{ maxHeight }}>
 				{content}
 			</div>
 		);

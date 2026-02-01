@@ -524,7 +524,7 @@ function RouteComponent() {
 										{/* CSS Grid automatically makes container height = tallest item */}
 										{/* Add bottom margin to create spacing between rows */}
 										<div
-											className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 md:gap-3"
+											className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
 											style={{ marginBottom: "0.75rem" }}
 										>
 											{rowProducts.map((product: ProductWithVariations) => (
@@ -541,7 +541,7 @@ function RouteComponent() {
 						</div>
 						{/* Loading indicator for next page */}
 						{isFetchingNextPage && (
-							<div className="w-full flex items-center justify-center p-8">
+							<div className="flex w-full items-center justify-center p-8">
 								<p className="text-muted-foreground">Загрузка...</p>
 							</div>
 						)}

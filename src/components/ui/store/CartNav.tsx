@@ -10,18 +10,18 @@ export function CartNav() {
 	const { cartOpen, setCartOpen, itemCount } = useCart();
 
 	return (
-		<div className="fixed bottom-3 right-3 z-50">
+		<div className="fixed right-3 bottom-3 z-50">
 			<Drawer open={cartOpen} onOpenChange={setCartOpen}>
 				<DrawerTrigger asChild>
 					<button
 						type="button"
 						onClick={() => setCartOpen(true)}
-						className="relative flex items-center justify-center w-[2.6rem] h-[2.6rem] md:w-[3.2rem] md:h-[3.2rem] rounded-full border border-black bg-background hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground transition-all duration-500"
+						className="relative flex h-[2.6rem] w-[2.6rem] items-center justify-center rounded-full border border-black bg-background transition-all duration-500 hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground md:h-[3.2rem] md:w-[3.2rem]"
 					>
 						{/* Cart SVG Icon */}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							className="w-5 h-5 md:w-6 md:h-6"
+							className="h-5 w-5 md:h-6 md:w-6"
 							fill="none"
 							viewBox="0 0 33 30"
 							aria-label="Корзина"
@@ -41,7 +41,7 @@ export function CartNav() {
 
 						{/* Cart Counter Badge */}
 						{itemCount > 0 && (
-							<span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-sm w-3.5 h-3.5 md:w-5 md:h-5 flex items-center justify-center rounded-full">
+							<span className="-top-1 -right-1 absolute flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm md:h-5 md:w-5">
 								{itemCount}
 							</span>
 						)}

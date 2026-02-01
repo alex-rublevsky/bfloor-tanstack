@@ -70,9 +70,9 @@ export function ProductForm({
 	const storeLocations = getAllStoreLocations();
 
 	return (
-		<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+		<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 			{/* Left Column - Images, Tags, Store Locations */}
-			<div className="space-y-4 flex flex-col">
+			<div className="flex flex-col space-y-4">
 				{/* Product Images Block */}
 				<DrawerSection variant="default">
 					<ImageUpload
@@ -127,7 +127,7 @@ export function ProductForm({
 			</div>
 
 			{/* Right Column - Basic Information */}
-			<div className="space-y-4 flex flex-col">
+			<div className="flex flex-col space-y-4">
 				{/* Basic Info */}
 				<DrawerSection variant="default" title="Базовая информация">
 					<ProductBasicInfoFields
@@ -166,7 +166,7 @@ export function ProductForm({
 						value={formData.dimensions || ""}
 						onChange={onChange}
 						placeholder="Введите габариты товара..."
-						className="w-full min-h-[4rem] px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 resize-y field-sizing-content"
+						className="field-sizing-content min-h-[4rem] w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					/>
 				</DrawerSection>
 			</div>

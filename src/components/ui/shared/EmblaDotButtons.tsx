@@ -70,7 +70,7 @@ export const DotButton: React.FC<PropType> = ({
 	return (
 		<button
 			type="button"
-			className={`embla__dot bg-transparent flex no-underline cursor-pointer border-0 p-0 m-0 items-center justify-center rounded-full transition-standard ${sizeClasses} ${className}`}
+			className={`embla__dot m-0 flex cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 no-underline transition-standard ${sizeClasses} ${className}`}
 			{...restProps}
 		>
 			{children}
@@ -102,7 +102,7 @@ export function EmblaDotButtons({
 
 	return (
 		<div
-			className={`flex flex-wrap justify-start items-center gap-0.5 ${containerClassName}`}
+			className={`flex flex-wrap items-center justify-start gap-0.5 ${containerClassName}`}
 		>
 			{scrollSnaps.map((_, index) => (
 				<DotButton

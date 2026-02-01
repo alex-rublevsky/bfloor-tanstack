@@ -121,14 +121,14 @@ export default function ImageGallery({
 
 	if (!images.length) {
 		return (
-			<div className="w-full h-[75vh] bg-muted flex items-center justify-center rounded-lg relative">
+			<div className="relative flex h-[75vh] w-full items-center justify-center rounded-lg bg-muted">
 				<div
 					style={{
 						viewTransitionName: transitionName,
 						opacity: 0,
 						position: "absolute",
 					}}
-					className="w-1 h-1"
+					className="h-1 w-1"
 				/>
 				<p className="text-muted-foreground">No images available</p>
 			</div>
@@ -140,17 +140,17 @@ export default function ImageGallery({
 		return (
 			<div className={`w-full ${className}`}>
 				{/* Desktop: Single image */}
-				<div className="hidden lg:block w-full relative">
-					<div className="overflow-hidden w-full h-[70vh] min-h-[500px]">
+				<div className="relative hidden w-full lg:block">
+					<div className="h-[70vh] min-h-[500px] w-full overflow-hidden">
 						<div className="flex h-full touch-pan-y touch-pinch-zoom gap-0">
-							<div className="flex-shrink-0 min-w-0 h-full relative flex items-center justify-center m-0 p-0">
+							<div className="relative m-0 flex h-full min-w-0 flex-shrink-0 items-center justify-center p-0">
 								<img
 									src={`${ASSETS_BASE_URL}/${images[0]}`}
 									alt={alt}
 									width={3000}
 									height={3000}
 									loading="eager"
-									className="w-auto h-full object-contain object-center rounded-none block"
+									className="block h-full w-auto rounded-none object-contain object-center"
 									style={{ viewTransitionName: transitionName }}
 								/>
 							</div>
@@ -160,7 +160,7 @@ export default function ImageGallery({
 
 				{/* Mobile: Single image */}
 				<div className="lg:hidden">
-					<div className="relative w-full aspect-[4/3] max-h-[50vh]">
+					<div className="relative aspect-[4/3] max-h-[50vh] w-full">
 						<img
 							src={`${ASSETS_BASE_URL}/${images[0]}`}
 							alt={alt}
@@ -179,16 +179,16 @@ export default function ImageGallery({
 	return (
 		<div className={`w-full ${className}`}>
 			{/* Desktop: Full-width carousel */}
-			<div className="hidden lg:block w-full relative">
+			<div className="relative hidden w-full lg:block">
 				<div
-					className="overflow-hidden w-full h-[70vh] min-h-[500px]"
+					className="h-[70vh] min-h-[500px] w-full overflow-hidden"
 					ref={emblaMainRef}
 				>
 					<div className="flex h-full touch-pan-y touch-pinch-zoom gap-0">
 						{images.map((image, index) => (
 							<div
 								key={image}
-								className="flex-shrink-0 min-w-0 h-full relative flex items-center justify-center m-0 p-0"
+								className="relative m-0 flex h-full min-w-0 flex-shrink-0 items-center justify-center p-0"
 							>
 								<img
 									src={`${ASSETS_BASE_URL}/${image}`}
@@ -196,7 +196,7 @@ export default function ImageGallery({
 									width={3000}
 									height={3000}
 									loading={index === 0 ? "eager" : "lazy"}
-									className="w-auto h-full object-contain object-center rounded-none block"
+									className="block h-full w-auto rounded-none object-contain object-center"
 									style={{
 										viewTransitionName:
 											index === initialImageIndex ? transitionName : undefined,
@@ -208,7 +208,7 @@ export default function ImageGallery({
 				</div>
 
 				{/* Desktop Navigation Controls */}
-				<div className="flex flex-row items-center gap-6 py-6 pl-4 justify-start">
+				<div className="flex flex-row items-center justify-start gap-6 py-6 pl-4">
 					<EmblaArrowButtons
 						emblaApi={emblaMainApi}
 						variant="grid"
@@ -224,17 +224,17 @@ export default function ImageGallery({
 			</div>
 
 			{/* Mobile: Square main image with thumbnails */}
-			<div className="lg:hidden w-full">
+			<div className="w-full lg:hidden">
 				{/* Main image carousel - edge-to-edge */}
-				<div className="relative w-full aspect-[4/3] max-h-[50vh]">
-					<div className="overflow-hidden w-full h-full" ref={emblaMobileRef}>
+				<div className="relative aspect-[4/3] max-h-[50vh] w-full">
+					<div className="h-full w-full overflow-hidden" ref={emblaMobileRef}>
 						<div className="flex h-full touch-pan-y touch-pinch-zoom">
 							{images.map((image, index) => (
 								<div
 									key={image}
-									className="flex-shrink-0 min-w-0 h-full relative flex items-center justify-center w-full"
+									className="relative flex h-full w-full min-w-0 flex-shrink-0 items-center justify-center"
 								>
-									<div className="w-full h-full flex items-center justify-center">
+									<div className="flex h-full w-full items-center justify-center">
 										<Image
 											src={`${ASSETS_BASE_URL}/${image}`}
 											alt={`${alt} main image ${index + 1}`}
@@ -260,7 +260,7 @@ export default function ImageGallery({
 
 				{/* Thumbnails - edge-to-edge with left padding for first item */}
 				<div className="mt-2">
-					<div className="overflow-hidden w-full" ref={emblaThumbsRef}>
+					<div className="w-full overflow-hidden" ref={emblaThumbsRef}>
 						<div className="flex gap-2 py-2 pl-3">
 							{images.map((image, index) => {
 								const isSelected = mobileSelectedIndex === index;
@@ -269,7 +269,7 @@ export default function ImageGallery({
 										key={image}
 										type="button"
 										aria-label={`View image ${index + 1}`}
-										className={`image-gallery-mobile__thumb bg-transparent cursor-pointer border-2 p-0 m-0 flex-shrink-0 w-24 h-24 sm:w-20 sm:h-20 relative rounded-sm overflow-hidden transition-standard ${
+										className={`image-gallery-mobile__thumb relative m-0 h-24 w-24 flex-shrink-0 cursor-pointer overflow-hidden rounded-sm border-2 bg-transparent p-0 transition-standard sm:h-20 sm:w-20 ${
 											isSelected
 												? "border-primary"
 												: "border-transparent hover:border-primary"
@@ -279,11 +279,11 @@ export default function ImageGallery({
 										}}
 										onClick={() => onThumbClick(index)}
 									>
-										<div className="absolute inset-0 w-full h-full">
+										<div className="absolute inset-0 h-full w-full">
 											<Image
 												src={`${ASSETS_BASE_URL}/${image}`}
 												alt={`${alt} thumbnail ${index + 1}`}
-												className="w-full h-full object-cover rounded-none"
+												className="h-full w-full rounded-none object-cover"
 											/>
 										</div>
 									</button>

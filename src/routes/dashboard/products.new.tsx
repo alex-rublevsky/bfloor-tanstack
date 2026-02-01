@@ -84,7 +84,7 @@ function NewProductPage() {
 	}, [navigate]);
 
 	return (
-		<div className="container mx-auto py-8 px-4">
+		<div className="container mx-auto px-4 py-8">
 			<div className="mb-6">
 				<Link
 					to="/dashboard"
@@ -94,7 +94,7 @@ function NewProductPage() {
 				</Link>
 			</div>
 
-			<h1 className="text-3xl font-bold mb-8">Создать новый товар</h1>
+			<h1 className="mb-8 font-bold text-3xl">Создать новый товар</h1>
 
 			<form
 				onSubmit={handleSubmit}
@@ -124,7 +124,7 @@ function NewProductPage() {
 				/>
 
 				{productForm.error && (
-					<div className="text-destructive text-sm mt-4">
+					<div className="mt-4 text-destructive text-sm">
 						{productForm.error}
 					</div>
 				)}

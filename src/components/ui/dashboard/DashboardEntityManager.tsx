@@ -467,7 +467,7 @@ export function DashboardEntityManager<
 
 						{/* Delete Button Section */}
 						<DrawerSection maxWidth>
-							<div className="pt-4 border-t border-border">
+							<div className="border-border border-t pt-4">
 								<Button
 									type="button"
 									variant="destructive"

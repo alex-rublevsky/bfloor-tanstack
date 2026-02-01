@@ -165,25 +165,25 @@ const ProductFilters = memo(function ProductFilters({
 		// Sort filter
 		filterSections.push(
 			<div key="sort" className="min-w-fit">
-				<div className="text-sm font-medium mb-2">Сортировка</div>
+				<div className="mb-2 font-medium text-sm">Сортировка</div>
 				<Select value={sortBy} onValueChange={handleSortChange}>
-					<SelectTrigger className="text-xs font-normal field-sizing-content">
+					<SelectTrigger className="field-sizing-content font-normal text-xs">
 						<SelectValue placeholder="Выберите сортировку" />
 					</SelectTrigger>
-					<SelectContent className="bg-background text-xs font-normal">
-						<SelectItem className="text-xs font-normal" value="relevant">
+					<SelectContent className="bg-background font-normal text-xs">
+						<SelectItem className="font-normal text-xs" value="relevant">
 							По релевантности
 						</SelectItem>
-						<SelectItem className="text-xs font-normal" value="best-selling">
+						<SelectItem className="font-normal text-xs" value="best-selling">
 							Популярные
 						</SelectItem>
-						<SelectItem className="text-xs font-normal" value="price-asc">
+						<SelectItem className="font-normal text-xs" value="price-asc">
 							Сначала дешёвые
 						</SelectItem>
-						<SelectItem className="text-xs font-normal" value="price-desc">
+						<SelectItem className="font-normal text-xs" value="price-desc">
 							Сначала дорогие
 						</SelectItem>
-						<SelectItem className="text-xs font-normal" value="newest">
+						<SelectItem className="font-normal text-xs" value="newest">
 							Сначала новые
 						</SelectItem>
 					</SelectContent>
@@ -211,8 +211,8 @@ const ProductFilters = memo(function ProductFilters({
 		if (brands.length > 1) {
 			filterSections.push(
 				<div key="brands" className="min-w-fit">
-					<div className="flex items-center justify-between mb-2">
-						<div className="text-sm font-medium">Бренды</div>
+					<div className="mb-2 flex items-center justify-between">
+						<div className="font-medium text-sm">Бренды</div>
 					</div>
 					<CheckboxList
 						items={brands.map((brand) => ({
@@ -237,8 +237,8 @@ const ProductFilters = memo(function ProductFilters({
 		if (collections.length > 1) {
 			filterSections.push(
 				<div key="collections" className="min-w-fit">
-					<div className="flex items-center justify-between mb-2">
-						<div className="text-sm font-medium">Коллекции</div>
+					<div className="mb-2 flex items-center justify-between">
+						<div className="font-medium text-sm">Коллекции</div>
 					</div>
 					<CheckboxList
 						items={collections.map((collection) => ({
@@ -263,8 +263,8 @@ const ProductFilters = memo(function ProductFilters({
 		if (storeLocations.length > 1) {
 			filterSections.push(
 				<div key="store-locations" className="min-w-fit">
-					<div className="flex items-center justify-between mb-2">
-						<div className="text-sm font-medium">Адрес магазина</div>
+					<div className="mb-2 flex items-center justify-between">
+						<div className="font-medium text-sm">Адрес магазина</div>
 					</div>
 					<CheckboxList
 						items={storeLocations.map((location) => ({
@@ -313,7 +313,7 @@ const ProductFilters = memo(function ProductFilters({
 
 			filterSections.push(
 				<div key={`attr-${attrFilter.attributeId}`} className="min-w-fit">
-					<div className="text-sm font-medium mb-2">
+					<div className="mb-2 font-medium text-sm">
 						{attrFilter.attributeName}
 					</div>
 					<CheckboxList
@@ -348,14 +348,14 @@ const ProductFilters = memo(function ProductFilters({
 					onFiltersOpen?.(); // Trigger lazy loading
 				}}
 				onMouseEnter={handleFiltersButtonHover}
-				className="fixed left-2 md:left-1/2 md:-translate-x-1/2 bottom-22 md:bottom-4 z-100 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-3 py-2 text-xs shadow-md"
+				className="md:-translate-x-1/2 fixed bottom-22 left-2 z-100 inline-flex items-center gap-2 rounded-full bg-primary px-3 py-2 text-primary-foreground text-xs shadow-md md:bottom-4 md:left-1/2"
 				aria-label="Открыть фильтры"
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 24 24"
 					fill="currentColor"
-					className="w-4 h-4"
+					className="h-4 w-4"
 					aria-hidden="true"
 					role="img"
 				>
@@ -375,8 +375,8 @@ const ProductFilters = memo(function ProductFilters({
 						<div className="space-y-4">{renderFilterContent()}</div>
 					</DrawerBody>
 
-					<DrawerFooter className="border-t border-border bg-background px-4 sm:px-6 lg:px-8">
-						<div className="flex justify-between items-center w-full">
+					<DrawerFooter className="border-border border-t bg-background px-4 sm:px-6 lg:px-8">
+						<div className="flex w-full items-center justify-between">
 							<div>
 								{hasAnyActiveFilters ? (
 									<Button
@@ -388,7 +388,7 @@ const ProductFilters = memo(function ProductFilters({
 										Сбросить все фильтры
 									</Button>
 								) : (
-									<span className="text-lg font-semibold leading-none tracking-tight">
+									<span className="font-semibold text-lg leading-none tracking-tight">
 										Фильтры
 									</span>
 								)}

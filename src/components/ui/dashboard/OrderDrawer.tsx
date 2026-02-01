@@ -66,7 +66,7 @@ export function OrderDrawer({ order, isOpen, onClose }: OrderDrawerProps) {
 							<X className="h-5 w-5" />
 						</Button>
 					</div>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						Placed on {formatDate(order.createdAt)}
 					</p>
 				</DrawerHeader>
@@ -92,7 +92,7 @@ export function OrderDrawer({ order, isOpen, onClose }: OrderDrawerProps) {
 										{order.currency} {Math.round(order.shippingAmount)}
 									</p>
 								)}
-								<p className="text-sm font-semibold">
+								<p className="font-semibold text-sm">
 									<span className="font-medium">Total:</span> {order.currency}{" "}
 									{Math.round(order.totalAmount)}
 								</p>
@@ -135,7 +135,7 @@ export function OrderDrawer({ order, isOpen, onClose }: OrderDrawerProps) {
 								<div className="space-y-4">
 									{order.items.map((item) => (
 										<div key={item.id} className="flex items-center gap-4">
-											<div className="relative w-16 h-16 shrink-0 bg-muted rounded overflow-hidden">
+											<div className="relative h-16 w-16 shrink-0 overflow-hidden rounded bg-muted">
 												{item.product.images ? (
 													<Image
 														src={`https://assets.rublevsky.studio/${item.product.images.split(",").map((img) => img.trim())[0]}`}
@@ -144,7 +144,7 @@ export function OrderDrawer({ order, isOpen, onClose }: OrderDrawerProps) {
 														sizes="4rem"
 													/>
 												) : (
-													<div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+													<div className="flex h-full w-full items-center justify-center text-muted-foreground text-xs">
 														No image
 													</div>
 												)}
@@ -152,19 +152,19 @@ export function OrderDrawer({ order, isOpen, onClose }: OrderDrawerProps) {
 											<div className="flex-1">
 												<p className="font-medium">{item.product.name}</p>
 												{item.variation?.sku && (
-													<p className="text-sm text-muted-foreground">
+													<p className="text-muted-foreground text-sm">
 														SKU: {item.variation.sku}
 													</p>
 												)}
 												{item.attributes &&
 													Object.keys(item.attributes).length > 0 && (
-														<p className="text-sm text-muted-foreground">
+														<p className="text-muted-foreground text-sm">
 															{Object.entries(item.attributes)
 																.map(([key, value]) => `${key}: ${value}`)
 																.join(", ")}
 														</p>
 													)}
-												<p className="text-sm text-muted-foreground">
+												<p className="text-muted-foreground text-sm">
 													Qty: {item.quantity} × ${Math.round(item.unitAmount)}
 												</p>
 											</div>

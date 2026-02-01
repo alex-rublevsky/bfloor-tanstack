@@ -34,46 +34,46 @@ export function EntityCardContent({
 			{icon && <div className="flex-shrink-0">{icon}</div>}
 
 			{/* Entity Info */}
-			<div className="flex flex-col flex-1 min-w-0 gap-0.5">
+			<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 				<div className="flex items-center gap-2">
-					<span className="text-sm font-medium truncate">{name}</span>
+					<span className="truncate font-medium text-sm">{name}</span>
 					{count === null ? (
-						<span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex items-center gap-1">
-							<Loader2 className="w-3 h-3 animate-spin" />
+						<span className="flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-muted-foreground text-xs">
+							<Loader2 className="h-3 w-3 animate-spin" />
 						</span>
 					) : count !== undefined && count > 0 ? (
-						<span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+						<span className="rounded bg-muted px-1.5 py-0.5 text-muted-foreground text-xs">
 							{count}
 						</span>
 					) : null}
 					{!isActive && (
-						<Badge variant="secondary" className="text-xs flex-shrink-0">
+						<Badge variant="secondary" className="flex-shrink-0 text-xs">
 							{inactiveLabel}
 						</Badge>
 					)}
 				</div>
 				{secondaryInfo && (
-					<span className="text-xs text-muted-foreground truncate">
+					<span className="truncate text-muted-foreground text-xs">
 						{secondaryInfo}
 					</span>
 				)}
 				{slug && (
-					<span className="text-xs text-muted-foreground truncate">{slug}</span>
+					<span className="truncate text-muted-foreground text-xs">{slug}</span>
 				)}
 				{/* Show standardized values as pills if they exist */}
 				{tags && tags.length > 0 && (
-					<div className="flex flex-wrap gap-1 mt-2">
+					<div className="mt-2 flex flex-wrap gap-1">
 						{tags.slice(0, maxTags).map((tag) => (
 							<span
 								key={tag.id}
-								className="text-[10px] leading-tight px-1.5 py-0.5 rounded bg-muted text-primary border border-primary font-medium"
+								className="rounded border border-primary bg-muted px-1.5 py-0.5 font-medium text-[10px] text-primary leading-tight"
 								title={tag.value}
 							>
 								{tag.value}
 							</span>
 						))}
 						{tags.length > maxTags && (
-							<span className="text-[10px] leading-tight px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+							<span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground leading-tight">
 								+{tags.length - maxTags}
 							</span>
 						)}

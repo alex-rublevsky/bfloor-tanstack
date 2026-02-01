@@ -25,14 +25,14 @@ export const DescriptionField = React.forwardRef<
 	return (
 		<div>
 			{label && (
-				<label htmlFor={id} className="block text-sm font-medium mb-1">
+				<label htmlFor={id} className="mb-1 block font-medium text-sm">
 					{label}
 				</label>
 			)}
 			<textarea
 				id={id}
 				className={cn(
-					"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-y field-sizing-content",
+					"field-sizing-content flex w-full resize-y rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
 					heightClass,
 					className,
 				)}

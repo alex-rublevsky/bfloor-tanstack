@@ -25,6 +25,9 @@
 			},
 			"suspicious": {
 				"noUnknownAtRules": "off"
+			},
+			"nursery": {
+				"useSortedClasses": "error"
 			}
 		}
 	},

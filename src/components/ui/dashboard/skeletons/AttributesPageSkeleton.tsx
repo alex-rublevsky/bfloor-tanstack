@@ -10,7 +10,7 @@ export function AttributesPageSkeleton() {
 	return (
 		<div className="space-y-6 px-6 py-6">
 			{/* Header */}
-			<div className="flex justify-between items-center">
+			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="relative">
 						<span className="invisible">Attributes Management</span>
@@ -20,11 +20,11 @@ export function AttributesPageSkeleton() {
 			</div>
 
 			{/* Attributes Grid */}
-			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+			<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
 				{SKELETON_KEYS.map((key) => (
 					<div
 						key={key}
-						className="border border-muted rounded-lg p-4 bg-card space-y-2"
+						className="space-y-2 rounded-lg border border-muted bg-card p-4"
 					>
 						<div className="flex items-center gap-2">
 							<div className="relative flex-1">
@@ -33,12 +33,12 @@ export function AttributesPageSkeleton() {
 							</div>
 							<div className="relative">
 								<span className="invisible">0</span>
-								<Skeleton className="absolute inset-0 w-6 h-4 rounded" />
+								<Skeleton className="absolute inset-0 h-4 w-6 rounded" />
 							</div>
 						</div>
 						<div className="relative">
 							<span className="invisible text-xs">attribute-slug</span>
-							<Skeleton className="absolute inset-0 w-20 h-3" />
+							<Skeleton className="absolute inset-0 h-3 w-20" />
 						</div>
 					</div>
 				))}

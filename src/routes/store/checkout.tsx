@@ -258,31 +258,31 @@ function CheckoutScreen() {
 	};
 
 	return (
-		<div className="w-full min-h-screen">
-			<div className="max-w-[1400px] mx-auto px-4 py-8">
+		<div className="min-h-screen w-full">
+			<div className="mx-auto max-w-[1400px] px-4 py-8">
 				{/* Cart Title Section */}
 				<div className="mb-6 flex items-center justify-between">
 					<div className="flex items-center gap-3">
 						<button
 							type="button"
 							onClick={() => navigate({ to: "/store" })}
-							className="flex items-center justify-center w-8 h-8 hover:bg-muted rounded transition-colors"
+							className="flex h-8 w-8 items-center justify-center rounded transition-colors hover:bg-muted"
 							aria-label="Назад"
 						>
 							<ChevronLeft size={20} />
 						</button>
-						<h1 className="text-3xl font-bold">
+						<h1 className="font-bold text-3xl">
 							Корзина {cart.items.length > 0 && `(${cart.items.length})`}
 						</h1>
 					</div>
-					
+
 					{/* Cart Actions - Moved to header */}
 					{cart.items.length > 0 && (
 						<div className="flex items-center gap-4">
 							<button
 								type="button"
 								onClick={handleSaveToPDF}
-								className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+								className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
 							>
 								<Download size={18} />
 								<span>Сохранить в PDF</span>
@@ -290,7 +290,7 @@ function CheckoutScreen() {
 							<button
 								type="button"
 								onClick={handleClearCart}
-								className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+								className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
 							>
 								<Trash size={18} />
 								<span>Очистить корзину</span>
@@ -299,14 +299,14 @@ function CheckoutScreen() {
 					)}
 				</div>
 
-				<div className="border-t border-border mb-6"></div>
+				<div className="mb-6 border-border border-t"></div>
 
-				<div className="flex flex-col lg:flex-row gap-8">
+				<div className="flex flex-col gap-8 lg:flex-row">
 					{/* Left Side - Cart Items */}
 					<div className="flex-1">
 						{cart.items.length === 0 ? (
-							<div className="text-center py-12">
-								<p className="text-muted-foreground text-lg">
+							<div className="py-12 text-center">
+								<p className="text-lg text-muted-foreground">
 									Ваша корзина пуста
 								</p>
 								<Button to="/store" variant="default" className="mt-4">
@@ -314,8 +314,8 @@ function CheckoutScreen() {
 								</Button>
 							</div>
 						) : enrichedItems.length === 0 && cart.items.length > 0 ? (
-							<div className="text-center py-12">
-								<p className="text-muted-foreground text-lg">
+							<div className="py-12 text-center">
+								<p className="text-lg text-muted-foreground">
 									Загрузка товаров...
 								</p>
 							</div>
@@ -333,32 +333,32 @@ function CheckoutScreen() {
 										return (
 											<div
 												key={`${item.productId}-${item.variationId || "default"}`}
-												className="flex items-start gap-4 bg-background p-4 rounded-lg border border-border"
+												className="flex items-start gap-4 rounded-lg border border-border bg-background p-4"
 											>
 												{/* Product Image */}
-												<div className="shrink-0 w-24 h-24 bg-muted rounded overflow-hidden">
+												<div className="h-24 w-24 shrink-0 overflow-hidden rounded bg-muted">
 													{imageArray.length > 0 ? (
 														<img
 															src={`${ASSETS_BASE_URL}/${imageArray[0]}`}
 															alt={item.productName}
-															className="w-full h-full object-cover"
+															className="h-full w-full object-cover"
 														/>
 													) : (
-														<div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+														<div className="flex h-full w-full items-center justify-center text-muted-foreground text-xs">
 															Нет изображения
 														</div>
 													)}
 												</div>
 
 												{/* Product Details */}
-												<div className="flex-1 flex flex-col gap-2">
+												<div className="flex flex-1 flex-col gap-2">
 													<div>
-														<p className="text-sm text-muted-foreground">
+														<p className="text-muted-foreground text-sm">
 															{item.price.toFixed(0)} | м²
 														</p>
 														<Link
 															href={`/product/${item.productSlug}`}
-															className="text-base font-medium hover:underline"
+															className="font-medium text-base hover:underline"
 														>
 															{item.productName}
 														</Link>
@@ -389,7 +389,7 @@ function CheckoutScreen() {
 															}
 															size="compact"
 														/>
-														<span className="text-sm text-muted-foreground">
+														<span className="text-muted-foreground text-sm">
 															уп
 														</span>
 													</div>
@@ -397,10 +397,10 @@ function CheckoutScreen() {
 
 												{/* Price and Area */}
 												<div className="text-right">
-													<p className="text-xl font-bold">
+													<p className="font-bold text-xl">
 														{itemTotal.toFixed(0)} р
 													</p>
-													<p className="text-sm text-muted-foreground">
+													<p className="text-muted-foreground text-sm">
 														{itemArea.toFixed(3)} м²
 													</p>
 												</div>
@@ -411,7 +411,7 @@ function CheckoutScreen() {
 													onClick={() =>
 														removeFromCart(item.productId, item.variationId)
 													}
-													className="shrink-0 w-8 h-8 flex items-center justify-center hover:bg-muted rounded transition-colors"
+													className="flex h-8 w-8 shrink-0 items-center justify-center rounded transition-colors hover:bg-muted"
 													aria-label="Удалить из корзины"
 												>
 													<X size={18} />
@@ -425,11 +425,11 @@ function CheckoutScreen() {
 					</div>
 
 					{/* Right Side - Order Summary and Form */}
-					<div className="lg:w-[400px] lg:sticky lg:top-4 lg:self-start">
+					<div className="lg:sticky lg:top-4 lg:w-[400px] lg:self-start">
 						{/* Order Summary Box */}
-						<div className="border-2 border-primary rounded-lg p-6 mb-6 bg-background">
-							<p className="text-sm mb-2">Итого</p>
-							<p className="text-3xl font-bold text-primary mb-4">
+						<div className="mb-6 rounded-lg border-2 border-primary bg-background p-6">
+							<p className="mb-2 text-sm">Итого</p>
+							<p className="mb-4 font-bold text-3xl text-primary">
 								{total.toFixed(0)} р
 							</p>
 							<div className="flex justify-between text-sm">
@@ -479,7 +479,7 @@ function CheckoutScreen() {
 
 							{/* Contact Method Selection */}
 							<div>
-								<p className="block text-sm text-muted-foreground mb-3">
+								<p className="mb-3 block text-muted-foreground text-sm">
 									Связаться со мной через
 								</p>
 								<div className="flex gap-3">
@@ -498,7 +498,7 @@ function CheckoutScreen() {
 													contactMethod: value as CustomerInfo["contactMethod"],
 												}))
 											}
-											className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-colors cursor-pointer ${
+											className={`flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-2 transition-colors ${
 												customerInfo.contactMethod === value
 													? "border-primary bg-primary/10"
 													: "border-border hover:border-primary/50"
@@ -524,11 +524,11 @@ function CheckoutScreen() {
 								onClick={handleButtonClick}
 								disabled={isLoading || cart.items.length === 0}
 								variant="default"
-								className="w-full h-12 text-base font-medium"
+								className="h-12 w-full font-medium text-base"
 							>
 								{isLoading ? (
 									<span className="flex items-center gap-2">
-										<div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+										<div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
 										Оформление заказа...
 									</span>
 								) : (
@@ -537,7 +537,7 @@ function CheckoutScreen() {
 							</Button>
 
 							{/* Security Message */}
-							<div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
+							<div className="flex items-center gap-2 pt-2 text-muted-foreground text-xs">
 								<Check size={16} className="text-green-600" />
 								<span>
 									Данные в безопасности, надёжно защищены и не передаются

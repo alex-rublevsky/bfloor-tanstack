@@ -54,30 +54,30 @@ export function AdminProductCard({
 		<Link
 			to="/dashboard/products/$productId/edit"
 			params={{ productId: product.id.toString() }}
-			className="block h-full relative cursor-pointer w-full text-left border-none bg-transparent p-0"
+			className="relative block h-full w-full cursor-pointer border-none bg-transparent p-0 text-left"
 			onMouseEnter={handleMouseEnter}
 			aria-label={`Edit product ${product.name}`}
 		>
 			<div
-				className="w-full product-card overflow-hidden group"
+				className="product-card group w-full overflow-hidden"
 				id={styles.productCard}
 			>
-				<div className="bg-background flex flex-col">
+				<div className="flex flex-col bg-background">
 					{/* Image Section */}
 					<div className="relative aspect-square overflow-hidden">
 						<div>
 							{/* Primary Image */}
-							<div className="relative aspect-square flex items-center justify-center overflow-hidden">
+							<div className="relative flex aspect-square items-center justify-center overflow-hidden">
 								{primaryImage ? (
-									<div className="relative w-full h-full">
+									<div className="relative h-full w-full">
 										{/* Loading skeleton, initially visible */}
-										<div className="absolute inset-0 w-full h-full bfloor-img-skeleton">
-											<Skeleton className="absolute inset-0 w-full h-full rounded-none" />
+										<div className="bfloor-img-skeleton absolute inset-0 h-full w-full">
+											<Skeleton className="absolute inset-0 h-full w-full rounded-none" />
 										</div>
 
 										{/* Broken overlay, initially hidden */}
-										<div className="absolute inset-0 hidden items-center justify-center flex-col text-muted-foreground select-none bfloor-img-fallback">
-											<Icon name="image" className="w-12 h-12" />
+										<div className="bfloor-img-fallback absolute inset-0 hidden select-none flex-col items-center justify-center text-muted-foreground">
+											<Icon name="image" className="h-12 w-12" />
 											<span className="mt-2 text-xs">Картинка сломана</span>
 										</div>
 
@@ -86,7 +86,7 @@ export function AdminProductCard({
 											src={`${ASSETS_BASE_URL}/${primaryImage}`}
 											alt={product.name}
 											loading="eager"
-											className="absolute inset-0 w-full h-full object-cover object-center"
+											className="absolute inset-0 h-full w-full object-cover object-center"
 											style={{
 												viewTransitionName: `product-image-${product.id}`,
 											}}
@@ -117,7 +117,7 @@ export function AdminProductCard({
 												src={`${ASSETS_BASE_URL}/${imageArray[1]}`}
 												alt={product.name}
 												loading="eager"
-												className="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ease-in-out opacity-0 group-hover:opacity-100 hidden md:block"
+												className="absolute inset-0 hidden h-full w-full object-cover object-center opacity-0 transition-opacity duration-500 ease-in-out group-hover:opacity-100 md:block"
 												onError={(e) => {
 													const t = e.currentTarget;
 													t.style.display = "none";
@@ -126,8 +126,8 @@ export function AdminProductCard({
 										)}
 									</div>
 								) : (
-									<div className="absolute inset-0 bg-muted flex flex-col items-center justify-center text-muted-foreground select-none">
-										<Icon name="image" className="w-12 h-12" />
+									<div className="absolute inset-0 flex select-none flex-col items-center justify-center bg-muted text-muted-foreground">
+										<Icon name="image" className="h-12 w-12" />
 										<span className="mt-2 text-xs">Нет картинки</span>
 									</div>
 								)}
@@ -154,10 +154,10 @@ export function AdminProductCard({
 						)}
 
 						{/* Desktop Edit Indicator - Centered on image */}
-						<div className="absolute inset-0 hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
-							<div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-background/80 backdrop-blur-[2px] rounded-md border border-border/30 text-primary">
-								<Edit className="w-4 h-4" />
-								<span className="text-sm font-medium text-primary">
+						<div className="pointer-events-none absolute inset-0 z-10 hidden items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:flex">
+							<div className="flex items-center justify-center gap-2 rounded-md border border-border/30 bg-background/80 px-3 py-1.5 text-primary backdrop-blur-[2px]">
+								<Edit className="h-4 w-4" />
+								<span className="font-medium text-primary text-sm">
 									Изменить
 								</span>
 							</div>
@@ -165,51 +165,50 @@ export function AdminProductCard({
 					</div>
 
 					{/* Content Section */}
-					<div className="flex flex-col h-auto md:h-full">
+					<div className="flex h-auto flex-col md:h-full">
 						{/* Info Section */}
-						<div className="p-4 flex flex-col h-auto md:h-full">
+						<div className="flex h-auto flex-col p-4 md:h-full">
 							{/* Price */}
-							<div className="flex flex-col mb-2">
-								<div className="flex flex-wrap items-center justify-between w-full gap-x-2">
-									<div className="flex flex-col items-baseline gap-0 flex-shrink-0">
+							<div className="mb-2 flex flex-col">
+								<div className="flex w-full flex-wrap items-center justify-between gap-x-2">
+									<div className="flex flex-shrink-0 flex-col items-baseline gap-0">
 										{product.discount ? (
 											<>
-												<div className="whitespace-nowrap flex items-baseline gap-0.5">
+												<div className="flex items-baseline gap-0.5 whitespace-nowrap">
 													<span
-														className="text-xl font-light"
+														className="font-light text-xl"
 														style={{
 															viewTransitionName: `product-price-${product.id}`,
 														}}
 													>
 														{Math.round(
-															displayPrice *
-															(1 - product.discount / 100)
+															displayPrice * (1 - product.discount / 100),
 														)}
 													</span>
-													<span className="text-xs font-light text-muted-foreground">
+													<span className="font-light text-muted-foreground text-xs">
 														р
 													</span>
 												</div>
 												<div className="flex items-center gap-1">
-													<span className="text-sm line-through text-muted-foreground">
+													<span className="text-muted-foreground text-sm line-through">
 														{Math.round(displayPrice)}
 													</span>
-													<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+													<span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 font-medium text-green-800 text-xs">
 														-{product.discount}%
 													</span>
 												</div>
 											</>
 										) : (
-											<div className="whitespace-nowrap flex items-baseline gap-0.5">
+											<div className="flex items-baseline gap-0.5 whitespace-nowrap">
 												<span
-													className="text-xl font-light"
+													className="font-light text-xl"
 													style={{
 														viewTransitionName: `product-price-${product.id}`,
 													}}
 												>
 													{Math.round(displayPrice)}
 												</span>
-												<span className="text-xs font-light text-muted-foreground">
+												<span className="font-light text-muted-foreground text-xs">
 													р
 												</span>
 											</div>

@@ -3,43 +3,43 @@ import { Skeleton } from "~/components/ui/dashboard/skeleton";
 // ImageGallery Skeleton Component
 function ImageGallerySkeleton() {
 	return (
-		<div className="gallery-stack flex flex-col lg:flex-row w-full gap-2 lg:pl-4 lg:pt-4 lg:pb-4">
+		<div className="gallery-stack flex w-full flex-col gap-2 lg:flex-row lg:pt-4 lg:pb-4 lg:pl-4">
 			{/* Thumbnails */}
-			<div className="order-2 lg:order-1 shrink-0 w-full lg:w-24 overflow-x-auto lg:overflow-x-hidden scrollbar-none">
+			<div className="scrollbar-none order-2 w-full shrink-0 overflow-x-auto lg:order-1 lg:w-24 lg:overflow-x-hidden">
 				{/* Scrollable container */}
-				<div className="no-scrollbar flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto px-4 lg:px-0 scroll-smooth">
+				<div className="no-scrollbar flex gap-2 overflow-x-auto scroll-smooth px-4 lg:flex-col lg:overflow-y-auto lg:px-0">
 					{/* Multiple thumbnail skeletons */}
 					{[
 						<div
 							key="thumbnail-1"
-							className="shrink-0 w-24 h-24 relative last:mb-2"
+							className="relative h-24 w-24 shrink-0 last:mb-2"
 						>
-							<div className="absolute inset-0 rounded-sm overflow-hidden">
-								<Skeleton className="w-full h-full rounded-sm" />
+							<div className="absolute inset-0 overflow-hidden rounded-sm">
+								<Skeleton className="h-full w-full rounded-sm" />
 							</div>
 						</div>,
 						<div
 							key="thumbnail-2"
-							className="shrink-0 w-24 h-24 relative last:mb-2"
+							className="relative h-24 w-24 shrink-0 last:mb-2"
 						>
-							<div className="absolute inset-0 rounded-sm overflow-hidden">
-								<Skeleton className="w-full h-full rounded-sm" />
+							<div className="absolute inset-0 overflow-hidden rounded-sm">
+								<Skeleton className="h-full w-full rounded-sm" />
 							</div>
 						</div>,
 						<div
 							key="thumbnail-3"
-							className="shrink-0 w-24 h-24 relative last:mb-2"
+							className="relative h-24 w-24 shrink-0 last:mb-2"
 						>
-							<div className="absolute inset-0 rounded-sm overflow-hidden">
-								<Skeleton className="w-full h-full rounded-sm" />
+							<div className="absolute inset-0 overflow-hidden rounded-sm">
+								<Skeleton className="h-full w-full rounded-sm" />
 							</div>
 						</div>,
 						<div
 							key="thumbnail-4"
-							className="shrink-0 w-24 h-24 relative last:mb-2"
+							className="relative h-24 w-24 shrink-0 last:mb-2"
 						>
-							<div className="absolute inset-0 rounded-sm overflow-hidden">
-								<Skeleton className="w-full h-full rounded-sm" />
+							<div className="absolute inset-0 overflow-hidden rounded-sm">
+								<Skeleton className="h-full w-full rounded-sm" />
 							</div>
 						</div>,
 					]}
@@ -47,48 +47,48 @@ function ImageGallerySkeleton() {
 			</div>
 
 			{/* Main image */}
-			<div className="flex items-center justify-center lg:items-start lg:justify-start order-1 grow relative">
-				<div className="relative w-full h-[60vh] lg:h-auto overflow-x-auto lg:overflow-x-hidden overflow-y-hidden scroll-smooth snap-x snap-mandatory lg:snap-none">
+			<div className="relative order-1 flex grow items-center justify-center lg:items-start lg:justify-start">
+				<div className="relative h-[60vh] w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden scroll-smooth lg:h-auto lg:snap-none lg:overflow-x-hidden">
 					{/* Mobile sliding images container */}
-					<div className="flex lg:hidden h-full">
+					<div className="flex h-full lg:hidden">
 						{[
 							<div
 								key="mobile-image-1"
-								className="shrink-0 w-full snap-center flex items-center justify-center"
+								className="flex w-full shrink-0 snap-center items-center justify-center"
 							>
-								<div className="relative w-full h-full flex items-center justify-center">
-									<div className="relative w-auto h-full flex items-center justify-center">
-										<Skeleton className="aspect-square w-auto h-full max-h-[60vh] rounded-none" />
+								<div className="relative flex h-full w-full items-center justify-center">
+									<div className="relative flex h-full w-auto items-center justify-center">
+										<Skeleton className="aspect-square h-full max-h-[60vh] w-auto rounded-none" />
 									</div>
 								</div>
 							</div>,
 							<div
 								key="mobile-image-2"
-								className="shrink-0 w-full snap-center flex items-center justify-center"
+								className="flex w-full shrink-0 snap-center items-center justify-center"
 							>
-								<div className="relative w-full h-full flex items-center justify-center">
-									<div className="relative w-auto h-full flex items-center justify-center">
-										<Skeleton className="aspect-square w-auto h-full max-h-[60vh] rounded-none" />
+								<div className="relative flex h-full w-full items-center justify-center">
+									<div className="relative flex h-full w-auto items-center justify-center">
+										<Skeleton className="aspect-square h-full max-h-[60vh] w-auto rounded-none" />
 									</div>
 								</div>
 							</div>,
 							<div
 								key="mobile-image-3"
-								className="shrink-0 w-full snap-center flex items-center justify-center"
+								className="flex w-full shrink-0 snap-center items-center justify-center"
 							>
-								<div className="relative w-full h-full flex items-center justify-center">
-									<div className="relative w-auto h-full flex items-center justify-center">
-										<Skeleton className="aspect-square w-auto h-full max-h-[60vh] rounded-none" />
+								<div className="relative flex h-full w-full items-center justify-center">
+									<div className="relative flex h-full w-auto items-center justify-center">
+										<Skeleton className="aspect-square h-full max-h-[60vh] w-auto rounded-none" />
 									</div>
 								</div>
 							</div>,
 							<div
 								key="mobile-image-4"
-								className="shrink-0 w-full snap-center flex items-center justify-center"
+								className="flex w-full shrink-0 snap-center items-center justify-center"
 							>
-								<div className="relative w-full h-full flex items-center justify-center">
-									<div className="relative w-auto h-full flex items-center justify-center">
-										<Skeleton className="aspect-square w-auto h-full max-h-[60vh] rounded-none" />
+								<div className="relative flex h-full w-full items-center justify-center">
+									<div className="relative flex h-full w-auto items-center justify-center">
+										<Skeleton className="aspect-square h-full max-h-[60vh] w-auto rounded-none" />
 									</div>
 								</div>
 							</div>,
@@ -97,7 +97,7 @@ function ImageGallerySkeleton() {
 
 					{/* Desktop selected image */}
 					<div className="hidden lg:block">
-						<Skeleton className="aspect-square w-auto h-auto max-h-[calc(100vh-5rem)] rounded-lg" />
+						<Skeleton className="aspect-square h-auto max-h-[calc(100vh-5rem)] w-auto rounded-lg" />
 					</div>
 				</div>
 			</div>
@@ -107,22 +107,22 @@ function ImageGallerySkeleton() {
 
 export function ProductPageSkeleton() {
 	return (
-		<div className="min-h-screen flex flex-col lg:h-screen lg:overflow-hidden">
-			<div className="grow flex items-start justify-center">
-				<div className="w-full h-full flex flex-col lg:flex-row gap-0 lg:gap-10 items-start">
+		<div className="flex min-h-screen flex-col lg:h-screen lg:overflow-hidden">
+			<div className="flex grow items-start justify-center">
+				<div className="flex h-full w-full flex-col items-start gap-0 lg:flex-row lg:gap-10">
 					{/* Image gallery section */}
-					<div className="w-full lg:w-3/5 xl:w-2/3 flex flex-col lg:flex-row gap-2 lg:h-full self-start">
+					<div className="flex w-full flex-col gap-2 self-start lg:h-full lg:w-3/5 lg:flex-row xl:w-2/3">
 						<ImageGallerySkeleton />
 					</div>
 
 					{/* Product information section */}
-					<div className="w-full lg:w-2/5 xl:w-1/3 px-4 lg:px-0 lg:h-[100dvh] lg:overflow-y-auto pt-4 pb-20 lg:pr-4 scrollbar-none">
-						<div className="space-y-6 w-full">
+					<div className="scrollbar-none w-full px-4 pt-4 pb-20 lg:h-[100dvh] lg:w-2/5 lg:overflow-y-auto lg:px-0 lg:pr-4 xl:w-1/3">
+						<div className="w-full space-y-6">
 							{/* Product name */}
 							<Skeleton className="h-8 w-3/4" />
 
 							{/* Price section */}
-							<div className="flex gap-4 items-center">
+							<div className="flex items-center gap-4">
 								<Skeleton className="h-6 w-32" />
 								<Skeleton className="h-6 w-20" />
 							</div>

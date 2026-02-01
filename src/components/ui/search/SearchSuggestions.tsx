@@ -158,10 +158,10 @@ export function SearchSuggestions({
 	return (
 		<div
 			ref={suggestionsRef}
-			className={`absolute z-50 w-full mt-2 bg-background border-2 border-primary rounded-lg shadow-lg overflow-hidden ${className}`}
+			className={`absolute z-50 mt-2 w-full overflow-hidden rounded-lg border-2 border-primary bg-background shadow-lg ${className}`}
 		>
 			{isShowingPopular && (
-				<div className="px-4 py-2 text-sm font-medium text-muted-foreground border-b border-border flex items-center gap-2">
+				<div className="flex items-center gap-2 border-border border-b px-4 py-2 font-medium text-muted-foreground text-sm">
 					<TrendingUp className="h-4 w-4" />
 					Популярные запросы
 				</div>
@@ -174,10 +174,10 @@ export function SearchSuggestions({
 							type="button"
 							onClick={() => handleSuggestionClick(suggestion)}
 							onMouseEnter={() => setSelectedIndex(index)}
-							className={`w-full px-4 py-2 text-left hover:bg-primary hover:text-primary-foreground transition-standard flex items-center gap-3 h-auto rounded-none justify-start ${
+							className={`flex h-auto w-full items-center justify-start gap-3 rounded-none px-4 py-2 text-left transition-standard hover:bg-primary hover:text-primary-foreground ${
 								index === selectedIndex
 									? "bg-primary text-primary-foreground"
-									: "text-foreground bg-transparent"
+									: "bg-transparent text-foreground"
 							}`}
 							asChild={false}
 						>
@@ -186,14 +186,14 @@ export function SearchSuggestions({
 								<img
 									src={`${ASSETS_BASE_URL}/${suggestion.metadata.imageUrl}`}
 									alt={suggestion.text}
-									className="h-8 w-8 object-cover rounded shrink-0"
+									className="h-8 w-8 shrink-0 rounded object-cover"
 								/>
 							) : (
 								<Search className="h-4 w-4 shrink-0" />
 							)}
-							<div className="flex-1 min-w-0">
-								<div className="font-medium truncate">{suggestion.text}</div>
-								<div className="text-xs opacity-70 capitalize">
+							<div className="min-w-0 flex-1">
+								<div className="truncate font-medium">{suggestion.text}</div>
+								<div className="text-xs capitalize opacity-70">
 									{getSuggestionTypeLabel(suggestion.type)}
 								</div>
 							</div>

@@ -4,15 +4,15 @@ import { Image } from "../shared/Image";
 
 function AboutSection() {
 	return (
-		<section className="md:grid md:grid-cols-2 gap-4 ">
+		<section className="gap-4 md:grid md:grid-cols-2">
 			<div className="md:flex md:justify-end">
 				<Image
 					src={`${ASSETS_BASE_URL}/banners/bubisha.webp`}
 					alt="О компании"
-					className="rounded-lg max-h-[30rem] h-full"
+					className="h-full max-h-[30rem] rounded-lg"
 				/>
 			</div>
-			<div className="pt-4 gap-2 flex flex-col max-w-[59ch]">
+			<div className="flex max-w-[59ch] flex-col gap-2 pt-4">
 				<h2>Магазин напольных покрытий</h2>
 				<p>
 					У нас большой выбор напольных покрытий, для домов, офисов, спортивных

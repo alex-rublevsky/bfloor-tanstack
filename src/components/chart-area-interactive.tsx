@@ -170,7 +170,7 @@ export function ChartAreaInteractive() {
 					</span>
 					<span className="@[540px]/card:hidden">Last 3 months</span>
 				</CardDescription>
-				<div className="absolute right-4 top-4">
+				<div className="absolute top-4 right-4">
 					<ToggleGroup
 						type="single"
 						value={timeRange}
@@ -190,7 +190,7 @@ export function ChartAreaInteractive() {
 					</ToggleGroup>
 					<Select value={timeRange} onValueChange={setTimeRange}>
 						<SelectTrigger
-							className="@[767px]/card:hidden flex w-40"
+							className="flex @[767px]/card:hidden w-40"
 							aria-label="Выбрать значение"
 						>
 							<SelectValue placeholder="Last 3 months" />

@@ -100,12 +100,12 @@ function SortableVariationItem({
 			style={style}
 			{...attributes}
 			{...listeners}
-			className={`relative border border-border rounded-md p-3 bg-background space-y-3 cursor-grab active:cursor-grabbing ${
+			className={`relative cursor-grab space-y-3 rounded-md border border-border bg-background p-3 active:cursor-grabbing ${
 				isDragging ? "opacity-50" : ""
 			}`}
 		>
 			{/* First row: SKU with Remove button */}
-			<div className="flex gap-1 items-end">
+			<div className="flex items-end gap-1">
 				<div className="flex-1">
 					<Input
 						id={`sku-${variation.id}`}
@@ -115,7 +115,7 @@ function SortableVariationItem({
 						placeholder="Автоматически генерируется на основе атрибутов"
 						disabled
 						onPointerDown={(e) => e.stopPropagation()}
-						className="text-sm bg-muted/50"
+						className="bg-muted/50 text-sm"
 					/>
 				</div>
 				<Button
@@ -127,7 +127,7 @@ function SortableVariationItem({
 					onPointerDown={(e) => e.stopPropagation()}
 					variant="destructive"
 					size="sm"
-					className="bg-destructive/20 hover:bg-destructive/90 shrink-0"
+					className="shrink-0 bg-destructive/20 hover:bg-destructive/90"
 				>
 					Удалить
 				</Button>
@@ -172,7 +172,7 @@ function SortableVariationItem({
 			{/* Attribute values section */}
 			{selectedAttributes.length > 0 && (
 				<div>
-					<div className="block text-sm font-medium text-foreground mb-2">
+					<div className="mb-2 block font-medium text-foreground text-sm">
 						Значения атрибутов
 					</div>
 					<div className="grid grid-cols-2 gap-2">
@@ -277,10 +277,10 @@ export default function ProductVariationForm({
 		<div className="space-y-4">
 			<div className="flex items-center justify-between">
 				<div>
-					<h3 className="text-sm font-medium text-foreground">
+					<h3 className="font-medium text-foreground text-sm">
 						Вариации товара
 					</h3>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						Создайте различные варианты товара с разными значениями атрибутов
 					</p>
 				</div>
@@ -295,7 +295,7 @@ export default function ProductVariationForm({
 			</div>
 
 			{variations.length === 0 ? (
-				<div className="p-8 border border-dashed border-border rounded-md text-center">
+				<div className="rounded-md border border-border border-dashed p-8 text-center">
 					<p className="text-muted-foreground">
 						Нет вариаций. Нажмите "Добавить вариацию" для создания первой
 						вариации.

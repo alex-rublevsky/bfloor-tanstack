@@ -72,9 +72,9 @@ const DrawerContent = React.forwardRef<
 			)}
 			{...props}
 		>
-			<div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted shrink-0" />
+			<div className="mx-auto mt-4 h-2 w-[100px] shrink-0 rounded-full bg-muted" />
 			<div
-				className={cn(drawerContentVariants({ width }), "h-full flex flex-col")}
+				className={cn(drawerContentVariants({ width }), "flex h-full flex-col")}
 			>
 				{children}
 			</div>
@@ -89,7 +89,7 @@ const DrawerHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
 	<div
 		className={cn(
-			"grid gap-1.5 px-4 pt-4 pb-2 sm:text-left shrink-0 bg-background",
+			"grid shrink-0 gap-1.5 bg-background px-4 pt-4 pb-2 sm:text-left",
 			className,
 		)}
 		{...props}
@@ -102,7 +102,7 @@ const DrawerBody = ({
 	...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
 	<div
-		className={cn("flex-1 overflow-y-auto px-4 pt-2 pb-6 min-h-0", className)}
+		className={cn("min-h-0 flex-1 overflow-y-auto px-4 pt-2 pb-6", className)}
 		{...props}
 	/>
 );
@@ -113,7 +113,7 @@ const DrawerFooter = ({
 	...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
 	<div
-		className={cn("flex flex-col gap-2 p-4 shrink-0 bg-background", className)}
+		className={cn("flex shrink-0 flex-col gap-2 bg-background p-4", className)}
 		{...props}
 	/>
 );
@@ -140,7 +140,7 @@ const DrawerDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
 	<DrawerPrimitive.Description
 		ref={ref}
-		className={cn("text-sm text-muted-foreground", className)}
+		className={cn("text-muted-foreground text-sm", className)}
 		{...props}
 	/>
 ));

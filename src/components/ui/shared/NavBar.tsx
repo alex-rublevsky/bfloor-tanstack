@@ -207,9 +207,9 @@ const DropdownNavMenu = ({
 		>
 			<button
 				type="button"
-				className="flex items-center justify-center cursor-pointer p-2 text-foreground hover:text-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+				className="flex cursor-pointer items-center justify-center p-2 text-foreground hover:text-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 			>
-				<MoreVertical className="w-5 h-5" />
+				<MoreVertical className="h-5 w-5" />
 			</button>
 			{/* Safe triangle bridge for gap between trigger and menu */}
 			{isOpen &&
@@ -233,16 +233,16 @@ const DropdownNavMenu = ({
 			>
 				{showUserInfo && (
 					<>
-						<div className="flex items-center gap-2 px-4 py-2 border-b border-border">
-							<Avatar className="h-8 w-8 rounded-lg flex-shrink-0">
+						<div className="flex items-center gap-2 border-border border-b px-4 py-2">
+							<Avatar className="h-8 w-8 flex-shrink-0 rounded-lg">
 								<AvatarImage src={userAvatar} alt={userName || userID} />
 								<AvatarFallback className="rounded-lg">
 									{userName ? userName.charAt(0).toUpperCase() : "U"}
 								</AvatarFallback>
 							</Avatar>
-							<div className="text-left text-sm leading-tight whitespace-nowrap">
+							<div className="whitespace-nowrap text-left text-sm leading-tight">
 								<div className="font-medium">{userName || userID}</div>
-								<div className="text-xs text-muted-foreground">{userEmail}</div>
+								<div className="text-muted-foreground text-xs">{userEmail}</div>
 							</div>
 						</div>
 						<button
@@ -268,7 +268,7 @@ const DropdownNavMenu = ({
 									navigate({ to: "/" });
 								}
 							}}
-							className="flex w-full items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground transition-standard border-b border-border cursor-pointer [&_svg]:hover:text-primary-foreground [&_svg]:active:text-primary-foreground"
+							className="flex w-full cursor-pointer items-center gap-2 border-border border-b px-4 py-2 text-foreground text-sm transition-standard hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground [&_svg]:hover:text-primary-foreground [&_svg]:active:text-primary-foreground"
 						>
 							<LogOutIcon className="h-4 w-4" />
 							Выйти
@@ -315,7 +315,7 @@ const CartButton = memo(() => {
 				<button
 					type="button"
 					onClick={() => setCartOpen(true)}
-					className="relative flex items-center justify-center text-accent hover:text-accent transition-standard cursor-pointer h-9"
+					className="relative flex h-9 cursor-pointer items-center justify-center text-accent transition-standard hover:text-accent"
 				>
 					{/* Cart SVG Icon */}
 					<svg
@@ -340,7 +340,7 @@ const CartButton = memo(() => {
 					{/* Cart Counter Badge */}
 					{itemCount > 0 && (
 						<span
-							className="absolute top-0 right-0.5 bg-accent text-accent-foreground! text-sm font-medium w-5 h-5 flex items-center justify-center -translate-y-1.5 translate-x-1.5"
+							className="-translate-y-1.5 absolute top-0 right-0.5 flex h-5 w-5 translate-x-1.5 items-center justify-center bg-accent font-medium text-accent-foreground! text-sm"
 							style={{ borderRadius: "var(--radius-xs)" }}
 						>
 							{itemCount}
@@ -375,12 +375,12 @@ const MobileMenuButton = memo(() => {
 				<Button
 					type="button"
 					variant="secondary"
-					className="size-9 p-1 rounded-sm group border-0 [&_svg]:size-5"
+					className="group size-9 rounded-sm border-0 p-1 [&_svg]:size-5"
 					aria-label="Меню"
 				>
 					<Menu
 						size={20}
-						className="text-accent group-hover:text-primary-foreground transition-standard"
+						className="text-accent transition-standard group-hover:text-primary-foreground"
 					/>
 				</Button>
 			</DrawerTrigger>
@@ -525,7 +525,7 @@ const AddressDropdown = memo(() => {
 			trigger={(isOpen) => (
 				<Link
 					href="/contact"
-					className="flex items-center gap-1.5 text-foreground hover:text-primary transition-standard whitespace-nowrap cursor-pointer"
+					className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap text-foreground transition-standard hover:text-primary"
 				>
 					<Icon
 						name="chevron-down"
@@ -543,45 +543,45 @@ const AddressDropdown = memo(() => {
 				<div className="space-y-3 text-sm">
 					<div className="flex gap-6">
 						<div>
-							<div className="font-semibold mb-1 whitespace-nowrap">
+							<div className="mb-1 whitespace-nowrap font-semibold">
 								ул. Русская, 78
 							</div>
-							<div className="text-muted-foreground space-y-0.5">
-								<div className="flex justify-between items-center gap-2">
+							<div className="space-y-0.5 text-muted-foreground">
+								<div className="flex items-center justify-between gap-2">
 									<span className="whitespace-nowrap">Пн — Пт</span>
 									<span className="whitespace-nowrap">10 — 18</span>
 								</div>
-								<div className="flex justify-between items-center gap-2">
+								<div className="flex items-center justify-between gap-2">
 									<span className="whitespace-nowrap">Сб</span>
 									<span className="whitespace-nowrap">11 — 17</span>
 								</div>
-								<div className="flex justify-between items-center gap-2">
+								<div className="flex items-center justify-between gap-2">
 									<span className="whitespace-nowrap">Вс</span>
 									<span className="whitespace-nowrap">Выходной</span>
 								</div>
 							</div>
 						</div>
 						<div>
-							<div className="font-semibold mb-1 whitespace-nowrap">
+							<div className="mb-1 whitespace-nowrap font-semibold">
 								ул. 100 летия, 30
 							</div>
-							<div className="text-muted-foreground space-y-0.5">
-								<div className="flex justify-between items-center gap-2">
+							<div className="space-y-0.5 text-muted-foreground">
+								<div className="flex items-center justify-between gap-2">
 									<span className="whitespace-nowrap">Пн — Пт</span>
 									<span className="whitespace-nowrap">10 — 18</span>
 								</div>
-								<div className="flex justify-between items-center gap-2">
+								<div className="flex items-center justify-between gap-2">
 									<span className="whitespace-nowrap">Сб</span>
 									<span className="whitespace-nowrap">11 — 17</span>
 								</div>
-								<div className="flex justify-between items-center gap-2">
+								<div className="flex items-center justify-between gap-2">
 									<span className="whitespace-nowrap">Вс</span>
 									<span className="whitespace-nowrap">Выходной</span>
 								</div>
 							</div>
 						</div>
 					</div>
-					<div className="pt-3 border-t border-border">
+					<div className="border-border border-t pt-3">
 						<Button to="/contact" variant="default" className="w-full">
 							Адреса
 						</Button>
@@ -601,7 +601,7 @@ const PhoneDropdown = memo(() => {
 			trigger={(isOpen) => (
 				<Link
 					href="tel:+79084466740"
-					className="flex items-center gap-1.5 text-foreground hover:text-primary transition-standard whitespace-nowrap cursor-pointer"
+					className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap text-foreground transition-standard hover:text-primary"
 				>
 					<Icon
 						name="chevron-down"
@@ -616,44 +616,44 @@ const PhoneDropdown = memo(() => {
 			)}
 		>
 			<div className="px-4 py-3">
-				<div className="flex gap-4 items-stretch">
+				<div className="flex items-stretch gap-4">
 					{/* Left column - Contact info */}
 					<div className="flex flex-col justify-between text-sm">
 						<div>
-							<Link href="tel:+79084466740" className="text-primary block">
+							<Link href="tel:+79084466740" className="block text-primary">
 								8 908 446 6740
 							</Link>
 						</div>
 						<div>
-							<Link href="tel:+79025559405" className="text-primary block">
+							<Link href="tel:+79025559405" className="block text-primary">
 								8 902 555 9405
 							</Link>
 						</div>
 						<div>
-							<Link href="tel:+79084486785" className="text-primary block">
+							<Link href="tel:+79084486785" className="block text-primary">
 								8 908 448 6785
 							</Link>
 						</div>
 						<div>
-							<Link href="mailto:romavg@mail.ru" className="text-primary block">
+							<Link href="mailto:romavg@mail.ru" className="block text-primary">
 								romavg@mail.ru
 							</Link>
 						</div>
 					</div>
 					{/* Right column - Social icons */}
-					<div className="flex flex-col gap-2 items-center">
+					<div className="flex flex-col items-center gap-2">
 						<Button
 							href="https://t.me/beautyfloor"
 							target="_blank"
 							rel="noopener noreferrer"
 							variant="secondary"
-							className="h-auto w-auto p-1.5 rounded-sm group border-0 [&_svg]:size-7"
+							className="group h-auto w-auto rounded-sm border-0 p-1.5 [&_svg]:size-7"
 							aria-label="Telegram"
 						>
 							<Icon
 								name="telegram"
 								size={28}
-								className="text-accent group-hover:text-primary-foreground transition-standard"
+								className="text-accent transition-standard group-hover:text-primary-foreground"
 							/>
 						</Button>
 						<Button
@@ -661,13 +661,13 @@ const PhoneDropdown = memo(() => {
 							target="_blank"
 							rel="noopener noreferrer"
 							variant="secondary"
-							className="h-auto w-auto p-1.5 rounded-sm group border-0 [&_svg]:size-7"
+							className="group h-auto w-auto rounded-sm border-0 p-1.5 [&_svg]:size-7"
 							aria-label="Instagram"
 						>
 							<Icon
 								name="instagram"
 								size={28}
-								className="text-accent group-hover:text-primary-foreground transition-standard"
+								className="text-accent transition-standard group-hover:text-primary-foreground"
 							/>
 						</Button>
 						<Button
@@ -675,13 +675,13 @@ const PhoneDropdown = memo(() => {
 							target="_blank"
 							rel="noopener noreferrer"
 							variant="secondary"
-							className="h-auto w-auto p-1.5 rounded-sm group border-0 [&_svg]:size-7"
+							className="group h-auto w-auto rounded-sm border-0 p-1.5 [&_svg]:size-7"
 							aria-label="WhatsApp"
 						>
 							<Icon
 								name="whatsapp"
 								size={28}
-								className="text-accent group-hover:text-primary-foreground transition-standard"
+								className="text-accent transition-standard group-hover:text-primary-foreground"
 							/>
 						</Button>
 					</div>
@@ -700,9 +700,9 @@ const CatalogDropdownSkeleton = () => {
 				(key) => (
 					<div
 						key={key}
-						className="flex items-center justify-between w-full px-4 py-2 text-sm"
+						className="flex w-full items-center justify-between px-4 py-2 text-sm"
 					>
-						<Skeleton className="h-4 flex-1 max-w-[60%]" />
+						<Skeleton className="h-4 max-w-[60%] flex-1" />
 						<Skeleton className="h-3 w-6" />
 					</div>
 				),
@@ -831,10 +831,10 @@ const CatalogDropdown = memo(() => {
 									prefetchStoreWithCategory(category.slug);
 								}}
 							>
-								<span className="flex-1 min-w-0 pr-3 wrap-break-word">
+								<span className="wrap-break-word min-w-0 flex-1 pr-3">
 									{category.name}
 								</span>
-								<span className="text-xs opacity-70 shrink-0">
+								<span className="shrink-0 text-xs opacity-70">
 									{category.productCount}
 								</span>
 							</Link>
@@ -978,14 +978,14 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 			<>
 				<nav
 					className={cn(
-						"navbar-scroll-aware border-b border-border",
+						"navbar-scroll-aware border-border border-b",
 						shouldShowNavbar ? "navbar-visible" : "navbar-hidden",
 						className,
 					)}
 				>
 					<div className="px-4 py-3">
 						{/* Desktop layout - Large screens and above */}
-						<div className="hidden lg:flex items-center gap-4">
+						<div className="hidden items-center gap-4 lg:flex">
 							{/* Pages navigation - fixed width */}
 							<div className="flex-shrink-0">
 								<DashboardNavLinks
@@ -997,7 +997,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 
 							{/* Search - takes all available space (dashboard) */}
 							{!isMiscPage && (
-								<div className="flex-1 min-w-0">
+								<div className="min-w-0 flex-1">
 									<DashboardSearchInput
 										placeholder={dynamicPlaceholder}
 										value={dashboardSearchInput}
@@ -1026,7 +1026,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 						</div>
 
 						{/* Tablet layout - Medium screens (single row with compact search) */}
-						<div className="hidden md:flex lg:hidden items-center gap-2 md:gap-2">
+						<div className="hidden items-center gap-2 md:flex md:gap-2 lg:hidden">
 							{/* Pages navigation */}
 							<div className="flex-shrink-0">
 								<DashboardNavLinks
@@ -1038,7 +1038,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 
 							{/* Search - flexible width (dashboard) */}
 							{!isMiscPage && (
-								<div className="flex-1 min-w-0">
+								<div className="min-w-0 flex-1">
 									<DashboardSearchInput
 										placeholder={dynamicPlaceholder}
 										value={dashboardSearchInput}
@@ -1067,7 +1067,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 						</div>
 
 						{/* Mobile layout - Small screens */}
-						<div className="md:hidden w-full">
+						<div className="w-full md:hidden">
 							{/* Search - takes full available space (dashboard) */}
 							{!isMiscPage && (
 								<DashboardSearchInput
@@ -1096,16 +1096,16 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 			<nav
 				style={{ viewTransitionName: "--persist-nav" }}
 				className={cn(
-					"navbar-scroll-aware border-b border-border",
+					"navbar-scroll-aware border-border border-b",
 					shouldShowNavbar ? "navbar-visible" : "navbar-hidden",
 					className,
 				)}
 			>
 				<div className="px-4 py-3">
 					{/* Desktop layout - Large screens and above */}
-					<div className="hidden lg:flex flex-col gap-3">
+					<div className="hidden flex-col gap-3 lg:flex">
 						{/* First row: Navigation Links */}
-						<div className="flex items-center justify-between gap-3 text-sm flex-wrap">
+						<div className="flex flex-wrap items-center justify-between gap-3 text-sm">
 							<AddressDropdown />
 							<PhoneDropdown />
 							<div className="flex items-center gap-3">
@@ -1121,7 +1121,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 							<div className="flex-shrink-0">
 								<Link
 									href="/"
-									className="hover:opacity-80 transition-standard"
+									className="transition-standard hover:opacity-80"
 									disableAnimation={true}
 								>
 									<Logo className="h-8 w-auto" />
@@ -1134,7 +1134,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 							</div>
 
 							{/* Search - takes all available space */}
-							<div className="flex-1 min-w-0">
+							<div className="min-w-0 flex-1">
 								<SearchInput
 									placeholder={dynamicPlaceholder || "Поиск..."}
 									value={clientSearch.searchTerm}
@@ -1170,9 +1170,9 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 					</div>
 
 					{/* Tablet layout - Medium screens */}
-					<div className="hidden md:flex lg:hidden flex-col gap-3">
+					<div className="hidden flex-col gap-3 md:flex lg:hidden">
 						{/* First row: Navigation Links */}
-						<div className="flex items-center justify-between gap-3 text-sm flex-wrap">
+						<div className="flex flex-wrap items-center justify-between gap-3 text-sm">
 							<AddressDropdown />
 							<PhoneDropdown />
 							<div className="flex items-center gap-3">
@@ -1188,7 +1188,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 							<div className="flex-shrink-0">
 								<Link
 									href="/"
-									className="hover:opacity-80 transition-standard"
+									className="transition-standard hover:opacity-80"
 									disableAnimation={true}
 								>
 									<Logo className="h-8 w-auto" />
@@ -1201,7 +1201,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 							</div>
 
 							{/* Search - flexible width */}
-							<div className="flex-1 min-w-0">
+							<div className="min-w-0 flex-1">
 								<SearchInput
 									placeholder={dynamicPlaceholder || "Поиск..."}
 									value={clientSearch.searchTerm}
@@ -1237,9 +1237,9 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 					</div>
 
 					{/* Mobile layout - Small screens */}
-					<div className="md:hidden flex items-center gap-1.5">
+					<div className="flex items-center gap-1.5 md:hidden">
 						{/* Search - takes full available space */}
-						<div className="flex-1 min-w-0">
+						<div className="min-w-0 flex-1">
 							<SearchInput
 								placeholder={dynamicPlaceholder || "Поиск..."}
 								value={clientSearch.searchTerm}
@@ -1263,12 +1263,12 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 							<Button
 								to="/contact"
 								variant="secondary"
-								className="size-9 p-1 rounded-sm group border-0 [&_svg]:size-5"
+								className="group size-9 rounded-sm border-0 p-1 [&_svg]:size-5"
 								aria-label="Контакты и адреса"
 							>
 								<Phone
 									size={20}
-									className="text-accent group-hover:text-primary-foreground transition-standard"
+									className="text-accent transition-standard group-hover:text-primary-foreground"
 								/>
 							</Button>
 						</div>

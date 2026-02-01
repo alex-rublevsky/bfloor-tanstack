@@ -24,9 +24,9 @@ export default function ProductVariationAttributesSelector({
 
 	if (!availableAttributes || availableAttributes.length === 0) {
 		return (
-			<div className="p-4 border border-dashed border-border rounded-md text-center text-muted-foreground">
+			<div className="rounded-md border border-border border-dashed p-4 text-center text-muted-foreground">
 				<p>Нет доступных атрибутов для вариаций</p>
-				<p className="text-sm mt-1">Создайте атрибуты в разделе "Атрибуты"</p>
+				<p className="mt-1 text-sm">Создайте атрибуты в разделе "Атрибуты"</p>
 			</div>
 		);
 	}
@@ -34,15 +34,15 @@ export default function ProductVariationAttributesSelector({
 	return (
 		<div className="space-y-4">
 			<div>
-				<h3 className="text-sm font-medium text-foreground mb-3">
+				<h3 className="mb-3 font-medium text-foreground text-sm">
 					Выберите атрибуты для вариаций
 				</h3>
-				<p className="text-sm text-muted-foreground mb-4">
+				<p className="mb-4 text-muted-foreground text-sm">
 					Выбранные атрибуты будут использоваться для всех вариаций товара
 				</p>
 			</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+			<div className="grid grid-cols-1 gap-3 md:grid-cols-3">
 				{availableAttributes.map((attribute) => {
 					const attributeIdStr = attribute.id.toString();
 					const isSelected = selectedAttributes.includes(attributeIdStr);
@@ -50,7 +50,7 @@ export default function ProductVariationAttributesSelector({
 					return (
 						<div
 							key={attribute.id}
-							className="flex items-center space-x-3 p-3 border border-border rounded-md hover:bg-muted/50 transition-colors"
+							className="flex items-center space-x-3 rounded-md border border-border p-3 transition-colors hover:bg-muted/50"
 						>
 							<Switch
 								id={`attr-${attribute.id}`}
@@ -59,7 +59,7 @@ export default function ProductVariationAttributesSelector({
 							/>
 							<label
 								htmlFor={`attr-${attribute.id}`}
-								className="flex-1 text-sm font-medium cursor-pointer"
+								className="flex-1 cursor-pointer font-medium text-sm"
 							>
 								{attribute.name}
 							</label>
@@ -69,8 +69,8 @@ export default function ProductVariationAttributesSelector({
 			</div>
 
 			{selectedAttributes.length > 0 && (
-				<div className="mt-4 p-3 bg-muted/30 rounded-md">
-					<p className="text-sm text-muted-foreground">
+				<div className="mt-4 rounded-md bg-muted/30 p-3">
+					<p className="text-muted-foreground text-sm">
 						Выбрано атрибутов:{" "}
 						<span className="font-medium text-foreground">
 							{selectedAttributes.length}

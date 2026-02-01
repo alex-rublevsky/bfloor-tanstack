@@ -32,9 +32,9 @@ export function CartSummary() {
 			</div>
 
 			{discountTotal > 0 && (
-				<div className="flex justify-between text-sm text-foreground">
+				<div className="flex justify-between text-foreground text-sm">
 					<p>Скидка</p>
-					<Badge variant="green" className="text-sm translate-x-2">
+					<Badge variant="green" className="translate-x-2 text-sm">
 						-{Math.round(discountTotal)} р
 					</Badge>
 				</div>
@@ -45,7 +45,7 @@ export function CartSummary() {
 				<h4>{Math.round(total)} р</h4>
 			</div>
 
-			<p className="text-xs text-muted-foreground text-center pt-2">
+			<p className="pt-2 text-center text-muted-foreground text-xs">
 				Доставка будет рассчитана при оформлении заказа
 			</p>
 		</div>

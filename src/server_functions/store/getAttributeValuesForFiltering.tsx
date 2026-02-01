@@ -5,8 +5,8 @@ import {
 	attributeValues,
 	productAttributes,
 	productAttributeValues,
-	products,
 	productStoreLocations,
+	products,
 } from "~/schema";
 
 export interface AttributeFilterValue {
@@ -90,9 +90,7 @@ export const getAttributeValuesForFiltering = createServerFn({ method: "GET" })
 			.where(
 				sql.join(
 					[
-						...(productConditions.length > 0
-							? productConditions
-							: [sql`1=1`]),
+						...(productConditions.length > 0 ? productConditions : [sql`1=1`]),
 						eq(attributeValues.isActive, true),
 						sql`${productAttributes.valueType} IN ('standardized', 'both')`,
 					],

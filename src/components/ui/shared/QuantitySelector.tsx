@@ -25,8 +25,8 @@ function QuantitySelectorButton({
 		<button
 			type="button"
 			onClick={onClick}
-			className={`${styles.button} hover:bg-muted active:bg-muted transition flex items-center justify-center ${
-				disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+			className={`${styles.button} flex items-center justify-center transition hover:bg-muted active:bg-muted ${
+				disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
 			}`}
 			disabled={disabled}
 			aria-label={ariaLabel}

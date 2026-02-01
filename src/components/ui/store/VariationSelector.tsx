@@ -62,7 +62,7 @@ export function VariationSelector({
 		<>
 			{productAttributes.map(({ attributeId, displayName, values }) => (
 				<div key={attributeId} className="space-y-2">
-					<div className="text-sm font-medium text-gray-700">{displayName}</div>
+					<div className="font-medium text-gray-700 text-sm">{displayName}</div>
 					<div className="flex flex-wrap gap-2">
 						{values.map((value) => {
 							const isSelected = selectedAttributes?.[attributeId] === value;
@@ -71,10 +71,10 @@ export function VariationSelector({
 									key={value}
 									type="button"
 									onClick={() => onAttributeChange(attributeId, value)}
-									className={`px-3 py-2 text-sm rounded-md border transition-colors ${
+									className={`rounded-md border px-3 py-2 text-sm transition-colors ${
 										isSelected
-											? "bg-red-600 text-white border-red-600"
-											: "bg-white text-gray-700 border-gray-300 hover:border-red-300 hover:bg-red-50"
+											? "border-red-600 bg-red-600 text-white"
+											: "border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50"
 									}`}
 								>
 									{value}

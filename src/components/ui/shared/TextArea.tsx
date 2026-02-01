@@ -72,9 +72,9 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 					<label
 						htmlFor={finalId}
 						className={cn(
-							"absolute left-3 text-sm text-muted-foreground pointer-events-none transition-faster origin-left z-10",
+							"pointer-events-none absolute left-3 z-10 origin-left text-muted-foreground text-sm transition-faster",
 							isLabelFloating && [
-								"top-0 -translate-y-1/2 scale-75 px-1 text-foreground",
+								"-translate-y-1/2 top-0 scale-75 px-1 text-foreground",
 								labelBackgroundColor || "bg-background",
 							],
 							!isLabelFloating && "top-4",
@@ -92,7 +92,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 					value={value}
 					defaultValue={defaultValue}
 					className={cn(
-						"flex min-h-[60px] w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground shadow-sm shadow-black/5 transition-faster placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50 field-sizing-content resize-none",
+						"field-sizing-content flex min-h-[60px] w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-foreground text-sm shadow-black/5 shadow-sm transition-faster placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50",
 						label && isLabelFloating && "pt-4",
 						error &&
 							"border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20",
@@ -107,7 +107,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 				/>
 
 				{error && (
-					<span className="absolute -bottom-5 left-0 text-red-500 text-xs font-medium">
+					<span className="-bottom-5 absolute left-0 font-medium text-red-500 text-xs">
 						{error}
 					</span>
 				)}

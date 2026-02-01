@@ -10,13 +10,13 @@ export const Route = createFileRoute("/delivery")({
 function RouteComponent() {
 	return (
 		<section>
-			<div className="flex flex-wrap gap-4 mb-6">
+			<div className="mb-6 flex flex-wrap gap-4">
 				<Image
 					src={`${ASSETS_BASE_URL}/banners/delivery.jpg`}
-					className="rounded-lg max-h-120 h-full w-full sm:w-auto sm:max-w-sm md:max-w-md sm:shrink-0"
+					className="h-full max-h-120 w-full rounded-lg sm:w-auto sm:max-w-sm sm:shrink-0 md:max-w-md"
 					alt="Доставка и оплата"
 				/>
-				<div className="flex flex-col gap-4 min-w-0 sm:min-w-[45ch] max-w-[65ch] flex-1">
+				<div className="flex min-w-0 max-w-[65ch] flex-1 flex-col gap-4 sm:min-w-[45ch]">
 					<h1>Доставка и оплата</h1>
 					<h3>По Приморскому краю</h3>
 					<p>
@@ -39,8 +39,8 @@ function RouteComponent() {
 				</div>
 			</div>
 
-			<div className="flex flex-wrap gap-4 mb-6">
-				<div className="flex flex-col gap-4 min-w-0 sm:min-w-[45ch] max-w-[65ch] w-full sm:flex-1">
+			<div className="mb-6 flex flex-wrap gap-4">
+				<div className="flex w-full min-w-0 max-w-[65ch] flex-col gap-4 sm:min-w-[45ch] sm:flex-1">
 					<h3>Доставка в регионы РФ</h3>
 					<p>
 						Наша компания доставляет товары по всей территории РФ. Для Вашего
@@ -53,7 +53,7 @@ function RouteComponent() {
 						составит 400р.
 					</p>
 				</div>
-				<div className="flex flex-col gap-4 min-w-0 sm:min-w-[45ch] max-w-[65ch] w-full sm:flex-1 items-start">
+				<div className="flex w-full min-w-0 max-w-[65ch] flex-col items-start gap-4 sm:min-w-[45ch] sm:flex-1">
 					<h2>Самовывоз с магазина</h2>
 					<p>
 						Вы можете забрать материал самостоятельно с нашего склада. Для этого
@@ -67,8 +67,8 @@ function RouteComponent() {
 				</div>
 			</div>
 
-			<div className="flex flex-wrap gap-4 mb-6">
-				<div className="flex flex-col gap-4 min-w-0 sm:min-w-[45ch] max-w-[65ch] w-full sm:flex-1">
+			<div className="mb-6 flex flex-wrap gap-4">
+				<div className="flex w-full min-w-0 max-w-[65ch] flex-col gap-4 sm:min-w-[45ch] sm:flex-1">
 					<h2>Оплата</h2>
 
 					<p>
@@ -78,7 +78,7 @@ function RouteComponent() {
 						менеджеры оперативно рассчитают вес и объем Вашего груза.
 					</p>
 				</div>
-				<div className="flex flex-col gap-4 min-w-0 sm:min-w-[45ch] max-w-[65ch] w-full sm:flex-1 items-start">
+				<div className="flex w-full min-w-0 max-w-[65ch] flex-col items-start gap-4 sm:min-w-[45ch] sm:flex-1">
 					<h2>Ассортимент и цена</h2>
 					<p>
 						Все товары указанные на сайте доступны к заказу, большая часть

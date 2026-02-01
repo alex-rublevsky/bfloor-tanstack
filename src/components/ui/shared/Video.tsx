@@ -38,7 +38,7 @@ export default function Video({
 			{isClient && (
 				<video
 					src={videoSrc}
-					className="w-full h-full object-cover"
+					className="h-full w-full object-cover"
 					autoPlay={autoPlay}
 					loop={loop}
 					muted={muted}

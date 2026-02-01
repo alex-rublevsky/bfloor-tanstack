@@ -51,7 +51,7 @@ const CategoryFormFields = ({
 			<div>
 				<label
 					htmlFor={parentCategoryId}
-					className="block text-sm font-medium mb-1"
+					className="mb-1 block font-medium text-sm"
 				>
 					Родительская категория (опционально)
 				</label>

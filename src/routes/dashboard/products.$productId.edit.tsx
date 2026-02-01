@@ -195,7 +195,7 @@ function EditProductPage() {
 	}, [navigate]);
 
 	return (
-		<div className="container mx-auto py-8 px-4">
+		<div className="container mx-auto px-4 py-8">
 			<div className="mb-6 flex items-center justify-between">
 				<button
 					type="button"
@@ -217,14 +217,14 @@ function EditProductPage() {
 								productId: loaderData.product.slug,
 							}}
 						>
-							<Eye className="w-4 h-4" />
+							<Eye className="h-4 w-4" />
 							<span>посмотреть на страницу этого товара</span>
 						</Link>
 					</Button>
 				)}
 			</div>
 
-			<h1 className="text-3xl font-bold mb-8">Редактировать товар</h1>
+			<h1 className="mb-8 font-bold text-3xl">Редактировать товар</h1>
 
 			<form
 				onSubmit={handleSubmit}
@@ -257,10 +257,10 @@ function EditProductPage() {
 				{/* Delete Product Section */}
 				<DrawerSection variant="default" className="lg:col-span-2">
 					<div className="flex flex-col gap-2">
-						<h3 className="text-sm font-medium text-destructive">
+						<h3 className="font-medium text-destructive text-sm">
 							Опасная зона
 						</h3>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							Удаление товара является необратимым действием. Все данные о
 							товаре будут безвозвратно удалены.
 						</p>
@@ -277,7 +277,7 @@ function EditProductPage() {
 				</DrawerSection>
 
 				{productForm.error && (
-					<div className="text-destructive text-sm mt-4">
+					<div className="mt-4 text-destructive text-sm">
 						{productForm.error}
 					</div>
 				)}

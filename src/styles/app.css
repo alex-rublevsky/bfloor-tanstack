@@ -485,7 +485,7 @@ number-flow {
 .link-animated:hover .link-text,
 .link-animated:active .link-text,
 .link-animated:focus .link-text {
-	color: var(--accent) !important;
+	color: var(--accent);
 }
 
 /* Mobile: show simple underline, hide animated underline */
@@ -500,7 +500,7 @@ number-flow {
 
 	/* Mobile: text color on active/tap (only for animated links) */
 	.link-animated:active .link-text {
-		color: var(--accent) !important;
+		color: var(--accent);
 	}
 }
 
@@ -525,7 +525,7 @@ number-flow {
 	.link:hover .link-text-wrapper,
 	.link:active .link-text-wrapper,
 	.link:focus .link-text-wrapper {
-		color: var(--accent) !important;
+		color: var(--accent);
 	}
 }
 

@@ -215,36 +215,38 @@ export function CartProvider({ children }: CartProviderProps) {
 	}, []);
 
 	// Remove item from cart
-	const removeFromCart = useCallback((productId: number, variationId?: number) => {
-		setCart((prevCart) => ({
-			items: prevCart.items.filter(
-				(item) =>
-					!(item.productId === productId && item.variationId === variationId),
-			),
-			lastUpdated: Date.now(),
-		}));
-	}, []);
+	const removeFromCart = useCallback(
+		(productId: number, variationId?: number) => {
+			setCart((prevCart) => ({
+				items: prevCart.items.filter(
+					(item) =>
+						!(item.productId === productId && item.variationId === variationId),
+				),
+				lastUpdated: Date.now(),
+			}));
+		},
+		[],
+	);
 
 	// Update item quantity
-	const updateQuantity = useCallback((
-		productId: number,
-		quantity: number,
-		variationId?: number,
-	) => {
-		if (quantity <= 0) {
-			removeFromCart(productId, variationId);
-			return;
-		}
+	const updateQuantity = useCallback(
+		(productId: number, quantity: number, variationId?: number) => {
+			if (quantity <= 0) {
+				removeFromCart(productId, variationId);
+				return;
+			}
 
-		setCart((prevCart) => ({
-			items: prevCart.items.map((item) =>
-				item.productId === productId && item.variationId === variationId
-					? { ...item, quantity: Math.max(1, quantity) }
-					: item,
-			),
-			lastUpdated: Date.now(),
-		}));
-	}, [removeFromCart]);
+			setCart((prevCart) => ({
+				items: prevCart.items.map((item) =>
+					item.productId === productId && item.variationId === variationId
+						? { ...item, quantity: Math.max(1, quantity) }
+						: item,
+				),
+				lastUpdated: Date.now(),
+			}));
+		},
+		[removeFromCart],
+	);
 
 	// Clear cart
 	const clearCart = useCallback(() => {
@@ -268,7 +270,15 @@ export function CartProvider({ children }: CartProviderProps) {
 			clearCart,
 			itemCount,
 		}),
-		[cart, cartOpen, addToCart, removeFromCart, updateQuantity, clearCart, itemCount],
+		[
+			cart,
+			cartOpen,
+			addToCart,
+			removeFromCart,
+			updateQuantity,
+			clearCart,
+			itemCount,
+		],
 	);
 
 	return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

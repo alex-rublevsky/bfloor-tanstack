@@ -173,12 +173,12 @@ export function ProductBasicInfoFields({
 						</SelectContent>
 					</Select>
 					{hasAttemptedSubmit && !formData.unitOfMeasurement && (
-						<p className="text-sm text-red-500 mt-1">обязательно</p>
+						<p className="mt-1 text-red-500 text-sm">обязательно</p>
 					)}
 				</div>
 
 				<div className="col-span-2 flex flex-wrap gap-4">
-					<div className="flex-1 min-w-[150px]">
+					<div className="min-w-[150px] flex-1">
 						<SelectWithCreate
 							value={formData.categorySlug}
 							onValueChange={(value) => {
@@ -204,7 +204,7 @@ export function ProductBasicInfoFields({
 						/>
 					</div>
 
-					<div className="flex-1 min-w-[150px]">
+					<div className="min-w-[150px] flex-1">
 						<SelectWithCreate
 							value={formData.brandSlug}
 							onValueChange={(value) => {
@@ -221,7 +221,7 @@ export function ProductBasicInfoFields({
 						/>
 					</div>
 
-					<div className="flex-1 min-w-[150px]">
+					<div className="min-w-[150px] flex-1">
 						<SelectWithCreate
 							value={formData.collectionSlug || null}
 							onValueChange={(value) => {

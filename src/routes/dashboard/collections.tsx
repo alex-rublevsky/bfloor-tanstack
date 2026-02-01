@@ -54,7 +54,7 @@ const CollectionFormFields = ({
 			<div>
 				<label
 					htmlFor={`${idPrefix}-collection-brand`}
-					className="block text-sm font-medium mb-1"
+					className="mb-1 block font-medium text-sm"
 				>
 					Бренд <span className="text-red-500">*</span>
 				</label>

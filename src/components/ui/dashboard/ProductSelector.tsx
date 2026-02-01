@@ -16,9 +16,9 @@ interface ProductSelectorProps {
 
 // Placeholder component for products without images
 const ImagePlaceholder = ({ className }: { className?: string }) => (
-	<div className={`bg-muted flex items-center justify-center ${className}`}>
+	<div className={`flex items-center justify-center bg-muted ${className}`}>
 		<svg
-			className="w-4 h-4 text-muted-foreground"
+			className="h-4 w-4 text-muted-foreground"
 			fill="none"
 			stroke="currentColor"
 			viewBox="0 0 24 24"
@@ -139,24 +139,24 @@ export default function ProductSelector({
 	return (
 		<div className="relative" ref={componentRef}>
 			{selectedProduct ? (
-				<div className="flex items-center space-x-2 p-2 border border-input rounded bg-card hover:border-primary transition-colors duration-200">
-					<div className="w-10 h-10 relative shrink-0">
+				<div className="flex items-center space-x-2 rounded border border-input bg-card p-2 transition-colors duration-200 hover:border-primary">
+					<div className="relative h-10 w-10 shrink-0">
 						{(() => {
 							const productImage = getProductImage(selectedProduct);
 							return productImage ? (
 								<Image
 									src={productImage}
 									alt={selectedProduct.name}
-									className="object-cover rounded"
+									className="rounded object-cover"
 								/>
 							) : (
-								<ImagePlaceholder className="w-full h-full rounded" />
+								<ImagePlaceholder className="h-full w-full rounded" />
 							);
 						})()}
 					</div>
 					<div className="grow">
 						<p className="font-medium">{selectedProduct.name}</p>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							{selectedProduct.slug}
 						</p>
 					</div>
@@ -176,13 +176,13 @@ export default function ProductSelector({
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
 						onFocus={openDropdown}
-						className="w-full px-3 py-2 bg-muted border border-input rounded hover:border-primary focus:border-primary transition-colors duration-200"
+						className="w-full rounded border border-input bg-muted px-3 py-2 transition-colors duration-200 hover:border-primary focus:border-primary"
 						ref={searchInputRef}
 					/>
 					<button
 						type="button"
 						onClick={toggleDropdown}
-						className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+						className="-translate-y-1/2 absolute top-1/2 right-2 transform text-muted-foreground"
 					>
 						{showDropdown ? "▲" : "▼"}
 					</button>
@@ -190,7 +190,7 @@ export default function ProductSelector({
 			)}
 
 			{showDropdown && (
-				<div className="absolute z-10 w-full mt-1 bg-background border border-input rounded shadow-lg max-h-60 overflow-y-auto">
+				<div className="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded border border-input bg-background shadow-lg">
 					{isLoading ? (
 						<div className="p-2 text-center text-muted-foreground">
 							Loading products...
@@ -205,25 +205,25 @@ export default function ProductSelector({
 								type="button"
 								key={product.id}
 								onClick={() => handleProductSelect(product)}
-								className="flex items-center p-2 hover:bg-muted active:bg-muted cursor-pointer w-full text-left"
+								className="flex w-full cursor-pointer items-center p-2 text-left hover:bg-muted active:bg-muted"
 							>
-								<div className="w-8 h-8 relative shrink-0 mr-2">
+								<div className="relative mr-2 h-8 w-8 shrink-0">
 									{(() => {
 										const productImage = getProductImage(product);
 										return productImage ? (
 											<Image
 												src={productImage}
 												alt={product.name}
-												className="object-cover rounded"
+												className="rounded object-cover"
 											/>
 										) : (
-											<ImagePlaceholder className="w-full h-full rounded" />
+											<ImagePlaceholder className="h-full w-full rounded" />
 										);
 									})()}
 								</div>
 								<div>
 									<p className="font-medium">{product.name}</p>
-									<p className="text-xs text-muted-foreground">
+									<p className="text-muted-foreground text-xs">
 										{product.slug}
 									</p>
 								</div>

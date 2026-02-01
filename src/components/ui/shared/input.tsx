@@ -71,12 +71,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 					<label
 						htmlFor={finalId}
 						className={cn(
-							"absolute left-3 text-sm text-muted-foreground pointer-events-none transition-faster origin-left z-10",
+							"pointer-events-none absolute left-3 z-10 origin-left text-muted-foreground text-sm transition-faster",
 							isLabelFloating && [
-								"top-0 -translate-y-1/2 scale-75 px-1 text-foreground",
+								"-translate-y-1/2 top-0 scale-75 px-1 text-foreground",
 								labelBackgroundColor || "bg-background",
 							],
-							!isLabelFloating && "top-1/2 -translate-y-1/2",
+							!isLabelFloating && "-translate-y-1/2 top-1/2",
 						)}
 					>
 						<span className="flex items-center gap-1">
@@ -92,11 +92,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 					value={value}
 					defaultValue={defaultValue}
 					className={cn(
-						"flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground shadow-sm shadow-black/5 transition-faster placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50",
+						"flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-foreground text-sm shadow-black/5 shadow-sm transition-faster placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50",
 						type === "search" &&
 							"[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none [&::-webkit-search-results-button]:appearance-none [&::-webkit-search-results-decoration]:appearance-none",
 						type === "file" &&
-							"p-0 pr-3 italic text-muted-foreground/70 file:me-3 file:h-full file:border-0 file:border-r file:border-solid file:border-input file:bg-transparent file:px-3 file:text-sm file:font-medium file:not-italic file:text-foreground",
+							"p-0 pr-3 text-muted-foreground/70 italic file:me-3 file:h-full file:border-0 file:border-input file:border-r file:border-solid file:bg-transparent file:px-3 file:font-medium file:text-foreground file:text-sm file:not-italic",
 						label && isLabelFloating && "pt-4",
 						error &&
 							"border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20",
@@ -110,7 +110,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 				/>
 
 				{error && (
-					<span className="absolute -bottom-5 left-0 text-red-500 text-xs font-medium">
+					<span className="-bottom-5 absolute left-0 font-medium text-red-500 text-xs">
 						{error}
 					</span>
 				)}

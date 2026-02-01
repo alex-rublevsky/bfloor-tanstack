@@ -44,15 +44,15 @@ function CartButton() {
 					type="button"
 					onClick={() => setCartOpen(true)}
 					className={cn(
-						"flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-standard relative",
+						"relative flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-standard",
 						cartOpen
-							? "text-primary bg-primary/10"
-							: "text-muted-foreground hover:text-foreground hover:bg-muted",
+							? "bg-primary/10 text-primary"
+							: "text-muted-foreground hover:bg-muted hover:text-foreground",
 					)}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
-						className="w-5 h-5"
+						className="h-5 w-5"
 						fill="none"
 						viewBox="0 0 33 30"
 						aria-label="Корзина"
@@ -70,11 +70,11 @@ function CartButton() {
 						<circle cx="26.4453" cy="27.3013" r="2.5" fill="currentColor" />
 					</svg>
 					{itemCount > 0 && (
-						<span className="absolute top-0 right-0 bg-primary text-primary-foreground! text-xs font-medium w-5 h-5 flex items-center justify-center rounded-full -translate-y-1 -translate-x-1">
+						<span className="-translate-y-1 -translate-x-1 absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-primary font-medium text-primary-foreground! text-xs">
 							{itemCount}
 						</span>
 					)}
-					<span className="text-xs font-medium">Корзина</span>
+					<span className="font-medium text-xs">Корзина</span>
 				</button>
 			</DrawerTrigger>
 			<DrawerContent>
@@ -95,15 +95,15 @@ function CatalogButton() {
 					type="button"
 					onClick={() => setCatalogOpen(true)}
 					className={cn(
-						"flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-standard",
+						"flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-standard",
 						catalogOpen
-							? "text-primary bg-primary/10"
-							: "text-muted-foreground hover:text-foreground hover:bg-muted",
+							? "bg-primary/10 text-primary"
+							: "text-muted-foreground hover:bg-muted hover:text-foreground",
 					)}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
-						className="w-5 h-5"
+						className="h-5 w-5"
 						fill="none"
 						viewBox="0 0 24 24"
 						stroke="currentColor"
@@ -117,7 +117,7 @@ function CatalogButton() {
 							d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
 						/>
 					</svg>
-					<span className="text-xs font-medium">Каталог</span>
+					<span className="font-medium text-xs">Каталог</span>
 				</button>
 			</DrawerTrigger>
 			<DrawerContent>
@@ -184,7 +184,7 @@ export function BottomNavBar({
 			<nav
 				style={{ viewTransitionName: "--persist-bottom-nav" }}
 				className={cn(
-					"fixed bottom-0 left-0 right-0 z-10000 bg-background/95 backdrop-blur-sm border-t border-border md:hidden",
+					"fixed right-0 bottom-0 left-0 z-10000 border-border border-t bg-background/95 backdrop-blur-sm md:hidden",
 					className,
 				)}
 			>
@@ -199,14 +199,14 @@ export function BottomNavBar({
 									to={item.url}
 									variant={pathname === item.url ? "default" : "secondary"}
 									className={cn(
-										"flex flex-col items-center gap-1 py-2 px-3 h-auto min-w-0",
+										"flex h-auto min-w-0 flex-col items-center gap-1 px-3 py-2",
 										pathname === item.url
 											? "bg-primary/10 text-primary hover:bg-primary/10"
-											: "text-muted-foreground hover:text-foreground hover:bg-muted border-transparent",
+											: "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
 									)}
 								>
 									<span className="text-lg">{item.icon}</span>
-									<span className="text-xs font-medium text-center leading-tight">
+									<span className="text-center font-medium text-xs leading-tight">
 										{item.name}
 									</span>
 								</Button>
@@ -218,33 +218,33 @@ export function BottomNavBar({
 									type="button"
 									onClick={() => setIsMenuOpen(!isMenuOpen)}
 									className={cn(
-										"flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-standard",
+										"flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-standard",
 										isMenuOpen
-											? "text-primary bg-primary/10"
-											: "text-muted-foreground hover:text-foreground hover:bg-muted",
+											? "bg-primary/10 text-primary"
+											: "text-muted-foreground hover:bg-muted hover:text-foreground",
 									)}
 								>
-									<MoreVertical className="w-5 h-5" />
-									<span className="text-xs font-medium">Меню</span>
+									<MoreVertical className="h-5 w-5" />
+									<span className="font-medium text-xs">Меню</span>
 								</button>
 
 								{/* Menu Popover */}
 								{isMenuOpen && (
-									<div className="absolute bottom-full right-0 mb-2 w-64 bg-background border border-border rounded-lg shadow-lg z-50">
+									<div className="absolute right-0 bottom-full z-50 mb-2 w-64 rounded-lg border border-border bg-background shadow-lg">
 										<div className="py-2">
 											{/* User Info */}
 											{userData && (
-												<div className="flex items-center gap-2 px-4 py-2 border-b border-border">
-													<div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium flex-shrink-0">
+												<div className="flex items-center gap-2 border-border border-b px-4 py-2">
+													<div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 font-medium text-sm">
 														{userData.userName
 															? userData.userName.charAt(0).toUpperCase()
 															: "U"}
 													</div>
-													<div className="text-sm leading-tight whitespace-nowrap">
+													<div className="whitespace-nowrap text-sm leading-tight">
 														<div className="font-medium">
 															{userData.userName || userData.userID}
 														</div>
-														<div className="text-xs text-muted-foreground">
+														<div className="text-muted-foreground text-xs">
 															{userData.userEmail}
 														</div>
 													</div>
@@ -258,7 +258,7 @@ export function BottomNavBar({
 													to={item.url}
 													onClick={() => setIsMenuOpen(false)}
 													variant="secondary"
-													className="flex items-center justify-start gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted transition-standard w-full h-auto rounded-none border-transparent"
+													className="flex h-auto w-full items-center justify-start gap-3 rounded-none border-transparent px-4 py-2 text-foreground text-sm transition-standard hover:bg-muted"
 												>
 													<span className="text-base">{item.icon}</span>
 													<span>{item.name}</span>
@@ -266,7 +266,7 @@ export function BottomNavBar({
 											))}
 
 											{/* Divider */}
-											<div className="border-t border-border my-1" />
+											<div className="my-1 border-border border-t" />
 
 											{/* Logout */}
 											<button
@@ -275,7 +275,7 @@ export function BottomNavBar({
 													setIsMenuOpen(false);
 													handleLogout();
 												}}
-												className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted transition-standard w-full text-left"
+												className="flex w-full items-center gap-3 px-4 py-2 text-left text-foreground text-sm transition-standard hover:bg-muted"
 											>
 												<span className="text-base">🚪</span>
 												<span>Выйти</span>
@@ -292,15 +292,15 @@ export function BottomNavBar({
 							<Link
 								to="/"
 								className={cn(
-									"flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-standard",
+									"flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-standard",
 									pathname === "/"
-										? "text-primary bg-primary/10"
-										: "text-muted-foreground hover:text-foreground hover:bg-muted",
+										? "bg-primary/10 text-primary"
+										: "text-muted-foreground hover:bg-muted hover:text-foreground",
 								)}
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
-									className="w-5 h-5"
+									className="h-5 w-5"
 									fill="none"
 									viewBox="0 0 24 24"
 									stroke="currentColor"
@@ -314,7 +314,7 @@ export function BottomNavBar({
 										d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
 									/>
 								</svg>
-								<span className="text-xs font-medium">Главная</span>
+								<span className="font-medium text-xs">Главная</span>
 							</Link>
 
 							{/* Catalog Button */}

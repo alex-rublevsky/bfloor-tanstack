@@ -102,7 +102,7 @@ export const EnhancedDescriptionField = React.forwardRef<
 
 		// Formatting help content
 		const formattingHelp = (
-			<div className="text-xs text-muted-foreground space-y-1">
+			<div className="space-y-1 text-muted-foreground text-xs">
 				<div className="space-y-1">
 					<div>
 						<strong>Markdown:</strong> **жирный**, *курсив*, [ссылка](url)
@@ -120,9 +120,9 @@ export const EnhancedDescriptionField = React.forwardRef<
 				</div>
 
 				{validation.issues.length > 0 && (
-					<div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800">
+					<div className="mt-2 rounded border border-yellow-200 bg-yellow-50 p-2 text-yellow-800">
 						<div className="font-medium">Проблемы:</div>
-						<ul className="list-disc list-inside mt-1">
+						<ul className="mt-1 list-inside list-disc">
 							{validation.issues.map((issue) => (
 								<li key={issue}>{issue}</li>
 							))}
@@ -130,9 +130,9 @@ export const EnhancedDescriptionField = React.forwardRef<
 					</div>
 				)}
 				{validation.suggestions.length > 0 && (
-					<div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-blue-800">
+					<div className="mt-2 rounded border border-blue-200 bg-blue-50 p-2 text-blue-800">
 						<div className="font-medium">Предложения:</div>
-						<ul className="list-disc list-inside mt-1">
+						<ul className="mt-1 list-inside list-disc">
 							{validation.suggestions.map((suggestion) => (
 								<li key={suggestion}>{suggestion}</li>
 							))}
@@ -145,7 +145,7 @@ export const EnhancedDescriptionField = React.forwardRef<
 		return (
 			<div className="space-y-2">
 				{label && (
-					<label htmlFor={id} className="block text-sm font-medium mb-1">
+					<label htmlFor={id} className="mb-1 block font-medium text-sm">
 						{label}
 					</label>
 				)}
@@ -166,7 +166,7 @@ export const EnhancedDescriptionField = React.forwardRef<
 							<textarea
 								id={id}
 								className={cn(
-									"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-y font-mono field-sizing-content",
+									"field-sizing-content flex w-full resize-y rounded-md border border-input bg-transparent px-3 py-2 font-mono text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
 									heightClass,
 									className,
 								)}
@@ -182,7 +182,7 @@ export const EnhancedDescriptionField = React.forwardRef<
 						<TabsContent value="preview" className="space-y-2">
 							<div
 								className={cn(
-									"border border-input rounded-md p-3 bg-background",
+									"rounded-md border border-input bg-background p-3",
 									heightClass,
 								)}
 							>
@@ -205,7 +205,7 @@ export const EnhancedDescriptionField = React.forwardRef<
 						<textarea
 							id={id}
 							className={cn(
-								"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-y field-sizing-content",
+								"field-sizing-content flex w-full resize-y rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
 								heightClass,
 								className,
 							)}

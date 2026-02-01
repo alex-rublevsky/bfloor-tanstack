@@ -32,12 +32,12 @@ export function CartDrawerContent() {
 
 			<DrawerBody>
 				{isLoading ? (
-					<div className="flex flex-col items-center justify-center h-full">
+					<div className="flex h-full flex-col items-center justify-center">
 						<p className="text-muted-foreground">Загрузка товаров...</p>
 					</div>
 				) : enrichedItems.length === 0 ? (
-					<div className="flex flex-col items-center justify-center h-full">
-						<ShoppingBag size={48} className="text-muted mb-4" />
+					<div className="flex h-full flex-col items-center justify-center">
+						<ShoppingBag size={48} className="mb-4 text-muted" />
 						<p className="text-muted-foreground">Ваша корзина пуста</p>
 					</div>
 				) : (

@@ -161,12 +161,12 @@ function SortableVariationItem({
 			style={style}
 			{...attributes}
 			{...listeners}
-			className={`relative border-1 border-border rounded-md p-3 bg-muted space-y-3 cursor-grab active:cursor-grabbing ${
+			className={`relative cursor-grab space-y-3 rounded-md border-1 border-border bg-muted p-3 active:cursor-grabbing ${
 				isDragging ? "opacity-50" : ""
 			}`}
 		>
 			{/* First row: SKU with Remove button */}
-			<div className="flex gap-1 items-end">
+			<div className="flex items-end gap-1">
 				<div className="flex-1">
 					<Input
 						id={`sku-${variation.id}`}
@@ -177,7 +177,7 @@ function SortableVariationItem({
 						disabled
 						onPointerDown={(e) => e.stopPropagation()}
 						labelBackgroundColor="bg-muted"
-						className="text-sm bg-muted/50"
+						className="bg-muted/50 text-sm"
 					/>
 				</div>
 				<Button
@@ -234,7 +234,7 @@ function SortableVariationItem({
 			{/* Attribute values section */}
 			{selectedAttributes.length > 0 && (
 				<div>
-					<div className="block text-sm font-medium text-foreground mb-2">
+					<div className="mb-2 block font-medium text-foreground text-sm">
 						Значения атрибутов
 					</div>
 					<div className="grid grid-cols-2 gap-2">
@@ -279,11 +279,11 @@ function SortableVariationItem({
 										<div className="space-y-2">
 											<label
 												htmlFor={`attr-${variation.id}-${attributeId}`}
-												className="block text-sm font-medium text-foreground"
+												className="block font-medium text-foreground text-sm"
 											>
 												{attribute.name}
 												{allowMultiple && (
-													<span className="text-xs text-muted-foreground ml-2">
+													<span className="ml-2 text-muted-foreground text-xs">
 														(можно выбрать несколько)
 													</span>
 												)}
@@ -419,10 +419,10 @@ export default function ProductVariationForm({
 		<div className="space-y-4">
 			<div className="flex items-center justify-between">
 				<div>
-					<h3 className="text-sm font-medium text-foreground">
+					<h3 className="font-medium text-foreground text-sm">
 						Вариации товара
 					</h3>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						Создайте различные варианты товара с разными значениями атрибутов
 					</p>
 				</div>
@@ -437,7 +437,7 @@ export default function ProductVariationForm({
 			</div>
 
 			{variations.length === 0 ? (
-				<div className="p-8 border border-dashed border-border rounded-md text-center">
+				<div className="rounded-md border border-border border-dashed p-8 text-center">
 					<p className="text-muted-foreground">
 						Нет вариаций. Нажмите "Добавить вариацию" для создания первой
 						вариации.

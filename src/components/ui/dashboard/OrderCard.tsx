@@ -66,7 +66,7 @@ export function OrderCard({
 
 	return (
 		<button
-			className={`border rounded-lg p-4 space-y-4 hover:border-primary/50 transition-colors cursor-pointer w-full text-left ${
+			className={`w-full cursor-pointer space-y-4 rounded-lg border p-4 text-left transition-colors hover:border-primary/50 ${
 				isSelectionMode && isSelected ? "ring-2 ring-primary" : ""
 			}`}
 			onClick={() => {
@@ -82,7 +82,7 @@ export function OrderCard({
 		>
 			{/* Header */}
 			<div className="flex items-center justify-between gap-2">
-				<div className="min-w-0 flex items-center gap-2">
+				<div className="flex min-w-0 items-center gap-2">
 					{isSelectionMode && (
 						<Checkbox
 							checked={isSelected}
@@ -93,11 +93,11 @@ export function OrderCard({
 						/>
 					)}
 					<div className="flex flex-wrap items-center gap-2">
-						<p className="text-xs text-foreground">#{order.id}</p>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-foreground text-xs">#{order.id}</p>
+						<p className="text-muted-foreground text-xs">
 							{formatDate(order.createdAt)}
 						</p>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							{totalItems} {totalItems === 1 ? "item" : "items"}
 						</p>
 					</div>
@@ -111,7 +111,7 @@ export function OrderCard({
 								e.stopPropagation();
 								onDelete(order.id);
 							}}
-							className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+							className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
 						>
 							<Trash size={16} />
 						</Button>
@@ -124,7 +124,7 @@ export function OrderCard({
 				<div className="space-y-2">
 					{order.items.map((item) => (
 						<div key={item.id} className="flex items-center gap-2">
-							<div className="relative w-12 h-12 shrink-0 bg-muted rounded overflow-hidden">
+							<div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-muted">
 								{item.product.images ? (
 									<Image
 										src={`${ASSETS_BASE_URL}/${item.product.images.split(",").map((img) => img.trim())[0]}`}
@@ -133,20 +133,20 @@ export function OrderCard({
 										sizes="3rem"
 									/>
 								) : (
-									<div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+									<div className="flex h-full w-full items-center justify-center text-muted-foreground text-xs">
 										No image
 									</div>
 								)}
 							</div>
 							<div className="min-w-0 flex-1">
-								<p className="text-xs font-medium truncate">
+								<p className="truncate font-medium text-xs">
 									{item.product.name}
 								</p>
-								<p className="text-xs text-muted-foreground">
+								<p className="text-muted-foreground text-xs">
 									Qty: {item.quantity} × ${Math.round(item.unitAmount)}
 								</p>
 							</div>
-							<p className="text-xs font-medium shrink-0">
+							<p className="shrink-0 font-medium text-xs">
 								${Math.round(item.finalAmount)}
 							</p>
 						</div>
@@ -155,13 +155,13 @@ export function OrderCard({
 			)}
 
 			{/* Price and Status Toggle */}
-			<div className="flex items-center justify-between pt-2 border-t">
+			<div className="flex items-center justify-between border-t pt-2">
 				<div>
 					<div className="flex items-baseline gap-0.5">
-						<span className="text-xl font-light">
+						<span className="font-light text-xl">
 							{Math.round(order.totalAmount || 0)}
 						</span>
-						<span className="text-xs font-light text-muted-foreground">
+						<span className="font-light text-muted-foreground text-xs">
 							{order.currency}
 						</span>
 					</div>

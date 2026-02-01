@@ -31,7 +31,7 @@ export function ActionButton({
 			size="sm"
 			onClick={button.onClick}
 		>
-			{isPrimary && showIcon && <Plus className="w-4 h-4" />}
+			{isPrimary && showIcon && <Plus className="h-4 w-4" />}
 			{button.label}
 		</Button>
 	);
@@ -90,17 +90,17 @@ export function MobileActionButton({
 			size="sm"
 			onClick={button.onClick}
 			className={cn(
-				"md:hidden fixed bottom-22 z-50 rounded-full whitespace-nowrap",
+				"fixed bottom-22 z-50 whitespace-nowrap rounded-full md:hidden",
 				position === "left" ? "left-2" : "right-2",
 				isPrimary
 					? "bg-primary text-primary-foreground hover:bg-primary-hover"
-					: "bg-background text-foreground border border-border hover:bg-muted",
+					: "border border-border bg-background text-foreground hover:bg-muted",
 				className,
 			)}
 			aria-label={button.label}
 		>
 			<span className="flex items-center gap-1.5 px-3 py-1.5 text-xs">
-				{isPrimary && <Plus className="w-4 h-4" />}
+				{isPrimary && <Plus className="h-4 w-4" />}
 				{button.label}
 			</span>
 		</Button>

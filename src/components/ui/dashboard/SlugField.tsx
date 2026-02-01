@@ -61,7 +61,7 @@ export function SlugField({
 	if (!showResetButton) {
 		return (
 			<div>
-				<div className="flex items-center justify-between mb-2">
+				<div className="mb-2 flex items-center justify-between">
 					<div className="flex items-center gap-2">
 						{isCustomSlug && <Badge variant="default">Пользовательский</Badge>}
 					</div>
@@ -75,7 +75,7 @@ export function SlugField({
 						/>
 						<label
 							htmlFor={autoSlugId}
-							className="text-xs text-muted-foreground"
+							className="text-muted-foreground text-xs"
 						>
 							Авто-генерация
 						</label>
@@ -91,7 +91,7 @@ export function SlugField({
 					disabled={isAutoSlug}
 					error={error}
 					className={cn(
-						isAutoSlug ? "opacity-60 cursor-not-allowed" : "",
+						isAutoSlug ? "cursor-not-allowed opacity-60" : "",
 						className,
 					)}
 				/>

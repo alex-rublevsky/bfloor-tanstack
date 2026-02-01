@@ -4,7 +4,7 @@ export function CategoriesPageSkeleton() {
 	return (
 		<div className="space-y-6 px-6">
 			{/* Header */}
-			<div className="flex justify-between items-center">
+			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="relative">
 						<span className="invisible">Categories Management</span>
@@ -14,16 +14,16 @@ export function CategoriesPageSkeleton() {
 			</div>
 
 			{/* Two-column layout for categories */}
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+			<div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
 				{/* Product Categories Section */}
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
-						<h3 className="text-lg font-medium relative">
+						<h3 className="relative font-medium text-lg">
 							<span className="invisible">Product Categories</span>
 							<Skeleton className="absolute inset-0 w-40" />
 						</h3>
 						<div className="relative">
-							<button type="button" className="h-8 px-3 invisible" disabled>
+							<button type="button" className="invisible h-8 px-3" disabled>
 								<span>Add Category</span>
 							</button>
 							<Skeleton className="absolute inset-0 rounded" />
@@ -41,11 +41,11 @@ export function CategoriesPageSkeleton() {
 										>
 											<td className="px-1 py-4">
 												<div>
-													<div className="font-medium relative">
+													<div className="relative font-medium">
 														<span className="invisible">Category Name</span>
 														<Skeleton className="absolute inset-0 w-32" />
 													</div>
-													<div className="text-sm text-muted-foreground relative mt-1">
+													<div className="relative mt-1 text-muted-foreground text-sm">
 														<span className="invisible">category-slug</span>
 														<Skeleton className="absolute inset-0 w-24" />
 													</div>
@@ -54,15 +54,15 @@ export function CategoriesPageSkeleton() {
 											<td className="px-1 py-4">
 												<div className="relative">
 													<span className="invisible">Active</span>
-													<Skeleton className="absolute inset-0 w-16 h-6 rounded-full" />
+													<Skeleton className="absolute inset-0 h-6 w-16 rounded-full" />
 												</div>
 											</td>
 											<td className="px-1 py-4 text-right">
-												<div className="flex space-x-2 justify-end">
+												<div className="flex justify-end space-x-2">
 													<div className="relative">
 														<button
 															type="button"
-															className="h-8 px-3 invisible"
+															className="invisible h-8 px-3"
 															disabled
 														>
 															<span>Edit</span>
@@ -72,7 +72,7 @@ export function CategoriesPageSkeleton() {
 													<div className="relative">
 														<button
 															type="button"
-															className="h-8 px-3 invisible"
+															className="invisible h-8 px-3"
 															disabled
 														>
 															<span>Delete</span>
@@ -92,12 +92,12 @@ export function CategoriesPageSkeleton() {
 				{/* Categories Section */}
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
-						<h3 className="text-lg font-medium relative">
+						<h3 className="relative font-medium text-lg">
 							<span className="invisible">Categories</span>
 							<Skeleton className="absolute inset-0 w-32" />
 						</h3>
 						<div className="relative">
-							<button type="button" className="h-8 px-3 invisible" disabled>
+							<button type="button" className="invisible h-8 px-3" disabled>
 								<span>Add Category</span>
 							</button>
 							<Skeleton className="absolute inset-0 rounded" />
@@ -115,11 +115,11 @@ export function CategoriesPageSkeleton() {
 										>
 											<td className="px-1 py-4">
 												<div>
-													<div className="font-medium relative">
+													<div className="relative font-medium">
 														<span className="invisible">Category Name</span>
 														<Skeleton className="absolute inset-0 w-36" />
 													</div>
-													<div className="text-sm text-muted-foreground relative mt-1">
+													<div className="relative mt-1 text-muted-foreground text-sm">
 														<span className="invisible">category-slug</span>
 														<Skeleton className="absolute inset-0 w-28" />
 													</div>
@@ -128,15 +128,15 @@ export function CategoriesPageSkeleton() {
 											<td className="px-1 py-4">
 												<div className="relative">
 													<span className="invisible">Active</span>
-													<Skeleton className="absolute inset-0 w-16 h-6 rounded-full" />
+													<Skeleton className="absolute inset-0 h-6 w-16 rounded-full" />
 												</div>
 											</td>
 											<td className="px-1 py-4 text-right">
-												<div className="flex space-x-2 justify-end">
+												<div className="flex justify-end space-x-2">
 													<div className="relative">
 														<button
 															type="button"
-															className="h-8 px-3 invisible"
+															className="invisible h-8 px-3"
 															disabled
 														>
 															<span>Edit</span>
@@ -146,7 +146,7 @@ export function CategoriesPageSkeleton() {
 													<div className="relative">
 														<button
 															type="button"
-															className="h-8 px-3 invisible"
+															className="invisible h-8 px-3"
 															disabled
 														>
 															<span>Delete</span>

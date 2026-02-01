@@ -4,8 +4,8 @@ import { eq, inArray } from "drizzle-orm";
 import { DB } from "~/db";
 import {
 	productAttributeValues,
-	products,
 	productStoreLocations,
+	products,
 	productVariations,
 	variationAttributes,
 } from "~/schema";

@@ -34,33 +34,34 @@ const measurementCache = new Map<string, number>();
 
 // Separate component for the virtualized product list
 // This isolates the virtualizer re-renders from the parent component
-const VirtualizedProductList = memo(({
-	displayProducts,
-	columnsPerRow,
-	scrollEntry,
-	cacheKey,
-	fetchNextPage,
-	hasNextPage,
-	isFetchingNextPage,
-}: {
-	displayProducts: ProductWithVariations[];
-	columnsPerRow: number;
-	scrollEntry: { scrollY?: number } | null | undefined;
-	cacheKey: string;
-	fetchNextPage: () => void;
-	hasNextPage: boolean;
-	isFetchingNextPage: boolean;
-}) => {
+const VirtualizedProductList = memo(
+	({
+		displayProducts,
+		columnsPerRow,
+		scrollEntry,
+		cacheKey,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	}: {
+		displayProducts: ProductWithVariations[];
+		columnsPerRow: number;
+		scrollEntry: { scrollY?: number } | null | undefined;
+		cacheKey: string;
+		fetchNextPage: () => void;
+		hasNextPage: boolean;
+		isFetchingNextPage: boolean;
+	}) => {
 		const itemHeight = 365;
 		const rowCount = Math.ceil(displayProducts.length / columnsPerRow);
-		
+
 		// Track last checked row index for infinite scroll
 		// Use cacheKey as part of ref key to reset on navigation
 		const lastCheckRef = useRef<{ cacheKey: string; index: number }>({
 			cacheKey,
 			index: 0,
 		});
-		
+
 		// Reset index if cacheKey changed (new query/navigation)
 		if (lastCheckRef.current.cacheKey !== cacheKey) {
 			lastCheckRef.current = { cacheKey, index: 0 };
@@ -115,7 +116,7 @@ const VirtualizedProductList = memo(({
 
 		// Infinite scroll - load more products when user scrolls near the end
 		const virtualItems = virtualizer.getVirtualItems();
-		
+
 		useEffect(() => {
 			const lastItem = virtualItems[virtualItems.length - 1];
 
@@ -125,11 +126,20 @@ const VirtualizedProductList = memo(({
 			const threshold = rowCount - 4;
 
 			// Fetch if we're past the threshold and haven't fetched for this threshold yet
-			if (lastItem.index >= threshold && lastCheckRef.current.index < threshold) {
+			if (
+				lastItem.index >= threshold &&
+				lastCheckRef.current.index < threshold
+			) {
 				lastCheckRef.current.index = threshold;
 				fetchNextPage();
 			}
-		}, [virtualItems, hasNextPage, isFetchingNextPage, rowCount, fetchNextPage]);
+		}, [
+			virtualItems,
+			hasNextPage,
+			isFetchingNextPage,
+			rowCount,
+			fetchNextPage,
+		]);
 
 		return (
 			<div
@@ -156,7 +166,7 @@ const VirtualizedProductList = memo(({
 								transform: `translateY(${virtualRow.start}px)`,
 							}}
 						>
-							<div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 md:gap-3">
+							<div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
 								{rowProducts.map((product) => (
 									<ProductCard key={product.id} product={product} />
 								))}
@@ -166,7 +176,8 @@ const VirtualizedProductList = memo(({
 				})}
 			</div>
 		);
-});
+	},
+);
 VirtualizedProductList.displayName = "VirtualizedProductList";
 
 interface StoreProductGridProps {
@@ -534,7 +545,7 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 						/>
 						{/* Loading indicator for next page */}
 						{isFetchingNextPage && (
-							<div className="w-full flex items-center justify-center p-8">
+							<div className="flex w-full items-center justify-center p-8">
 								<p className="text-muted-foreground">Загрузка...</p>
 							</div>
 						)}

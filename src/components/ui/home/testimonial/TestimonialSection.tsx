@@ -90,7 +90,6 @@ export default function TestimonialSliderSection() {
 				return <Yandex size={24} className="flex-shrink-0" />;
 			case "2GIS":
 				return <TwoGis size={24} className="flex-shrink-0" />;
-			case "Google":
 			default:
 				return <Google size={24} className="flex-shrink-0" />;
 		}
@@ -119,7 +118,7 @@ export default function TestimonialSliderSection() {
 			</div>
 
 			<div
-				className="embla__viewport overflow-y-visible overflow-x-hidden pb-6"
+				className="embla__viewport overflow-x-hidden overflow-y-visible pb-6"
 				ref={emblaRef}
 			>
 				<div className="embla__container">
@@ -137,7 +136,7 @@ export default function TestimonialSliderSection() {
 									</div>
 									<p className="mb-6 line-clamp-[10]">{testimonial.content}</p>
 									<div className="flex items-center">
-										<div className="w-12 h-12 rounded-full mr-4 relative overflow-hidden">
+										<div className="relative mr-4 h-12 w-12 overflow-hidden rounded-full">
 											<Image
 												src={testimonial.avatar}
 												alt={testimonial.name}
@@ -153,7 +152,7 @@ export default function TestimonialSliderSection() {
 													renderSourceIcon(testimonial.source)}
 											</div>
 											{testimonial.date && (
-												<p className="text-sm text-muted-foreground mt-1">
+												<p className="mt-1 text-muted-foreground text-sm">
 													{formatDate(testimonial.date)}
 												</p>
 											)}

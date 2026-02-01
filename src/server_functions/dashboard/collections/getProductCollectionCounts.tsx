@@ -53,4 +53,3 @@ export const getProductCollectionCounts = createServerFn({ method: "GET" })
 
 		return counts;
 	});
-

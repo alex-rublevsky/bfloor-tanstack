@@ -29,13 +29,13 @@ function RouteComponent() {
 
 		if (isAuthorized) {
 			return (
-				<section className="relative mt-4 lg:mt-12 flex items-center justify-center">
+				<section className="relative mt-4 flex items-center justify-center lg:mt-12">
 					<AnimatedGroup>
-						<div className="text-center max-w-md">
+						<div className="max-w-md text-center">
 							<TextEffect as="h2" className="mb-4">
 								Добро пожаловать обратно!
 							</TextEffect>
-							<p className="text-muted-foreground mb-6">
+							<p className="mb-6 text-muted-foreground">
 								Вы уже вошли как {session.user.name}
 							</p>
 							<Button asChild size="lg" className="w-full">
@@ -47,13 +47,13 @@ function RouteComponent() {
 			);
 		} else {
 			return (
-				<section className="relative mt-4 lg:mt-12 flex items-center justify-center">
+				<section className="relative mt-4 flex items-center justify-center lg:mt-12">
 					<AnimatedGroup>
-						<div className="text-center max-w-md">
+						<div className="max-w-md text-center">
 							<TextEffect as="h2" className="mb-4">
 								Доступ запрещен
 							</TextEffect>
-							<p className="text-muted-foreground mb-6">
+							<p className="mb-6 text-muted-foreground">
 								Вы вошли как {session.user.name} ({session.user.email}), но этот
 								аккаунт не имеет доступа к панели управления.
 							</p>
@@ -73,7 +73,7 @@ function RouteComponent() {
 	}
 
 	return (
-		<section className="relative pb-0 mt-4 lg:mt-12 h-full flex items-center justify-center">
+		<section className="relative mt-4 flex h-full items-center justify-center pb-0 lg:mt-12">
 			<AnimatedGroup>
 				<div className="w-full max-w-md">
 					<img
@@ -85,7 +85,7 @@ function RouteComponent() {
 						<TextEffect as="h3" className="mt-3">
 							Вы точно друг зайки?
 						</TextEffect>
-						<p className="text-muted-foreground mb-8">
+						<p className="mb-8 text-muted-foreground">
 							Войдите используя свой аккаунт Google
 						</p>
 					</div>
@@ -96,9 +96,9 @@ function RouteComponent() {
 						}
 						variant="default"
 						size="lg"
-						className="w-full flex items-center gap-3"
+						className="flex w-full items-center gap-3"
 					>
-						<svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
+						<svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
 							<path
 								fill="#4285F4"
 								d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

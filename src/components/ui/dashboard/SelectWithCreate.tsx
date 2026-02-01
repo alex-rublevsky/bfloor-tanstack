@@ -280,7 +280,7 @@ export function SelectWithCreate({
 								{option.name}
 							</SelectItem>
 						))}
-						<SelectItem value="create-new" className="text-primary font-medium">
+						<SelectItem value="create-new" className="font-medium text-primary">
 							+ Создать новый{" "}
 							{entityType === "category"
 								? "категорию"
@@ -292,7 +292,7 @@ export function SelectWithCreate({
 				</Select>
 
 				{error && (
-					<span className="absolute -bottom-5 left-0 text-red-500 text-xs font-medium">
+					<span className="-bottom-5 absolute left-0 font-medium text-red-500 text-xs">
 						{error}
 					</span>
 				)}
@@ -300,8 +300,8 @@ export function SelectWithCreate({
 
 			{/* Inline creation form */}
 			{isCreating && (
-				<div className="mt-4 p-4 border rounded-lg bg-muted/30 space-y-4">
-					<h5 className="font-medium text-xs text-muted-foreground">
+				<div className="mt-4 space-y-4 rounded-lg border bg-muted/30 p-4">
+					<h5 className="font-medium text-muted-foreground text-xs">
 						Создать новый{" "}
 						{entityType === "category"
 							? "категорию"

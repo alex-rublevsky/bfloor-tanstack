@@ -360,7 +360,7 @@ export const LogoLoop = React.memo<LogoLoopProps>(
 				const content = isNodeItem ? (
 					<span
 						className={cx(
-							"inline-flex items-center max-w-full max-h-full",
+							"inline-flex max-h-full max-w-full items-center",
 							"motion-reduce:transition-none",
 							scaleOnHover &&
 								"transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/item:scale-120",
@@ -372,8 +372,8 @@ export const LogoLoop = React.memo<LogoLoopProps>(
 				) : (
 					<img
 						className={cx(
-							"w-full max-h-full h-auto block object-contain",
-							"[-webkit-user-drag:none] pointer-events-none",
+							"block h-auto max-h-full w-full object-contain",
+							"pointer-events-none [-webkit-user-drag:none]",
 							"[image-rendering:-webkit-optimize-contrast]",
 							"motion-reduce:transition-none",
 							scaleOnHover &&
@@ -399,14 +399,14 @@ export const LogoLoop = React.memo<LogoLoopProps>(
 				return (
 					<li
 						className={cx(
-							"flex-none mr-[var(--logoloop-gap)]",
-							"w-[11rem] md:w-[12rem] lg:w-[13rem] aspect-square",
+							"mr-[var(--logoloop-gap)] flex-none",
+							"aspect-square w-[11rem] md:w-[12rem] lg:w-[13rem]",
 							"relative",
 							"rounded-lg",
 							"transition-standard",
 							"hover:bg-muted",
 							item.href && "cursor-pointer",
-							scaleOnHover && "overflow-visible group/item",
+							scaleOnHover && "group/item overflow-visible",
 						)}
 						key={key}
 						onMouseEnter={pauseOnHover ? handleMouseEnter : undefined}
@@ -416,7 +416,7 @@ export const LogoLoop = React.memo<LogoLoopProps>(
 							<a
 								className={cx(
 									"absolute inset-0 flex items-center justify-center",
-									"no-underline rounded-lg z-10",
+									"z-10 rounded-lg no-underline",
 									"focus-visible:outline focus-visible:outline-current focus-visible:outline-offset-2",
 								)}
 								href={item.href}
@@ -424,12 +424,12 @@ export const LogoLoop = React.memo<LogoLoopProps>(
 								target="_blank"
 								rel="noreferrer noopener"
 							>
-								<div className="relative z-20 p-2 flex items-center justify-center w-full h-full overflow-hidden">
+								<div className="relative z-20 flex h-full w-full items-center justify-center overflow-hidden p-2">
 									{content}
 								</div>
 							</a>
 						) : (
-							<div className="flex items-center justify-center w-full h-full p-2 overflow-hidden">
+							<div className="flex h-full w-full items-center justify-center overflow-hidden p-2">
 								{content}
 							</div>
 						)}
@@ -499,7 +499,7 @@ export const LogoLoop = React.memo<LogoLoopProps>(
 
 				<div
 					className={cx(
-						"flex w-max will-change-transform select-none",
+						"flex w-max select-none will-change-transform",
 						"motion-reduce:transform-none",
 					)}
 					ref={trackRef}

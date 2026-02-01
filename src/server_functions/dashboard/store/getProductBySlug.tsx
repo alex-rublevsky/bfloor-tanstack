@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq, sql } from "drizzle-orm";
 import { DB } from "~/db";
-import { products, productStoreLocations, productVariations } from "~/schema";
+import { productStoreLocations, products, productVariations } from "~/schema";
 import {
 	parseProductAttributes,
 	parseVariationAttributes,

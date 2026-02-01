@@ -52,9 +52,9 @@ export function EmptyState({
 	};
 
 	const defaultIcon = isSearchResult ? (
-		<Search className="w-12 h-12 text-muted-foreground" />
+		<Search className="h-12 w-12 text-muted-foreground" />
 	) : (
-		<Plus className="w-12 h-12 text-muted-foreground" />
+		<Plus className="h-12 w-12 text-muted-foreground" />
 	);
 
 	const title = isSearchResult
@@ -62,21 +62,21 @@ export function EmptyState({
 		: `Пока нет ${entity.genitive}`;
 
 	return (
-		<div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+		<div className="flex flex-col items-center justify-center px-4 py-16 text-center">
 			{/* Icon */}
 			<div className="mb-6">
-				<div className="w-24 h-24 mx-auto bg-muted/30 rounded-full flex items-center justify-center">
+				<div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-muted/30">
 					{icon || defaultIcon}
 				</div>
 			</div>
 
 			{/* Title */}
-			<h3 className="text-xl font-semibold text-foreground mb-6">{title}</h3>
+			<h3 className="mb-6 font-semibold text-foreground text-xl">{title}</h3>
 
 			{/* Action Button */}
 			{actionButton && (
 				<Button onClick={actionButton.onClick} className="gap-2">
-					<Plus className="w-4 h-4" />
+					<Plus className="h-4 w-4" />
 					{actionButton.text}
 				</Button>
 			)}

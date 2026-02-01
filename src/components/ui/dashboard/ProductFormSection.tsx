@@ -21,9 +21,9 @@ export function DrawerSection({
 	return (
 		<div
 			className={cn(
-				"px-4 sm:px-6 lg:px-8 py-6",
+				"px-4 py-6 sm:px-6 lg:px-8",
 				variant === "muted" ? "bg-muted/30" : "bg-background",
-				maxWidth && "max-w-2xl mx-auto", // Add max-width for single-column layouts
+				maxWidth && "mx-auto max-w-2xl", // Add max-width for single-column layouts
 				className,
 			)}
 			style={style}

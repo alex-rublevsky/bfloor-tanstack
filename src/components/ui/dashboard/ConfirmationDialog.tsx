@@ -28,7 +28,7 @@ export default function DeleteConfirmationDialog({
 		<AlertDialog open={isOpen} onOpenChange={onClose}>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<h5 className="text-lg font-semibold">{title}</h5>
+					<h5 className="font-semibold text-lg">{title}</h5>
 					<AlertDialogDescription>{description}</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

@@ -22,7 +22,9 @@ export const auth = betterAuth({
 		"https://bfloor.ru",
 		"https://www.bfloor.ru",
 		"http://localhost:3000",
-		...(process.env.NODE_ENV === "development" ? ["http://localhost:5173"] : []),
+		...(process.env.NODE_ENV === "development"
+			? ["http://localhost:5173"]
+			: []),
 	],
 	socialProviders: {
 		google: {

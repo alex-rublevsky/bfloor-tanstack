@@ -50,7 +50,7 @@ const SelectTrigger = React.forwardRef<
 					<label
 						htmlFor={finalId}
 						className={cn(
-							"absolute left-3 top-0 -translate-y-1/2 scale-75 px-1 text-sm text-foreground pointer-events-none z-10 origin-left",
+							"-translate-y-1/2 pointer-events-none absolute top-0 left-3 z-10 origin-left scale-75 px-1 text-foreground text-sm",
 							labelBackgroundColor || "bg-background",
 						)}
 					>
@@ -64,9 +64,9 @@ const SelectTrigger = React.forwardRef<
 					ref={ref}
 					id={finalId}
 					className={cn(
-						"flex h-9 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm shadow-black/5 transition-standard cursor-pointer",
+						"flex h-9 w-full cursor-pointer rounded-lg border border-input bg-background px-3 py-2 text-foreground text-sm shadow-black/5 shadow-sm transition-standard",
 						"hover:border-primary active:border-primary",
-						"focus:outline-none focus:border-ring focus:ring-[3px] focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50",
+						"focus:border-ring focus:outline-none focus:ring-[3px] focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50",
 						label && "pt-4",
 						className,
 					)}
@@ -74,12 +74,12 @@ const SelectTrigger = React.forwardRef<
 					onMouseLeave={onMouseLeave}
 					{...props}
 				>
-					<span className="relative z-10 flex items-center justify-between w-full text-foreground text-sm">
+					<span className="relative z-10 flex w-full items-center justify-between text-foreground text-sm">
 						<span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left filter-none [mix-blend-normal]">
 							{children}
 						</span>
 						<SelectPrimitive.Icon asChild>
-							<ChevronDown className="h-4 w-4 ml-2 opacity-50 shrink-0" />
+							<ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 						</SelectPrimitive.Icon>
 					</span>
 				</SelectPrimitive.Trigger>
@@ -97,9 +97,9 @@ const SelectContent = React.forwardRef<
 		<SelectPrimitive.Content
 			ref={ref}
 			className={cn(
-				"relative z-50 max-h-96 min-w-32 overflow-hidden rounded-2xl border border-primary bg-background text-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+				"data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-96 min-w-32 overflow-hidden rounded-2xl border border-primary bg-background text-foreground data-[state=closed]:animate-out data-[state=open]:animate-in",
 				position === "popper" &&
-					"data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+					"data-[side=left]:-translate-x-1 data-[side=top]:-translate-y-1 data-[side=right]:translate-x-1 data-[side=bottom]:translate-y-1",
 				className,
 			)}
 			position={position}
@@ -125,7 +125,7 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
 	<SelectPrimitive.Label
 		ref={ref}
-		className={cn("px-2 py-1.5 text-sm font-semibold", className)}
+		className={cn("px-2 py-1.5 font-semibold text-sm", className)}
 		{...props}
 	/>
 ));
@@ -139,7 +139,7 @@ const SelectItem = React.forwardRef<
 		<SelectPrimitive.Item
 			ref={ref}
 			className={cn(
-				"relative flex w-full cursor-pointer select-none items-center py-2 px-3 text-sm outline-none focus:bg-primary focus:text-primary-foreground data-disabled:pointer-events-none data-disabled:opacity-50 hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground transition-standard",
+				"relative flex w-full cursor-pointer select-none items-center px-3 py-2 text-sm outline-none transition-standard hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground active:bg-primary active:text-primary-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
 				className,
 			)}
 			onMouseEnter={onMouseEnter}

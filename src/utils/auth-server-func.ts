@@ -19,8 +19,8 @@ type AuthContext = {
  * ADMIN_EMAILS should be a comma-separated list: "email1@example.com,email2@example.com"
  */
 const adminEmailsSet = new Set(
-	(env.ADMIN_EMAILS || '')
-		.split(',')
+	(env.ADMIN_EMAILS || "")
+		.split(",")
 		.map((email) => email.trim().toLowerCase())
 		.filter((email) => email.length > 0),
 );

@@ -244,7 +244,7 @@ const Slider = React.forwardRef<
 			const thumb = (
 				<SliderPrimitive.Thumb
 					key={index}
-					className="block h-5 w-5 rounded-full border-2 border-primary bg-background shadow-sm transition-colors focus-visible:outline-[3px] focus-visible:outline-ring/40 data-disabled:cursor-not-allowed cursor-grab active:cursor-grabbing"
+					className="block h-5 w-5 cursor-grab rounded-full border-2 border-primary bg-background shadow-sm transition-colors focus-visible:outline-[3px] focus-visible:outline-ring/40 active:cursor-grabbing data-disabled:cursor-not-allowed"
 					onPointerDown={handlePointerDown}
 				/>
 			);
@@ -271,17 +271,17 @@ const Slider = React.forwardRef<
 
 		return (
 			<div
-				className={cn("space-y-4 min-w-52 w-full sm:max-w-[20rem]", className)}
+				className={cn("w-full min-w-52 space-y-4 sm:max-w-[20rem]", className)}
 			>
 				{(label || valueDisplay) && (
 					<div className="flex items-center justify-between gap-2">
-						{label && <p className="text-sm font-medium">{label}</p>}
+						{label && <p className="font-medium text-sm">{label}</p>}
 						{valueDisplay}
 					</div>
 				)}
 
 				{showInputs && hasTwoValues && (
-					<div className="flex items-center w-full gap-0">
+					<div className="flex w-full items-center gap-0">
 						<div className="flex-1">
 							<Input
 								type="number"
@@ -291,7 +291,7 @@ const Slider = React.forwardRef<
 								min={min}
 								max={max}
 								step={step}
-								className="h-8 text-xs rounded-r-none border-r-0"
+								className="h-8 rounded-r-none border-r-0 text-xs"
 								aria-label="Minimum value"
 							/>
 						</div>
@@ -304,7 +304,7 @@ const Slider = React.forwardRef<
 								min={min}
 								max={max}
 								step={step}
-								className="h-8 text-xs rounded-l-none -ml-px"
+								className="-ml-px h-8 rounded-l-none text-xs"
 								aria-label="Maximum value"
 							/>
 						</div>

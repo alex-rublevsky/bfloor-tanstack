@@ -49,9 +49,9 @@ export const ClientOrderConfirmation = ({
 		<Html>
 			<Head />
 			<Tailwind>
-				<Body className="bg-white my-auto mx-auto font-sans px-2">
+				<Body className="mx-auto my-auto bg-white px-2 font-sans">
 					<Preview>{previewText}</Preview>
-					<Container className="border border-solid border-[#eaeaea] rounded my-[40px] mx-auto p-[10px] max-w-[465px]">
+					<Container className="mx-auto my-[40px] max-w-[465px] rounded border border-[#eaeaea] border-solid p-[10px]">
 						<Section className="mt-[32px]">
 							<Img
 								src={
@@ -60,16 +60,16 @@ export const ClientOrderConfirmation = ({
 								width="40"
 								height="37"
 								alt="Rublevsky Studio"
-								className="my-0 mx-auto"
+								className="mx-auto my-0"
 							/>
 						</Section>
-						<Heading className="text-foreground text-[24px] font-normal text-center p-0 my-[30px] mx-0">
+						<Heading className="mx-0 my-[30px] p-0 text-center font-normal text-[24px] text-foreground">
 							Your order has been placed successfully!
 						</Heading>
-						<Text className="text-foreground text-[14px] leading-[15px]">
+						<Text className="text-[14px] text-foreground leading-[15px]">
 							Greetings, {Name} {LastName}!
 						</Text>
-						<Text className="text-foreground text-[14px] leading-[15px]">
+						<Text className="text-[14px] text-foreground leading-[15px]">
 							You will be contacted shortly regarding delivery and payment.
 						</Text>
 
@@ -77,7 +77,7 @@ export const ClientOrderConfirmation = ({
 							<table className="mb-[16px] w-full">
 								{orderItems.map((item, index) => (
 									<tr key={`${item.name}-${index}`}>
-										<td className="border-0 border-b border-solid border-gray-200 py-[8px] w-[80px]">
+										<td className="w-[80px] border-0 border-gray-200 border-b border-solid py-[8px]">
 											{item.image ? (
 												<Img
 													alt={item.name}
@@ -89,28 +89,28 @@ export const ClientOrderConfirmation = ({
 										</td>
 										<td
 											align="left"
-											className="border-0 border-b border-solid border-gray-200 py-[8px] px-4"
+											className="border-0 border-gray-200 border-b border-solid px-4 py-[8px]"
 										>
 											<Text>{item.name}</Text>
 										</td>
 										<td
 											align="right"
-											className="border-0 border-b border-solid border-gray-200 py-[8px] w-auto"
+											className="w-auto border-0 border-gray-200 border-b border-solid py-[8px]"
 										>
 											{item.discount ? (
 												<div className="space-y-0 text-right">
 													<Text className="text-sm">
-														<span className="text-red-600 font-medium">
+														<span className="font-medium text-red-600">
 															-{item.discount}%
 														</span>{" "}
-														<span className="line-through text-gray-500">
+														<span className="text-gray-500 line-through">
 															CA${item.originalPrice}
 														</span>
 													</Text>
 													<Text className="text-foreground text-lg leading-[15px]">
 														CA${item.price}
 													</Text>
-													<Text className="text-sm text-gray-500">
+													<Text className="text-gray-500 text-sm">
 														Quantity: {item.quantity}
 													</Text>
 												</div>
@@ -119,7 +119,7 @@ export const ClientOrderConfirmation = ({
 													<Text className="text-foreground text-lg leading-[15px]">
 														CA${item.price}
 													</Text>
-													<Text className="text-sm text-gray-500">
+													<Text className="text-gray-500 text-sm">
 														Quantity: {item.quantity}
 													</Text>
 												</div>
@@ -136,7 +136,7 @@ export const ClientOrderConfirmation = ({
 											Discount: -CA${totalDiscount}
 										</Text>
 									)}
-									<Text className="font-semibold text-lg mt-2">
+									<Text className="mt-2 font-semibold text-lg">
 										Total: CA${orderTotal}
 									</Text>
 								</Column>
@@ -153,7 +153,7 @@ export const ClientOrderConfirmation = ({
 							</Row>
 						</Section>
 
-						<Text className="text-gray-400 text-[14px] leading-[24px]">
+						<Text className="text-[14px] text-gray-400 leading-[24px]">
 							or copy and paste this URL into your browser:{" "}
 							<Link
 								href={`https://www.rublevsky.studio/order/${orderId}`}
@@ -162,7 +162,7 @@ export const ClientOrderConfirmation = ({
 								{`https://www.rublevsky.studio/order/${orderId}`}
 							</Link>
 						</Text>
-						<Hr className="border border-solid border-[#eaeaea] my-[26px] mx-0 w-full" />
+						<Hr className="mx-0 my-[26px] w-full border border-[#eaeaea] border-solid" />
 						<Text className="text-[#666666] text-[12px] leading-[22px]">
 							This order confirmation was intended for{" "}
 							<span className="text-foreground">{Name}</span>. This email was

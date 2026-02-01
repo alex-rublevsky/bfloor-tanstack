@@ -111,7 +111,8 @@
 	/* Start hidden */
 	opacity: 0;
 	/* Animate in after a short delay */
-	animation: product-info-reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards;
+	animation: product-info-reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s
+		forwards;
 }
 
 /* Disable the reveal animation during view transitions */

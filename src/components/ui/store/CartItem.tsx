@@ -37,18 +37,18 @@ export function CartItem({ item }: CartItemProps) {
 	return (
 		<div className="flex items-start gap-4 py-4">
 			{/* Product image with overlapping remove button */}
-			<div className="shrink-0 relative w-20">
-				<div className="relative aspect-square w-full bg-muted rounded-md overflow-hidden">
+			<div className="relative w-20 shrink-0">
+				<div className="relative aspect-square w-full overflow-hidden rounded-md bg-muted">
 					{imageArray.length > 0 ? (
-						<div className="relative w-full h-full">
+						<div className="relative h-full w-full">
 							{/* Loading skeleton, initially visible */}
-							<div className="absolute inset-0 w-full h-full bfloor-img-skeleton">
-								<Skeleton className="absolute inset-0 w-full h-full rounded-none" />
+							<div className="bfloor-img-skeleton absolute inset-0 h-full w-full">
+								<Skeleton className="absolute inset-0 h-full w-full rounded-none" />
 							</div>
 
 							{/* Broken overlay, initially hidden */}
-							<div className="absolute inset-0 hidden items-center justify-center flex-col text-muted-foreground select-none bfloor-img-fallback">
-								<Icon name="image" className="w-8 h-8" />
+							<div className="bfloor-img-fallback absolute inset-0 hidden select-none flex-col items-center justify-center text-muted-foreground">
+								<Icon name="image" className="h-8 w-8" />
 								<span className="mt-1 text-xs">Картинка сломана</span>
 							</div>
 
@@ -57,7 +57,7 @@ export function CartItem({ item }: CartItemProps) {
 								src={`${ASSETS_BASE_URL}/${imageArray[0]}`}
 								alt={item.productName}
 								loading="eager"
-								className="absolute inset-0 w-full h-full object-cover object-center"
+								className="absolute inset-0 h-full w-full object-cover object-center"
 								onLoad={(e) => {
 									const parent = e.currentTarget.parentElement;
 									const sk = parent?.querySelector<HTMLDivElement>(
@@ -81,8 +81,8 @@ export function CartItem({ item }: CartItemProps) {
 							/>
 						</div>
 					) : (
-						<div className="absolute inset-0 bg-muted flex flex-col items-center justify-center text-muted-foreground select-none">
-							<Icon name="image" className="w-8 h-8" />
+						<div className="absolute inset-0 flex select-none flex-col items-center justify-center bg-muted text-muted-foreground">
+							<Icon name="image" className="h-8 w-8" />
 							<span className="mt-1 text-xs">Нет картинки</span>
 						</div>
 					)}
@@ -90,7 +90,7 @@ export function CartItem({ item }: CartItemProps) {
 				<button
 					type="button"
 					onClick={() => removeFromCart(item.productId, item.variationId)}
-					className="absolute translate-x-1/2 translate-y-1/2 bottom-0 right-0 p-1 bg-background/80 hover:bg-background/80 active:bg-background/80 backdrop-blur-[2px] rounded-md shadow-sm text-secondary-foreground hover:text-foreground active:text-foreground cursor-pointer transition-colors"
+					className="absolute right-0 bottom-0 translate-x-1/2 translate-y-1/2 cursor-pointer rounded-md bg-background/80 p-1 text-secondary-foreground shadow-sm backdrop-blur-[2px] transition-colors hover:bg-background/80 hover:text-foreground active:bg-background/80 active:text-foreground"
 					aria-label="Удалить из корзины"
 				>
 					<X size={16} />
@@ -104,9 +104,9 @@ export function CartItem({ item }: CartItemProps) {
 				</Link>
 
 				{item.attributes && Object.entries(item.attributes).length > 0 && (
-					<div className="flex flex-wrap gap-x-6 gap-y-0 mt-1">
+					<div className="mt-1 flex flex-wrap gap-x-6 gap-y-0">
 						{Object.entries(item.attributes).map(([key, value]) => (
-							<span key={key} className="text-sm text-muted-foreground">
+							<span key={key} className="text-muted-foreground text-sm">
 								{getAttributeDisplayName(key, attributes || [])}: {value}
 							</span>
 						))}
@@ -130,11 +130,13 @@ export function CartItem({ item }: CartItemProps) {
 						<Badge variant="greenOutline" className="translate-x-2">
 							Скидка {item.discount}%
 						</Badge>
-						<span className="line-through text-sm text-muted-foreground">
+						<span className="text-muted-foreground text-sm line-through">
 							{Math.round(item.price * item.quantity)} р
 						</span>
 						<h6>
-							{Math.round(item.price * (1 - item.discount / 100) * item.quantity)}{" "}
+							{Math.round(
+								item.price * (1 - item.discount / 100) * item.quantity,
+							)}{" "}
 							р
 						</h6>
 					</div>

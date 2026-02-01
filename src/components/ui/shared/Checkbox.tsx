@@ -11,13 +11,13 @@ function Checkbox({
 		<CheckboxPrimitive.Root
 			data-slot="checkbox"
 			className={cn(
-				"cursor-pointer size-4 shrink-0 rounded-[4px] border transition-all outline-none",
+				"size-4 shrink-0 cursor-pointer rounded-[4px] border outline-none transition-all",
 				// Default: black outline
-				"border-primary	 bg-transparent",
+				"border-primary bg-transparent",
 				// Checked: fully black fill and border
-				"data-[state=checked]:bg-primary data-[state=checked]:border-primary",
+				"data-[state=checked]:border-primary data-[state=checked]:bg-primary",
 				// Accessibility focus
-				"focus-visible:ring-[2px] focus-visible:ring-ring/40 focus-visible:border-black",
+				"focus-visible:border-black focus-visible:ring-[2px] focus-visible:ring-ring/40",
 				// Disabled
 				"disabled:cursor-not-allowed disabled:opacity-50",
 				className,

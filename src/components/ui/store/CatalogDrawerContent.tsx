@@ -52,7 +52,7 @@ export function CatalogDrawerContent() {
 
 			<DrawerBody>
 				{activeCategories.length === 0 ? (
-					<div className="flex flex-col items-center justify-center h-full">
+					<div className="flex h-full flex-col items-center justify-center">
 						<p className="text-muted-foreground">Нет категорий</p>
 					</div>
 				) : (
@@ -68,11 +68,11 @@ export function CatalogDrawerContent() {
 										prefetchStoreWithCategory(category.slug);
 									}}
 								>
-									<span className="flex-1 min-w-0 pr-3 wrap-break-word">
+									<span className="wrap-break-word min-w-0 flex-1 pr-3">
 										{category.name}
 									</span>
 									{category.productCount !== null && (
-										<span className="text-xs opacity-70 shrink-0">
+										<span className="shrink-0 text-xs opacity-70">
 											{category.productCount}
 										</span>
 									)}

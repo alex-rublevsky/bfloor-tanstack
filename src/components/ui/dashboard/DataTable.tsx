@@ -37,6 +37,14 @@ import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "~/components/ui/DropdownMenu";
+import {
 	type ChartConfig,
 	ChartContainer,
 	ChartTooltip,
@@ -67,14 +75,6 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "~/components/ui/dashboard/tabs";
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "~/components/ui/DropdownMenu";
 import { Badge } from "~/components/ui/shared/Badge";
 import { Button } from "~/components/ui/shared/Button";
 import { Checkbox } from "~/components/ui/shared/Checkbox";
@@ -124,7 +124,7 @@ function DragHandle({ id }: { id: number }) {
 			{...attributes}
 			{...listeners}
 			size="icon"
-			className="size-7 bg-transparent text-muted-foreground hover:bg-transparent active:bg-transparent border-0 shadow-none"
+			className="size-7 border-0 bg-transparent text-muted-foreground shadow-none hover:bg-transparent active:bg-transparent"
 		>
 			<GripVertical className="size-3 text-muted-foreground" />
 			<span className="sr-only">Drag to reorder</span>
@@ -218,7 +218,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
 					Target
 				</Label>
 				<Input
-					className="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 active:bg-input/30 focus-visible:border focus-visible:bg-background"
+					className="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background active:bg-input/30"
 					defaultValue={row.original.target}
 					id={`${row.original.id}-target`}
 				/>
@@ -243,7 +243,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
 					Limit
 				</Label>
 				<Input
-					className="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 active:bg-input/30 focus-visible:border focus-visible:bg-background"
+					className="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background active:bg-input/30"
 					defaultValue={row.original.limit}
 					id={`${row.original.id}-limit`}
 				/>
@@ -289,7 +289,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button
-						className="flex size-8 bg-transparent text-muted-foreground data-[state=open]:bg-muted border-0 shadow-none"
+						className="flex size-8 border-0 bg-transparent text-muted-foreground shadow-none data-[state=open]:bg-muted"
 						size="icon"
 					>
 						<MoreVertical />
@@ -411,7 +411,7 @@ export function DataTable({
 				</Label>
 				<Select defaultValue="outline">
 					<SelectTrigger
-						className="@4xl/main:hidden flex w-fit"
+						className="flex @4xl/main:hidden w-fit"
 						id={viewSelectorId}
 					>
 						<SelectValue placeholder="Select a view" />
@@ -541,13 +541,13 @@ export function DataTable({
 					</DndContext>
 				</div>
 				<div className="flex items-center justify-between px-4">
-					<div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
+					<div className="hidden flex-1 text-muted-foreground text-sm lg:flex">
 						{table.getFilteredSelectedRowModel().rows.length} of{" "}
 						{table.getFilteredRowModel().rows.length} row(s) selected.
 					</div>
 					<div className="flex w-full items-center gap-8 lg:w-fit">
 						<div className="hidden items-center gap-2 lg:flex">
-							<Label htmlFor={rowsPerPageId} className="text-sm font-medium">
+							<Label htmlFor={rowsPerPageId} className="font-medium text-sm">
 								Rows per page
 							</Label>
 							<Select
@@ -570,7 +570,7 @@ export function DataTable({
 								</SelectContent>
 							</Select>
 						</div>
-						<div className="flex w-fit items-center justify-center text-sm font-medium">
+						<div className="flex w-fit items-center justify-center font-medium text-sm">
 							Page {table.getState().pagination.pageIndex + 1} of{" "}
 							{table.getPageCount()}
 						</div>

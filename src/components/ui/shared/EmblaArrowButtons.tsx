@@ -66,12 +66,12 @@ export const PrevButton: React.FC<PropType> = ({
 
 	return (
 		<button
-			className={`embla__button embla__button--prev border-2 border-input bg-transparent flex no-underline cursor-pointer p-0 m-0 z-[1] rounded-full items-center justify-center transition-standard text-foreground ${sizeClasses}`}
+			className={`embla__button embla__button--prev z-[1] m-0 flex cursor-pointer items-center justify-center rounded-full border-2 border-input bg-transparent p-0 text-foreground no-underline transition-standard ${sizeClasses}`}
 			type="button"
 			disabled={disabled}
 			{...restProps}
 		>
-			<svg className="w-[35%] h-[35%]" viewBox="0 0 532 532">
+			<svg className="h-[35%] w-[35%]" viewBox="0 0 532 532">
 				<title>Previous slide</title>
 				<path
 					fill="currentColor"
@@ -94,12 +94,12 @@ export const NextButton: React.FC<PropType> = ({
 
 	return (
 		<button
-			className={`embla__button embla__button--next border-2 border-input bg-transparent flex no-underline cursor-pointer p-0 m-0 z-[1] rounded-full items-center justify-center transition-standard text-foreground ${sizeClasses}`}
+			className={`embla__button embla__button--next z-[1] m-0 flex cursor-pointer items-center justify-center rounded-full border-2 border-input bg-transparent p-0 text-foreground no-underline transition-standard ${sizeClasses}`}
 			type="button"
 			disabled={disabled}
 			{...restProps}
 		>
-			<svg className="w-[35%] h-[35%]" viewBox="0 0 532 532">
+			<svg className="h-[35%] w-[35%]" viewBox="0 0 532 532">
 				<title>Next slide</title>
 				<path
 					fill="currentColor"

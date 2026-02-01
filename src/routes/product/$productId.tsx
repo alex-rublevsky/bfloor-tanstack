@@ -167,13 +167,13 @@ const validateSearch = (search: Record<string, unknown>) => {
 // Error component for product page errors
 function ProductErrorComponent({ error }: ErrorComponentProps) {
 	return (
-		<div className="min-h-screen flex items-center justify-center px-4">
-			<div className="text-center max-w-md">
-				<h1 className="text-4xl font-bold mb-4">Oops!</h1>
-				<p className="text-muted-foreground mb-6">
+		<div className="flex min-h-screen items-center justify-center px-4">
+			<div className="max-w-md text-center">
+				<h1 className="mb-4 font-bold text-4xl">Oops!</h1>
+				<p className="mb-6 text-muted-foreground">
 					Something went wrong while loading this product.
 				</p>
-				<div className="flex gap-3 justify-center">
+				<div className="flex justify-center gap-3">
 					<Button asChild size="lg">
 						<Link href="/store">Browse Store</Link>
 					</Button>
@@ -187,10 +187,10 @@ function ProductErrorComponent({ error }: ErrorComponentProps) {
 				</div>
 				{error && (
 					<details className="mt-6 text-left">
-						<summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+						<summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
 							Error details
 						</summary>
-						<pre className="mt-2 text-xs bg-muted p-4 rounded overflow-auto">
+						<pre className="mt-2 overflow-auto rounded bg-muted p-4 text-xs">
 							{error.message}
 						</pre>
 					</details>
@@ -203,13 +203,13 @@ function ProductErrorComponent({ error }: ErrorComponentProps) {
 // Not found component for product page
 function ProductNotFoundComponent() {
 	return (
-		<div className="min-h-screen flex items-center justify-center px-4">
-			<div className="text-center max-w-md">
-				<h1 className="text-4xl font-bold mb-4">Product Not Found</h1>
-				<p className="text-muted-foreground mb-6">
+		<div className="flex min-h-screen items-center justify-center px-4">
+			<div className="max-w-md text-center">
+				<h1 className="mb-4 font-bold text-4xl">Product Not Found</h1>
+				<p className="mb-6 text-muted-foreground">
 					The product you're looking for doesn't exist or has been removed.
 				</p>
-				<div className="flex gap-3 justify-center">
+				<div className="flex justify-center gap-3">
 					<Button asChild size="lg">
 						<Link href="/store">Browse Store</Link>
 					</Button>
@@ -298,21 +298,21 @@ function AddToCartSection({
 		// With discount: Grid layout with button spanning both rows
 		return (
 			<motion.div
-				className={`bg-muted rounded-lg p-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 items-stretch ${className}`}
+				className={`grid grid-cols-[auto_1fr] items-stretch gap-x-4 gap-y-1 rounded-lg bg-muted p-2 ${className}`}
 				layout
 				transition={{ duration: 0.3, ease: "easeInOut" }}
 			>
 				{/* Discount Row */}
 				<div className="flex items-baseline gap-4">
 					<div className="text-left">Скидка</div>
-					<span className="text-xl line-through whitespace-nowrap font-digital-mono">
+					<span className="whitespace-nowrap font-digital-mono text-xl line-through">
 						<NumberFlow
 							value={Math.round(originalTotalPrice)}
 							format={{ useGrouping: true }}
 							suffix=" p"
 						/>
 					</span>
-					<span className="px-2 py-1 bg-accent text-accent-foreground! text-base font-semibold rounded-[5px] whitespace-nowrap font-digital-mono">
+					<span className="whitespace-nowrap rounded-[5px] bg-accent px-2 py-1 font-digital-mono font-semibold text-accent-foreground! text-base">
 						-{currentDiscount}%
 					</span>
 				</div>
@@ -327,7 +327,7 @@ function AddToCartSection({
 						onClick={handleAddToCart}
 						disabled={!canAddToCart}
 						size={size}
-						className="w-full h-full"
+						className="h-full w-full"
 					>
 						{!canAddToCart ? "Недоступно" : "В корзину"}
 					</Button>
@@ -337,7 +337,7 @@ function AddToCartSection({
 				<div className="flex items-baseline gap-4">
 					<div className="text-left">Итого</div>
 					<span
-						className={`${size === "lg" ? "text-4xl" : "text-2xl"} font-bold whitespace-nowrap font-digital-mono`}
+						className={`${size === "lg" ? "text-4xl" : "text-2xl"} whitespace-nowrap font-bold font-digital-mono`}
 					>
 						<NumberFlow
 							value={Math.round(totalPrice)}
@@ -353,13 +353,13 @@ function AddToCartSection({
 	// Without discount: Label above price
 	return (
 		<motion.div
-			className={`bg-muted rounded-lg p-2 flex flex-row gap-4 items-stretch ${className}`}
+			className={`flex flex-row items-stretch gap-4 rounded-lg bg-muted p-2 ${className}`}
 			layout
 			transition={{ duration: 0.3, ease: "easeInOut" }}
 		>
 			{/* Price Display - stacked vertically */}
 			<div className="flex flex-col">
-				<div className="text-sm text-muted-foreground">Итого</div>
+				<div className="text-muted-foreground text-sm">Итого</div>
 				<div
 					className={`${size === "lg" ? "text-4xl" : "text-2xl"} font-bold font-digital-mono`}
 				>
@@ -373,7 +373,7 @@ function AddToCartSection({
 
 			{/* Add to Cart Button */}
 			<motion.div
-				className="flex-1 flex"
+				className="flex flex-1"
 				layout
 				transition={{ duration: 0.3, ease: "easeInOut" }}
 			>
@@ -381,7 +381,7 @@ function AddToCartSection({
 					onClick={handleAddToCart}
 					disabled={!canAddToCart}
 					size={size}
-					className="w-full h-full"
+					className="h-full w-full"
 				>
 					{!canAddToCart ? "Недоступно" : "В корзину"}
 				</Button>
@@ -418,32 +418,32 @@ function MobileFixedCartBar({
 	if (currentDiscount && currentDiscount > 0) {
 		return (
 			<motion.div
-				className="bg-muted grid grid-cols-[auto_1fr] grid-rows-2 items-stretch shadow-lg border-t border-border"
+				className="grid grid-cols-[auto_1fr] grid-rows-2 items-stretch border-border border-t bg-muted shadow-lg"
 				layout
 				transition={{ duration: 0.3, ease: "easeInOut" }}
 			>
 				{/* Left column - Price info with padding, spans both rows */}
-				<div className="row-span-2 px-2 py-2 flex flex-col justify-center space-y-1 min-w-0">
+				<div className="row-span-2 flex min-w-0 flex-col justify-center space-y-1 px-2 py-2">
 					{/* Discount Row */}
-					<div className="flex items-baseline gap-2 flex-wrap">
-						<div className="text-left whitespace-nowrap">Скидка</div>
-						<span className="text-base line-through whitespace-nowrap font-digital-mono">
+					<div className="flex flex-wrap items-baseline gap-2">
+						<div className="whitespace-nowrap text-left">Скидка</div>
+						<span className="whitespace-nowrap font-digital-mono text-base line-through">
 							<NumberFlow
 								value={Math.round(originalTotalPrice)}
 								format={{ useGrouping: true }}
 								suffix=" p"
 							/>
 						</span>
-						<span className="px-2 py-1 bg-accent text-accent-foreground! text-sm font-semibold rounded-[5px] whitespace-nowrap font-digital-mono">
+						<span className="whitespace-nowrap rounded-[5px] bg-accent px-2 py-1 font-digital-mono font-semibold text-accent-foreground! text-sm">
 							-{currentDiscount}%
 						</span>
 					</div>
 
 					{/* Total Row with quantity */}
-					<div className="flex items-baseline justify-between gap-2 min-w-0">
-						<div className="flex items-baseline gap-2 min-w-0">
-							<div className="text-left whitespace-nowrap">Итого</div>
-							<span className="text-2xl font-bold whitespace-nowrap font-digital-mono">
+					<div className="flex min-w-0 items-baseline justify-between gap-2">
+						<div className="flex min-w-0 items-baseline gap-2">
+							<div className="whitespace-nowrap text-left">Итого</div>
+							<span className="whitespace-nowrap font-bold font-digital-mono text-2xl">
 								<NumberFlow
 									value={Math.round(totalPrice)}
 									format={{ useGrouping: true }}
@@ -451,7 +451,7 @@ function MobileFixedCartBar({
 								/>
 							</span>
 						</div>
-						<div className="flex items-baseline gap-1 text-sm text-muted-foreground whitespace-nowrap shrink-0 font-digital-mono">
+						<div className="flex shrink-0 items-baseline gap-1 whitespace-nowrap font-digital-mono text-muted-foreground text-sm">
 							<span>
 								<NumberFlow value={quantity} />
 							</span>
@@ -474,7 +474,7 @@ function MobileFixedCartBar({
 						onClick={handleAddToCart}
 						disabled={!canAddToCart}
 						size="sm"
-						className="w-full h-full rounded-none"
+						className="h-full w-full rounded-none"
 					>
 						{!canAddToCart ? "Недоступно" : "В корзину"}
 					</Button>
@@ -486,17 +486,17 @@ function MobileFixedCartBar({
 	// Without discount
 	return (
 		<motion.div
-			className="bg-muted flex flex-row items-stretch shadow-lg border-t border-border"
+			className="flex flex-row items-stretch border-border border-t bg-muted shadow-lg"
 			layout
 			transition={{ duration: 0.3, ease: "easeInOut" }}
 		>
 			{/* Price Display with quantity */}
-			<div className="flex flex-col px-2 py-2 min-w-0">
+			<div className="flex min-w-0 flex-col px-2 py-2">
 				<div className="flex items-baseline justify-between gap-2">
-					<div className="text-sm text-muted-foreground whitespace-nowrap">
+					<div className="whitespace-nowrap text-muted-foreground text-sm">
 						Итого
 					</div>
-					<div className="flex items-baseline gap-1 text-sm text-muted-foreground whitespace-nowrap shrink-0 font-digital-mono">
+					<div className="flex shrink-0 items-baseline gap-1 whitespace-nowrap font-digital-mono text-muted-foreground text-sm">
 						<span>
 							<NumberFlow value={quantity} />
 						</span>
@@ -508,7 +508,7 @@ function MobileFixedCartBar({
 					</div>
 				</div>
 				<div className="flex items-baseline">
-					<span className="text-2xl font-bold whitespace-nowrap font-digital-mono">
+					<span className="whitespace-nowrap font-bold font-digital-mono text-2xl">
 						<NumberFlow
 							value={Math.round(totalPrice)}
 							format={{ useGrouping: true }}
@@ -520,7 +520,7 @@ function MobileFixedCartBar({
 
 			{/* Add to Cart Button - flush with edges */}
 			<motion.div
-				className="flex-1 flex"
+				className="flex flex-1"
 				layout
 				transition={{ duration: 0.3, ease: "easeInOut" }}
 			>
@@ -528,7 +528,7 @@ function MobileFixedCartBar({
 					onClick={handleAddToCart}
 					disabled={!canAddToCart}
 					size="sm"
-					className="w-full h-full rounded-none"
+					className="h-full w-full rounded-none"
 				>
 					{!canAddToCart ? "Недоступно" : "В корзину"}
 				</Button>
@@ -866,7 +866,7 @@ function ProductPage() {
 				{/* Wrapper that spans full height for sticky positioning */}
 				<div className="relative">
 					{/* Full-width Image Gallery */}
-					<div className="w-full relative z-0">
+					<div className="relative z-0 w-full">
 						<ImageGallery
 							images={productImages}
 							alt={productWithDetails?.name || "Product"}
@@ -878,15 +878,15 @@ function ProductPage() {
 
 					{/* Sticky Product Info Panel - Overlay on top of gallery, then sticks */}
 					<div
-						className="absolute top-0 right-0 w-full h-full pointer-events-none"
+						className="pointer-events-none absolute top-0 right-0 h-full w-full"
 						style={{
 							zIndex: 9999,
 						}}
 					>
-						<div className="sticky top-16 w-full lg:w-2/5 min-w-0 h-fit ml-auto pointer-events-auto">
-							<div className="flex items-start justify-end p-8 min-w-0">
+						<div className="pointer-events-auto sticky top-16 ml-auto h-fit w-full min-w-0 lg:w-2/5">
+							<div className="flex min-w-0 items-start justify-end p-8">
 								<div
-									className="product-info-overlay product-info-reveal p-6 max-w-[45vw] rounded-lg shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] min-w-0 w-fit border border-border relative"
+									className="product-info-overlay product-info-reveal relative w-fit min-w-0 max-w-[45vw] rounded-lg border border-border p-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]"
 									style={{
 										viewTransitionName: "product-info-container",
 									}}
@@ -950,7 +950,7 @@ function ProductPage() {
 											<h1 className="">
 												{productWithDetails?.name || "Product"}
 											</h1>
-											<div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm">
+											<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
 												{/* Brand Logo/Name */}
 												{productWithDetails?.brand && (
 													<Link
@@ -1017,12 +1017,12 @@ function ProductPage() {
 										</div>
 
 										{/* Wrapper for Price, Quantity, and Add to Cart */}
-										<div className="border border-border rounded-lg p-2 space-y-4 min-w-0 max-w-full @container">
+										<div className="@container min-w-0 max-w-full space-y-4 rounded-lg border border-border p-2">
 											{/* Price and Quantity */}
-											<div className="flex flex-wrap items-stretch gap-0 min-w-0 w-full">
+											<div className="flex w-full min-w-0 flex-wrap items-stretch gap-0">
 												{/* Price Box */}
-												<div className="bg-muted px-4 py-3 rounded-lg flex flex-col justify-center items-center @[38ch]:items-start w-full @[38ch]:w-auto text-center @[38ch]:text-left">
-													<div className="text-sm text-muted-foreground mb-1">
+												<div className="flex @[38ch]:w-auto w-full flex-col @[38ch]:items-start items-center justify-center rounded-lg bg-muted px-4 py-3 @[38ch]:text-left text-center">
+													<div className="mb-1 text-muted-foreground text-sm">
 														Цена за{" "}
 														<span className="whitespace-nowrap">
 															{isFlooringProduct
@@ -1033,7 +1033,7 @@ function ProductPage() {
 														</span>
 													</div>
 													{currentDiscount && currentDiscount > 0 && (
-														<div className="text-base line-through text-muted-foreground mb-1 font-digital-mono">
+														<div className="mb-1 font-digital-mono text-base text-muted-foreground line-through">
 															<NumberFlow
 																value={Math.round(currentPrice)}
 																format={{ useGrouping: true }}
@@ -1041,7 +1041,7 @@ function ProductPage() {
 															/>
 														</div>
 													)}
-													<div className="text-3xl font-bold text-foreground leading-tight! font-digital-mono">
+													<div className="font-bold font-digital-mono text-3xl text-foreground leading-tight!">
 														<NumberFlow
 															value={Math.round(displayPrice)}
 															format={{ useGrouping: true }}
@@ -1051,39 +1051,39 @@ function ProductPage() {
 												</div>
 
 												{/* Icon divider - horizontal (shown when both blocks fit in one row) */}
-												<div className="hidden @[38ch]:flex shrink-0 px-1 items-center justify-center">
+												<div className="@[38ch]:flex hidden shrink-0 items-center justify-center px-1">
 													<Icon
 														name="plus"
 														size={28}
-														className="text-foreground-muted rotate-45"
+														className="rotate-45 text-foreground-muted"
 													/>
 												</div>
 
 												{/* Icon divider - vertical (shown when stacked) */}
-												<div className="@[38ch]:hidden w-full flex justify-center py-2">
+												<div className="flex @[38ch]:hidden w-full justify-center py-2">
 													<Icon
 														name="plus"
 														size={28}
-														className="text-foreground-muted rotate-45"
+														className="rotate-45 text-foreground-muted"
 													/>
 												</div>
 
 												{/* Quantity Selector */}
-												<div className="flex flex-col min-w-[20ch] flex-1 self-stretch w-full @[38ch]:w-auto">
-													<div className="flex gap-0.5 items-stretch w-full flex-1">
+												<div className="flex @[38ch]:w-auto w-full min-w-[20ch] flex-1 flex-col self-stretch">
+													<div className="flex w-full flex-1 items-stretch gap-0.5">
 														<Button
 															type="button"
 															onClick={decrementQuantity}
 															disabled={quantity <= 1}
-															className="flex-1 min-w-10 h-full self-stretch flex items-center justify-center text-primary bg-muted hover:bg-secondary hover:[&_svg]:text-[var(--muted)] active:bg-muted-hover rounded-[15px] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+															className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted text-primary hover:bg-secondary active:bg-muted-hover disabled:cursor-not-allowed disabled:opacity-50 hover:[&_svg]:text-[var(--muted)]"
 														>
 															<Icon name="minus" size={20} />
 														</Button>
-														<div className="text-center bg-muted rounded-lg py-1 px-0.5 flex items-center justify-center flex-1">
-															<div className="flex flex-col items-center gap-1 w-full justify-center">
+														<div className="flex flex-1 items-center justify-center rounded-lg bg-muted px-0.5 py-1 text-center">
+															<div className="flex w-full flex-col items-center justify-center gap-1">
 																{productWithDetails?.squareMetersPerPack && (
-																	<div className="flex flex-col items-center justify-center w-full gap-0">
-																		<div className="text-xl sm:text-2xl font-normal whitespace-nowrap text-foreground font-digital-mono">
+																	<div className="flex w-full flex-col items-center justify-center gap-0">
+																		<div className="whitespace-nowrap font-digital-mono font-normal text-foreground text-xl sm:text-2xl">
 																			<NumberFlow
 																				value={
 																					quantity *
@@ -1095,7 +1095,7 @@ function ProductPage() {
 																				}}
 																			/>
 																		</div>
-																		<div className="text-xs sm:text-sm font-normal whitespace-nowrap text-muted-foreground -mt-1">
+																		<div className="-mt-1 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
 																			Площадь{" "}
 																			<span className="text-foreground">
 																				м²
@@ -1103,16 +1103,16 @@ function ProductPage() {
 																		</div>
 																	</div>
 																)}
-																<div className="flex flex-col items-center justify-center w-full gap-0 pb-0.5">
+																<div className="flex w-full flex-col items-center justify-center gap-0 pb-0.5">
 																	<Input
 																		type="number"
 																		min={1}
 																		value={quantity}
 																		onChange={handleQuantityChange}
-																		className="text-xl sm:text-2xl font-normal text-center border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] field-sizing-content [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-digital-mono"
+																		className="field-sizing-content m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] border-0 bg-transparent p-0 text-center font-digital-mono font-normal text-xl shadow-none [appearance:textfield] focus-visible:ring-0 focus-visible:ring-offset-0 sm:text-2xl [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 																	/>
 																	{isFlooringProduct && (
-																		<div className="text-xs sm:text-sm font-normal whitespace-nowrap text-muted-foreground -mt-3.5">
+																		<div className="-mt-3.5 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
 																			Упаковок
 																		</div>
 																	)}
@@ -1122,7 +1122,7 @@ function ProductPage() {
 														<Button
 															type="button"
 															onClick={incrementQuantity}
-															className="flex-1 min-w-10 h-full self-stretch flex items-center justify-center text-primary bg-muted hover:bg-secondary hover:[&_svg]:text-[var(--muted)] active:bg-muted-hover rounded-[15px] cursor-pointer"
+															className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted text-primary hover:bg-secondary active:bg-muted-hover hover:[&_svg]:text-[var(--muted)]"
 														>
 															<Icon name="plus" size={20} />
 														</Button>
@@ -1206,7 +1206,7 @@ function ProductPage() {
 						(productWithDetails?.productAttributes &&
 							Array.isArray(productWithDetails.productAttributes) &&
 							productWithDetails.productAttributes.length > 0)) && (
-						<div className="max-w-7xl mx-auto px-4 py-8 lg:pr-[45%]">
+						<div className="mx-auto max-w-7xl px-4 py-8 lg:pr-[45%]">
 							<div className="flex flex-col gap-8">
 								{/* Characteristics */}
 								{(productWithDetails?.hasVariations ||
@@ -1255,7 +1255,7 @@ function ProductPage() {
 													return (
 														<div
 															key={attr.attributeId}
-															className="flex justify-between items-center py-2"
+															className="flex items-center justify-between py-2"
 														>
 															<span className="text-foreground-muted">
 																{displayName}
@@ -1309,12 +1309,12 @@ function ProductPage() {
 															return (
 																<div
 																	key={attr.attributeId}
-																	className="flex justify-between items-center py-2"
+																	className="flex items-center justify-between py-2"
 																>
-																	<span className="text-foreground-muted font-normal">
+																	<span className="font-normal text-foreground-muted">
 																		{displayName}
 																	</span>
-																	<span className="text-foreground font-normal">
+																	<span className="font-normal text-foreground">
 																		{attr.value}
 																	</span>
 																</div>
@@ -1340,7 +1340,7 @@ function ProductPage() {
 													return (
 														<div
 															key={`${trimmedLabel}-${value}`}
-															className="flex justify-between items-center py-2"
+															className="flex items-center justify-between py-2"
 														>
 															<span className="text-foreground-muted">
 																{trimmedLabel}
@@ -1400,7 +1400,7 @@ function ProductPage() {
 				</div>
 
 				{/* Rest of content with padding - add bottom padding for fixed price bar on mobile only */}
-				<div className="max-w-7xl mx-auto px-4 py-8 pb-8">
+				<div className="mx-auto max-w-7xl px-4 py-8 pb-8">
 					<div className="flex flex-col gap-8">
 						{/* Product Info */}
 						<div className="w-full">
@@ -1443,7 +1443,7 @@ function ProductPage() {
 								{/* Product Title */}
 								<div>
 									<h1 className="">{productWithDetails?.name || "Product"}</h1>
-									<div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-gray-600">
+									<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-gray-600 text-sm">
 										{/* Brand Logo/Name */}
 										{productWithDetails?.brand && (
 											<Link
@@ -1506,13 +1506,13 @@ function ProductPage() {
 								</div>
 
 								{/* Wrapper for Price, Quantity, and Add to Cart */}
-								<div className="border border-border rounded-lg p-2 space-y-4 min-w-0">
+								<div className="min-w-0 space-y-4 rounded-lg border border-border p-2">
 									{/* Price and Quantity */}
 									<div className="@container">
-										<div className="flex flex-wrap items-stretch gap-0 min-w-0 w-full">
+										<div className="flex w-full min-w-0 flex-wrap items-stretch gap-0">
 											{/* Price Box */}
-											<div className="bg-muted px-4 py-3 rounded-lg flex flex-col justify-center items-center @[38ch]:items-start w-full @[38ch]:w-auto text-center @[38ch]:text-left">
-												<div className="text-sm text-muted-foreground mb-1">
+											<div className="flex @[38ch]:w-auto w-full flex-col @[38ch]:items-start items-center justify-center rounded-lg bg-muted px-4 py-3 @[38ch]:text-left text-center">
+												<div className="mb-1 text-muted-foreground text-sm">
 													Цена за{" "}
 													<span className="whitespace-nowrap">
 														{isFlooringProduct
@@ -1523,7 +1523,7 @@ function ProductPage() {
 													</span>
 												</div>
 												{currentDiscount && currentDiscount > 0 && (
-													<div className="text-base line-through text-muted-foreground mb-1 font-digital-mono">
+													<div className="mb-1 font-digital-mono text-base text-muted-foreground line-through">
 														<NumberFlow
 															value={Math.round(currentPrice)}
 															format={{ useGrouping: true }}
@@ -1531,7 +1531,7 @@ function ProductPage() {
 														/>
 													</div>
 												)}
-												<div className="text-3xl font-bold text-gray-800 font-digital-mono">
+												<div className="font-bold font-digital-mono text-3xl text-gray-800">
 													<NumberFlow
 														value={Math.round(displayPrice)}
 														format={{ useGrouping: true }}
@@ -1541,39 +1541,39 @@ function ProductPage() {
 											</div>
 
 											{/* Icon divider - horizontal (shown when both blocks fit in one row) */}
-											<div className="hidden @[38ch]:flex shrink-0 px-1 items-center justify-center">
+											<div className="@[38ch]:flex hidden shrink-0 items-center justify-center px-1">
 												<Icon
 													name="plus"
 													size={28}
-													className="text-foreground-muted rotate-45"
+													className="rotate-45 text-foreground-muted"
 												/>
 											</div>
 
 											{/* Icon divider - vertical (shown when stacked) */}
-											<div className="@[38ch]:hidden w-full flex justify-center py-2">
+											<div className="flex @[38ch]:hidden w-full justify-center py-2">
 												<Icon
 													name="plus"
 													size={28}
-													className="text-foreground-muted rotate-45"
+													className="rotate-45 text-foreground-muted"
 												/>
 											</div>
 
 											{/* Quantity Selector */}
-											<div className="flex flex-col min-w-[20ch] flex-1 self-stretch w-full @[38ch]:w-auto">
-												<div className="flex gap-0.5 items-stretch w-full flex-1">
+											<div className="flex @[38ch]:w-auto w-full min-w-[20ch] flex-1 flex-col self-stretch">
+												<div className="flex w-full flex-1 items-stretch gap-0.5">
 													<Button
 														type="button"
 														onClick={decrementQuantity}
 														disabled={quantity <= 1}
-														className="flex-1 min-w-10 h-full self-stretch flex items-center justify-center text-primary bg-muted hover:bg-secondary hover:[&_svg]:text-[var(--muted)] active:bg-muted-hover rounded-[15px] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+														className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted text-primary hover:bg-secondary active:bg-muted-hover disabled:cursor-not-allowed disabled:opacity-50 hover:[&_svg]:text-[var(--muted)]"
 													>
 														<Icon name="minus" size={20} />
 													</Button>
-													<div className="text-center bg-muted rounded-lg py-1 px-0.5 flex items-center justify-center flex-1">
-														<div className="flex flex-col items-center gap-1 w-full justify-center">
+													<div className="flex flex-1 items-center justify-center rounded-lg bg-muted px-0.5 py-1 text-center">
+														<div className="flex w-full flex-col items-center justify-center gap-1">
 															{productWithDetails?.squareMetersPerPack && (
-																<div className="flex flex-col items-center justify-center w-full gap-0">
-																	<div className="text-xl sm:text-2xl font-normal whitespace-nowrap text-foreground font-digital-mono">
+																<div className="flex w-full flex-col items-center justify-center gap-0">
+																	<div className="whitespace-nowrap font-digital-mono font-normal text-foreground text-xl sm:text-2xl">
 																		<NumberFlow
 																			value={
 																				quantity *
@@ -1585,22 +1585,22 @@ function ProductPage() {
 																			}}
 																		/>
 																	</div>
-																	<div className="text-xs sm:text-sm font-normal whitespace-nowrap text-muted-foreground -mt-1">
+																	<div className="-mt-1 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
 																		Площадь{" "}
 																		<span className="text-foreground">м²</span>
 																	</div>
 																</div>
 															)}
-															<div className="flex flex-col items-center justify-center w-full gap-0 pb-0.5">
+															<div className="flex w-full flex-col items-center justify-center gap-0 pb-0.5">
 																<Input
 																	type="number"
 																	min={1}
 																	value={quantity}
 																	onChange={handleQuantityChange}
-																	className="text-xl sm:text-2xl font-normal text-center border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] field-sizing-content [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-digital-mono"
+																	className="field-sizing-content m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] border-0 bg-transparent p-0 text-center font-digital-mono font-normal text-xl shadow-none [appearance:textfield] focus-visible:ring-0 focus-visible:ring-offset-0 sm:text-2xl [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 																/>
 																{isFlooringProduct && (
-																	<div className="text-xs sm:text-sm font-normal whitespace-nowrap text-muted-foreground -mt-3.5">
+																	<div className="-mt-3.5 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
 																		Упаковок
 																	</div>
 																)}
@@ -1610,7 +1610,7 @@ function ProductPage() {
 													<Button
 														type="button"
 														onClick={incrementQuantity}
-														className="flex-1 min-w-10 h-full self-stretch flex items-center justify-center text-primary bg-muted hover:bg-secondary hover:[&_svg]:text-[var(--muted)] active:bg-muted-hover rounded-[15px] cursor-pointer"
+														className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted text-primary hover:bg-secondary active:bg-muted-hover hover:[&_svg]:text-[var(--muted)]"
 													>
 														<Icon name="plus" size={20} />
 													</Button>
@@ -1692,7 +1692,7 @@ function ProductPage() {
 								Array.isArray(productWithDetails.productAttributes) &&
 								productWithDetails.productAttributes.length > 0)) && (
 							<div className="w-full">
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+								<div className="grid grid-cols-1 gap-8 md:grid-cols-2">
 									{/* Left Column - Characteristics */}
 									{(productWithDetails?.hasVariations ||
 										(productWithDetails?.productAttributes &&
@@ -1739,7 +1739,7 @@ function ProductPage() {
 															return (
 																<div
 																	key={attr.attributeId}
-																	className="flex justify-between items-center py-2"
+																	className="flex items-center justify-between py-2"
 																>
 																	<span className="text-foreground-muted">
 																		{displayName}
@@ -1794,12 +1794,12 @@ function ProductPage() {
 																return (
 																	<div
 																		key={attr.attributeId}
-																		className="flex justify-between items-center py-2"
+																		className="flex items-center justify-between py-2"
 																	>
-																		<span className="text-foreground-muted font-normal">
+																		<span className="font-normal text-foreground-muted">
 																			{displayName}
 																		</span>
-																		<span className="text-foreground font-normal">
+																		<span className="font-normal text-foreground">
 																			{attr.value}
 																		</span>
 																	</div>
@@ -1825,7 +1825,7 @@ function ProductPage() {
 														return (
 															<div
 																key={`${trimmedLabel}-${value}`}
-																className="flex justify-between items-center py-2"
+																className="flex items-center justify-between py-2"
 															>
 																<span className="text-foreground-muted">
 																	{trimmedLabel}
@@ -1882,7 +1882,7 @@ function ProductPage() {
 			)}
 
 			{/* Fixed Price and Add to Cart Bar - Mobile only (< 768px), positioned above bottom nav */}
-			<div className="md:hidden fixed bottom-[72px] left-0 right-0 z-9999">
+			<div className="fixed right-0 bottom-[72px] left-0 z-9999 md:hidden">
 				<MobileFixedCartBar
 					currentDiscount={currentDiscount}
 					originalTotalPrice={originalTotalPrice}

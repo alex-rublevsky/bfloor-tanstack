@@ -1,4 +1,7 @@
-import { useSuspenseInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useQueryClient,
+	useSuspenseInfiniteQuery,
+} from "@tanstack/react-query";
 import type { UseEmblaCarouselType } from "embla-carousel-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
@@ -58,9 +61,14 @@ export default function ProductSlider({
 	// Use Suspense query for server-fetched data (modern TanStack approach)
 	// This guarantees data is available during SSR - no loading states needed!
 	// Remove 'enabled' property as it's not supported by useSuspenseInfiniteQuery
-	const { enabled: _enabled, ...suspenseQueryOptions } = queryOptions as typeof queryOptions & { enabled?: boolean };
+	const { enabled: _enabled, ...suspenseQueryOptions } =
+		queryOptions as typeof queryOptions & { enabled?: boolean };
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-		useSuspenseInfiniteQuery(suspenseQueryOptions as ReturnType<typeof discountedProductsInfiniteQueryOptions>);
+		useSuspenseInfiniteQuery(
+			suspenseQueryOptions as ReturnType<
+				typeof discountedProductsInfiniteQueryOptions
+			>,
+		);
 
 	// Merge products from all pages
 	const products = useMemo(() => {
@@ -92,7 +100,10 @@ export default function ProductSlider({
 
 		// With useSuspenseInfiniteQuery, data is ALWAYS available (never undefined)
 		// No need for cache fallbacks or loading checks!
-		type PageData = { products?: ProductWithVariations[]; pagination?: unknown };
+		type PageData = {
+			products?: ProductWithVariations[];
+			pagination?: unknown;
+		};
 		const allProducts =
 			data?.pages
 				?.flatMap((page: PageData) => page?.products ?? [])
@@ -270,12 +281,12 @@ export default function ProductSlider({
 					)}
 				</div>
 
-			{/* Carousel Controls - only show when there are products */}
-			{products.length > 0 && (
-				<div className="product-slider__controls">
-					<EmblaArrowButtons emblaApi={emblaApi} />
-				</div>
-			)}
+				{/* Carousel Controls - only show when there are products */}
+				{products.length > 0 && (
+					<div className="product-slider__controls">
+						<EmblaArrowButtons emblaApi={emblaApi} />
+					</div>
+				)}
 			</div>
 
 			{/* Empty State - with Suspense, data is always loaded, so no loading state needed */}
@@ -307,7 +318,7 @@ export default function ProductSlider({
 							{/* Loading indicator when fetching more */}
 							{hasNextPage && isFetchingNextPage && (
 								<div className="embla__slide">
-									<div className="px-1 md:px-1.5 flex items-center justify-center">
+									<div className="flex items-center justify-center px-1 md:px-1.5">
 										<div className="text-muted-foreground">Загрузка...</div>
 									</div>
 								</div>
@@ -320,7 +331,7 @@ export default function ProductSlider({
 	);
 
 	if (mode === "recentlyVisited") {
-		return <div className="pt-20 w-full overflow-x-hidden">{section}</div>;
+		return <div className="w-full overflow-x-hidden pt-20">{section}</div>;
 	}
 	return section;
 }

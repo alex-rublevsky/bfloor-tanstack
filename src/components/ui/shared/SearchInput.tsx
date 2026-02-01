@@ -86,17 +86,17 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 		};
 
 		return (
-			<div className="flex items-center gap-1 w-full">
+			<div className="flex w-full items-center gap-1">
 				{value && (
 					<Button
 						size="icon"
 						variant="secondary"
 						type="button"
 						onClick={handleClear}
-						className="h-9 w-9 shrink-0 group"
+						className="group h-9 w-9 shrink-0"
 						aria-label="Очистить поиск"
 					>
-						<X className="h-4 w-4 text-primary group-hover:text-primary-foreground transition-standard" />
+						<X className="h-4 w-4 text-primary transition-standard group-hover:text-primary-foreground" />
 					</Button>
 				)}
 				<div ref={inputWrapperRef} className="relative w-full">
@@ -109,7 +109,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 						onFocus={handleFocus}
 						placeholder={placeholder}
 						className={cn(
-							"flex h-9 w-full min-w-[6ch] md:min-w-[6ch] md:pl-2 md:pr-8 lg:min-w-[15ch] lg:px-3 rounded-md border-[1.5px] border-input bg-background px-3 pr-10 py-1 text-base shadow-xs transition-standard file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-accent hover:border-accent disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+							"flex h-9 w-full min-w-[6ch] rounded-md border-[1.5px] border-input bg-background px-3 py-1 pr-10 text-base shadow-xs transition-standard file:border-0 file:bg-transparent file:font-medium file:text-foreground file:text-sm placeholder:text-muted-foreground hover:border-accent focus-visible:border-accent focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:min-w-[6ch] md:pr-8 md:pl-2 md:text-sm lg:min-w-[15ch] lg:px-3",
 							className,
 						)}
 						{...props}
@@ -117,13 +117,13 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 					<Button
 						type="button"
 						onClick={handleSearchClick}
-						className="absolute right-1 top-1/2 -translate-y-1/2 h-auto w-auto p-1.5 rounded-sm group border-0"
+						className="-translate-y-1/2 group absolute top-1/2 right-1 h-auto w-auto rounded-sm border-0 p-1.5"
 						aria-label="Поиск"
 						variant="secondary"
 					>
 						<Search
 							size={18}
-							className="text-accent group-hover:text-primary-foreground transition-standard"
+							className="text-accent transition-standard group-hover:text-primary-foreground"
 						/>
 					</Button>
 

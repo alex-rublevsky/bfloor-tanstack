@@ -3,25 +3,25 @@ import styles from "../productCard.module.css";
 
 export function ProductCardSkeleton() {
 	return (
-		<div className="block h-full relative">
+		<div className="relative block h-full">
 			<div
-				className="w-full product-card overflow-hidden group"
+				className="product-card group w-full overflow-hidden"
 				id={styles.productCard}
 			>
-				<div className="bg-background flex flex-col">
+				<div className="flex flex-col bg-background">
 					{/* Image section - matching exact structure with square corners */}
 					<div className="relative aspect-square overflow-hidden">
 						<div>
 							{/* Primary Image container */}
-							<div className="relative aspect-square flex items-center justify-center overflow-hidden">
-								<Skeleton className="absolute inset-0 w-full h-full rounded-none" />
+							<div className="relative flex aspect-square items-center justify-center overflow-hidden">
+								<Skeleton className="absolute inset-0 h-full w-full rounded-none" />
 							</div>
 						</div>
 
 						{/* Desktop Add to Cart button - invisible but present for layout */}
 						<button
 							type="button"
-							className="absolute bottom-0 left-0 right-0 hidden md:flex items-center justify-center space-x-2 bg-muted/70 backdrop-blur-xs text-foreground transition-all duration-500 py-2 opacity-0 pointer-events-none"
+							className="pointer-events-none absolute right-0 bottom-0 left-0 hidden items-center justify-center space-x-2 bg-muted/70 py-2 text-foreground opacity-0 backdrop-blur-xs transition-all duration-500 md:flex"
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -47,12 +47,12 @@ export function ProductCardSkeleton() {
 					</div>
 
 					{/* Content Section */}
-					<div className="flex flex-col h-auto md:h-full">
+					<div className="flex h-auto flex-col md:h-full">
 						{/* Info Section */}
-						<div className="p-4 flex flex-col h-auto md:h-full">
+						<div className="flex h-auto flex-col p-4 md:h-full">
 							{/* Price and Stock */}
-							<div className="flex flex-col mb-2">
-								<div className="flex flex-wrap items-baseline justify-between w-full gap-x-2">
+							<div className="mb-2 flex flex-col">
+								<div className="flex w-full flex-wrap items-baseline justify-between gap-x-2">
 									<div className="flex flex-col items-baseline gap-1">
 										<Skeleton className="h-6 w-20" />
 									</div>
@@ -64,13 +64,13 @@ export function ProductCardSkeleton() {
 							</div>
 
 							{/* Product Name */}
-							<Skeleton className="h-5 w-3/4 mb-3" />
+							<Skeleton className="mb-3 h-5 w-3/4" />
 
 							{/* Variations */}
 							<div className="space-y-2">
 								{/* First variation group */}
 								<div className="space-y-1">
-									<Skeleton className="h-4 w-8 mb-1" />
+									<Skeleton className="mb-1 h-4 w-8" />
 									<div className="flex flex-wrap gap-1">
 										<Skeleton className="h-7 w-7 rounded-full" />
 										<Skeleton className="h-7 w-8 rounded-full" />
@@ -80,7 +80,7 @@ export function ProductCardSkeleton() {
 
 								{/* Second variation group */}
 								<div className="space-y-1">
-									<Skeleton className="h-4 w-10 mb-1" />
+									<Skeleton className="mb-1 h-4 w-10" />
 									<div className="flex flex-wrap gap-1">
 										<Skeleton className="h-7 w-10 rounded-full" />
 										<Skeleton className="h-7 w-12 rounded-full" />
@@ -90,7 +90,7 @@ export function ProductCardSkeleton() {
 						</div>
 
 						{/* Mobile Add to Cart button */}
-						<div className="md:hidden mt-auto">
+						<div className="mt-auto md:hidden">
 							<Skeleton className="h-10 w-full rounded-none" />
 						</div>
 					</div>

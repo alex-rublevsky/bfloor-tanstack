@@ -154,7 +154,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 				)}
 			>
 				<div className="font-light! text-2xl!">{children}</div>
-				<div className="text-sm opacity-75 leading-tight font-normal whitespace-normal break-words">
+				<div className="whitespace-normal break-words font-normal text-sm leading-tight opacity-75">
 					{description}
 				</div>
 			</div>
@@ -174,7 +174,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 					// Use cursor-not-allowed for disabled buttons, cursor-default for enabled buttons
 					disabled ? "cursor-not-allowed" : "cursor-pointer",
 					// Adjust button styling when description is present - must come after buttonVariants to override
-					hasDescription && "h-auto py-3 px-4 whitespace-normal",
+					hasDescription && "h-auto whitespace-normal px-4 py-3",
 				)}
 				ref={ref}
 				disabled={disabled}

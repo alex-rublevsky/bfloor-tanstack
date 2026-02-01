@@ -54,9 +54,9 @@ function OrderPage() {
 	//TODO: update this to use a skeleton
 	if (isPending) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+			<div className="flex min-h-screen items-center justify-center bg-gray-50">
 				<div className="text-center">
-					<div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+					<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
 					<p className="text-gray-600">Loading order details...</p>
 				</div>
 			</div>
@@ -65,9 +65,9 @@ function OrderPage() {
 
 	if (isError || !order) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+			<div className="flex min-h-screen items-center justify-center bg-gray-50">
 				<div className="text-center">
-					<h1 className="text-2xl font-bold text-gray-900 mb-2">
+					<h1 className="mb-2 font-bold text-2xl text-gray-900">
 						Order Not Found
 					</h1>
 					<p className="text-gray-600">
@@ -82,10 +82,10 @@ function OrderPage() {
 
 	return (
 		<section className="py-16">
-			<div className="max-w-3xl mx-auto space-y-8">
+			<div className="mx-auto max-w-3xl space-y-8">
 				{/* Header Section */}
 				<div className="text-center">
-					<div className="flex justify-center mb-6">
+					<div className="mb-6 flex justify-center">
 						{isNewOrder ? (
 							<CheckCircle className="h-16 w-16 text-green-500" />
 						) : (
@@ -98,7 +98,7 @@ function OrderPage() {
 					</h3>
 
 					<div className="flex justify-center gap-8">
-						<p className="text-muted-foreground mb-2">Order #{order.id}</p>
+						<p className="mb-2 text-muted-foreground">Order #{order.id}</p>
 						<p className="text-muted-foreground">
 							Placed on {formatDate(order.createdAt)}
 						</p>
@@ -124,7 +124,7 @@ function OrderPage() {
 				{isNewOrder && (
 					<>
 						<h5 className="text-muted-foreground">What happens next?</h5>
-						<ol className="list-decimal list-inside space-y-2 text-secondary-foreground">
+						<ol className="list-inside list-decimal space-y-2 text-secondary-foreground">
 							<li>You will receive an order confirmation email shortly.</li>
 							<li>
 								Our team will review your order and contact you to discuss
@@ -153,22 +153,22 @@ function OrderPage() {
 											alt={item.product.name}
 											width={80}
 											height={80}
-											className="rounded-md w-full h-auto"
+											className="h-auto w-full rounded-md"
 										/>
 									</div>
 								)}
 								<div className="grid flex-grow grid-rows-[auto_1fr] gap-2">
-									<h6 className="font-medium break-words">
+									<h6 className="break-words font-medium">
 										{item.product?.name || "Product"}
 									</h6>
 									{item.productVariationId && (
-										<p className="text-sm text-muted-foreground">
+										<p className="text-muted-foreground text-sm">
 											Variation ID: {item.productVariationId}
 										</p>
 									)}
 									<div className="grid grid-cols-[1fr_auto] gap-4">
-										<div className="space-y-1 -mt-1">
-											<p className="text-sm text-muted-foreground">
+										<div className="-mt-1 space-y-1">
+											<p className="text-muted-foreground text-sm">
 												Quantity: {item.quantity}
 											</p>
 											{item.attributes &&
@@ -178,7 +178,7 @@ function OrderPage() {
 															([key, value]) => (
 																<span
 																	key={key}
-																	className="text-sm text-muted-foreground"
+																	className="text-muted-foreground text-sm"
 																>
 																	{getAttributeDisplayName(
 																		key,
@@ -191,13 +191,13 @@ function OrderPage() {
 													</div>
 												)}
 										</div>
-										<div className="text-right self-end">
+										<div className="self-end text-right">
 											{item.discountPercentage ? (
 												<>
-													<Badge variant="green" className="mb-1 -mr-1">
+													<Badge variant="green" className="-mr-1 mb-1">
 														-{item.discountPercentage}%
 													</Badge>
-													<p className="line-through text-muted-foreground">
+													<p className="text-muted-foreground line-through">
 														CA${Math.round(item.unitAmount * item.quantity)}
 													</p>
 												</>
@@ -225,7 +225,7 @@ function OrderPage() {
 							</Badge>
 						</div>
 					)}
-					<div className="flex justify-between ">
+					<div className="flex justify-between">
 						<p>Shipping</p>
 						<p className="text-muted-foreground">
 							{order.shippingAmount
@@ -233,7 +233,7 @@ function OrderPage() {
 								: "To be determined"}
 						</p>
 					</div>
-					<div className="flex justify-between items-baseline text-lg pt-2 border-t">
+					<div className="flex items-baseline justify-between border-t pt-2 text-lg">
 						<h5>Total</h5>
 						<h3>CA${Math.round(order.totalAmount)}</h3>
 					</div>

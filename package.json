@@ -8,6 +8,7 @@
 		"preview": "vite preview",
 		"lint": "biome check .",
 		"lint-format": "biome check --write",
+		"lint-format-unsafe": "biome check --write --unsafe .",
 		"deploy": "bash ./scripts/deploy-container.sh",
 		"db:generate": "drizzle-kit generate",
 		"db:studio": "drizzle-kit studio",

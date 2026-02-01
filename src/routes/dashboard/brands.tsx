@@ -54,7 +54,7 @@ const BrandFormFields = ({
 			<div>
 				<label
 					htmlFor={`${idPrefix}-brand-country`}
-					className="block text-sm font-medium mb-1"
+					className="mb-1 block font-medium text-sm"
 				>
 					Страна
 				</label>
@@ -67,7 +67,7 @@ const BrandFormFields = ({
 							e.target.value ? parseInt(e.target.value, 10) : null,
 						)
 					}
-					className="flex h-9 field-sizing-content rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+					className="field-sizing-content flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					<option value="">Не указано</option>
 					{countries.map((country) => (
@@ -96,50 +96,50 @@ const BrandList = ({ entities, onEdit }: EntityListProps<BrandWithCount>) => (
 		gridClassName="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 md:gap-3"
 		renderEntity={(brand) => (
 			<div
-				className="w-full product-card overflow-hidden group"
+				className="product-card group w-full overflow-hidden"
 				id={styles.productCard}
 			>
-				<div className="bg-background flex flex-col">
+				<div className="flex flex-col bg-background">
 					{/* Image Section */}
 					<div className="relative aspect-square overflow-hidden">
 						{brand.image ? (
-							<div className="relative w-full h-full flex items-center justify-center">
+							<div className="relative flex h-full w-full items-center justify-center">
 								<Image
 									src={`${ASSETS_BASE_URL}/${brand.image}`}
 									alt={brand.name}
-									className="w-full h-full object-contain"
+									className="h-full w-full object-contain"
 								/>
 							</div>
 						) : (
-							<div className="absolute inset-0 bg-muted flex items-center justify-center">
-								<span className="text-xs text-muted-foreground">?</span>
+							<div className="absolute inset-0 flex items-center justify-center bg-muted">
+								<span className="text-muted-foreground text-xs">?</span>
 							</div>
 						)}
 
-					{/* Desktop Edit Indicator - Centered on image (identical to ProductCard) */}
-					<div className="absolute inset-0 hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
-						<div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-background/80 backdrop-blur-[2px] rounded-md border border-border/30 text-primary">
-							<Edit className="w-4 h-4" />
-							<span className="text-sm font-medium">Изменить</span>
+						{/* Desktop Edit Indicator - Centered on image (identical to ProductCard) */}
+						<div className="pointer-events-none absolute inset-0 z-10 hidden items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:flex">
+							<div className="flex items-center justify-center gap-2 rounded-md border border-border/30 bg-background/80 px-3 py-1.5 text-primary backdrop-blur-[2px]">
+								<Edit className="h-4 w-4" />
+								<span className="font-medium text-sm">Изменить</span>
+							</div>
 						</div>
-					</div>
 					</div>
 
 					{/* Content Section */}
-					<div className="flex flex-col h-auto md:h-full">
-						<div className="p-4 flex flex-col h-auto md:h-full">
+					<div className="flex h-auto flex-col md:h-full">
+						<div className="flex h-auto flex-col p-4 md:h-full">
 							{/* Brand Name and Count */}
-							<div className="flex items-center gap-2 mb-1">
-								<span className="text-sm font-medium whitespace-nowrap">
+							<div className="mb-1 flex items-center gap-2">
+								<span className="whitespace-nowrap font-medium text-sm">
 									{brand.name}
 								</span>
 								{brand.productCount > 0 && (
-									<span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+									<span className="rounded bg-muted px-1.5 py-0.5 text-muted-foreground text-xs">
 										{brand.productCount}
 									</span>
 								)}
 								{!brand.isActive && (
-									<Badge variant="secondary" className="text-xs flex-shrink-0">
+									<Badge variant="secondary" className="flex-shrink-0 text-xs">
 										Inactive
 									</Badge>
 								)}
@@ -147,12 +147,12 @@ const BrandList = ({ entities, onEdit }: EntityListProps<BrandWithCount>) => (
 
 							{/* Slug and Country Flag */}
 							<div className="flex items-center gap-2">
-								<span className="text-xs text-muted-foreground whitespace-nowrap">
+								<span className="whitespace-nowrap text-muted-foreground text-xs">
 									{brand.slug}
 								</span>
 								{/* Country Flag */}
 								{brand.countryFlagImage && (
-									<div className="h-4 w-4 relative flex-shrink-0">
+									<div className="relative h-4 w-4 flex-shrink-0">
 										<Image
 											src={brand.countryFlagImage}
 											alt="Country flag"
@@ -275,7 +275,7 @@ function RouteComponent() {
 			<div className="space-y-6 px-6 py-6">
 				{/* Brands Management Section */}
 				<div>
-					<h2 className="text-lg font-semibold mb-4">Бренды</h2>
+					<h2 className="mb-4 font-semibold text-lg">Бренды</h2>
 					<DashboardEntityManager
 						config={entityManagerConfig}
 						data={brandsWithCounts}

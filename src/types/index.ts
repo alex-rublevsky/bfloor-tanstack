@@ -6,8 +6,8 @@ import type {
 	orderItems,
 	orders,
 	productAttributes,
-	products,
 	productStoreLocations,
+	products,
 	productVariations,
 } from "~/schema";
 

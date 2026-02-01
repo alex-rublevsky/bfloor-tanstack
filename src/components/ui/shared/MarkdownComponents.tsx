@@ -6,7 +6,7 @@ import { Link } from "./Link";
 export const markdownComponents: Components = {
 	a: ({ href, children, ...props }) => {
 		if (!href) return <span>{children}</span>;
-		
+
 		// Use the custom Link component for all links (internal and external)
 		return (
 			<Link
@@ -22,7 +22,7 @@ export const markdownComponents: Components = {
 	},
 	blockquote: ({ children, ...props }) => (
 		<blockquote
-			className="border-l-4 border-primary/50 pl-4 py-2 my-4 bg-muted/30 rounded-r"
+			className="my-4 rounded-r border-primary/50 border-l-4 bg-muted/30 py-2 pl-4"
 			{...props}
 		>
 			{children}

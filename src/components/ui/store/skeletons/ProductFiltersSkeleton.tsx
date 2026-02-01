@@ -8,14 +8,14 @@ export function ProductFiltersSkeleton() {
 
 	return (
 		<div
-			className={`sticky overflow-hidden top-3 mt-0 z-10 w-full ${isMobileOrTablet ? "px-2" : ""}`}
+			className={`sticky top-3 z-10 mt-0 w-full overflow-hidden ${isMobileOrTablet ? "px-2" : ""}`}
 			style={{ transform: "translateY(0%)" }} // Match the motion.div initial state
 		>
 			<div
-				className={`relative ${isMobileOrTablet ? "w-full max-w-screen-sm mx-auto" : "w-max mx-auto"}`}
+				className={`relative ${isMobileOrTablet ? "mx-auto w-full max-w-screen-sm" : "mx-auto w-max"}`}
 			>
 				<div
-					className="bg-background/50 rounded-3xl"
+					className="rounded-3xl bg-background/50"
 					style={{
 						position: "absolute",
 						inset: 0,
@@ -47,32 +47,32 @@ export function ProductFiltersSkeleton() {
 					{isMobileOrTablet ? (
 						<>
 							{/* First Row: Categories and Sort By */}
-							<div className="flex gap-4 items-start">
+							<div className="flex items-start gap-4">
 								{/* Categories section */}
-								<div className="flex-1 min-w-0 overflow-hidden">
+								<div className="min-w-0 flex-1 overflow-hidden">
 									<div className="space-y-2">
-										<div className="h-4 text-sm font-medium relative">
+										<div className="relative h-4 font-medium text-sm">
 											<span className="text-transparent">Categories</span>
 											<Skeleton className="absolute inset-0" />
 										</div>
 										<div className="flex flex-wrap gap-1">
-											<div className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full border border-border bg-background/80 relative">
+											<div className="relative rounded-full border border-border bg-background/80 px-2 py-1.5 font-medium text-xs md:px-4 md:py-2 md:text-sm">
 												<span className="text-transparent">All</span>
 												<Skeleton className="absolute inset-0 rounded-full" />
 											</div>
-											<div className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full border border-border bg-background/80 relative">
+											<div className="relative rounded-full border border-border bg-background/80 px-2 py-1.5 font-medium text-xs md:px-4 md:py-2 md:text-sm">
 												<span className="text-transparent">Apparel</span>
 												<Skeleton className="absolute inset-0 rounded-full" />
 											</div>
-											<div className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full border border-border bg-background/80 relative">
+											<div className="relative rounded-full border border-border bg-background/80 px-2 py-1.5 font-medium text-xs md:px-4 md:py-2 md:text-sm">
 												<span className="text-transparent">Category</span>
 												<Skeleton className="absolute inset-0 rounded-full" />
 											</div>
-											<div className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full border border-border bg-background/80 relative">
+											<div className="relative rounded-full border border-border bg-background/80 px-2 py-1.5 font-medium text-xs md:px-4 md:py-2 md:text-sm">
 												<span className="text-transparent">Stickers</span>
 												<Skeleton className="absolute inset-0 rounded-full" />
 											</div>
-											<div className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full border border-border bg-background/80 relative">
+											<div className="relative rounded-full border border-border bg-background/80 px-2 py-1.5 font-medium text-xs md:px-4 md:py-2 md:text-sm">
 												<span className="text-transparent">Produce</span>
 												<Skeleton className="absolute inset-0 rounded-full" />
 											</div>
@@ -81,13 +81,13 @@ export function ProductFiltersSkeleton() {
 								</div>
 
 								{/* Sort By Filter - Right side, compact */}
-								<div className="flex flex-col gap-2 flex-shrink-0">
-									<div className="h-4 text-sm font-medium relative">
+								<div className="flex flex-shrink-0 flex-col gap-2">
+									<div className="relative h-4 font-medium text-sm">
 										<span className="text-transparent">Sort By</span>
 										<Skeleton className="absolute inset-0" />
 									</div>
-									<div className="h-9 w-[15ch] px-3 py-2 text-sm rounded-md border border-border bg-background relative">
-										<span className="text-transparent flex items-center justify-between">
+									<div className="relative h-9 w-[15ch] rounded-md border border-border bg-background px-3 py-2 text-sm">
+										<span className="flex items-center justify-between text-transparent">
 											Relevant
 											<svg
 												width="15"
@@ -112,26 +112,26 @@ export function ProductFiltersSkeleton() {
 							</div>
 
 							{/* Price Range Filter - Full width */}
-							<div className="space-y-4 min-w-[13rem] w-full sm:max-w-[20rem] pt-3 pb-5 lg:pt-0">
+							<div className="w-full min-w-[13rem] space-y-4 pt-3 pb-5 sm:max-w-[20rem] lg:pt-0">
 								<div className="flex items-center justify-between gap-2">
-									<div className="h-4 text-sm font-medium relative">
+									<div className="relative h-4 font-medium text-sm">
 										<span className="text-transparent">Price Range</span>
 										<Skeleton className="absolute inset-0" />
 									</div>
-									<div className="h-4 text-sm font-medium tabular-nums relative">
+									<div className="relative h-4 font-medium text-sm tabular-nums">
 										<span className="text-transparent">$0 - $100</span>
 										<Skeleton className="absolute inset-0" />
 									</div>
 								</div>
-								<div className="relative flex pt-1.5 w-full touch-none select-none items-center data-[orientation=vertical]:h-full data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col">
-									<div className="relative grow overflow-hidden rounded-full bg-secondary data-[orientation=horizontal]:h-0.5 data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-2 h-0.5 w-full">
+								<div className="relative flex w-full touch-none select-none items-center pt-1.5 data-[orientation=vertical]:h-full data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col">
+									<div className="relative h-0.5 w-full grow overflow-hidden rounded-full bg-secondary data-[orientation=horizontal]:h-0.5 data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-2">
 										<div
-											className="absolute bg-primary data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full h-full"
+											className="absolute h-full bg-primary data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full"
 											style={{ left: "0%", width: "100%" }}
 										/>
 									</div>
 									<div
-										className="block h-5 w-5 rounded-full border-2 border-primary bg-background transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-disabled:cursor-not-allowed cursor-grab"
+										className="block h-5 w-5 cursor-grab rounded-full border-2 border-primary bg-background transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-disabled:cursor-not-allowed"
 										style={{
 											position: "absolute",
 											left: "0%",
@@ -139,7 +139,7 @@ export function ProductFiltersSkeleton() {
 										}}
 									/>
 									<div
-										className="block h-5 w-5 rounded-full border-2 border-primary bg-background transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-disabled:cursor-not-allowed cursor-grab"
+										className="block h-5 w-5 cursor-grab rounded-full border-2 border-primary bg-background transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-disabled:cursor-not-allowed"
 										style={{
 											position: "absolute",
 											left: "100%",
@@ -154,28 +154,28 @@ export function ProductFiltersSkeleton() {
 						<div className="flex gap-10">
 							{/* Main Categories */}
 							<div className="space-y-2">
-								<div className="h-4 text-sm font-medium relative">
+								<div className="relative h-4 font-medium text-sm">
 									<span className="text-transparent">Categories</span>
 									<Skeleton className="absolute inset-0" />
 								</div>
 								<div className="flex flex-wrap gap-1">
-									<div className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full border border-border bg-background/80 relative">
+									<div className="relative rounded-full border border-border bg-background/80 px-2 py-1.5 font-medium text-xs md:px-4 md:py-2 md:text-sm">
 										<span className="text-transparent">All</span>
 										<Skeleton className="absolute inset-0 rounded-full" />
 									</div>
-									<div className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full border border-border bg-background/80 relative">
+									<div className="relative rounded-full border border-border bg-background/80 px-2 py-1.5 font-medium text-xs md:px-4 md:py-2 md:text-sm">
 										<span className="text-transparent">Apparel</span>
 										<Skeleton className="absolute inset-0 rounded-full" />
 									</div>
-									<div className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full border border-border bg-background/80 relative">
+									<div className="relative rounded-full border border-border bg-background/80 px-2 py-1.5 font-medium text-xs md:px-4 md:py-2 md:text-sm">
 										<span className="text-transparent">Category</span>
 										<Skeleton className="absolute inset-0 rounded-full" />
 									</div>
-									<div className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full border border-border bg-background/80 relative">
+									<div className="relative rounded-full border border-border bg-background/80 px-2 py-1.5 font-medium text-xs md:px-4 md:py-2 md:text-sm">
 										<span className="text-transparent">Stickers</span>
 										<Skeleton className="absolute inset-0 rounded-full" />
 									</div>
-									<div className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full border border-border bg-background/80 relative">
+									<div className="relative rounded-full border border-border bg-background/80 px-2 py-1.5 font-medium text-xs md:px-4 md:py-2 md:text-sm">
 										<span className="text-transparent">Produce</span>
 										<Skeleton className="absolute inset-0 rounded-full" />
 									</div>
@@ -183,26 +183,26 @@ export function ProductFiltersSkeleton() {
 							</div>
 
 							{/* Price Range Filter */}
-							<div className="space-y-4 min-w-[13rem] sm:max-w-[20rem]">
+							<div className="min-w-[13rem] space-y-4 sm:max-w-[20rem]">
 								<div className="flex items-center justify-between gap-2">
-									<div className="h-4 text-sm font-medium relative">
+									<div className="relative h-4 font-medium text-sm">
 										<span className="text-transparent">Price Range</span>
 										<Skeleton className="absolute inset-0" />
 									</div>
-									<div className="h-4 text-sm font-medium tabular-nums relative">
+									<div className="relative h-4 font-medium text-sm tabular-nums">
 										<span className="text-transparent">$0 - $100</span>
 										<Skeleton className="absolute inset-0" />
 									</div>
 								</div>
-								<div className="relative flex pt-1.5 w-full touch-none select-none items-center data-[orientation=vertical]:h-full data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col">
-									<div className="relative grow overflow-hidden rounded-full bg-secondary data-[orientation=horizontal]:h-0.5 data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-2 h-0.5 w-full">
+								<div className="relative flex w-full touch-none select-none items-center pt-1.5 data-[orientation=vertical]:h-full data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col">
+									<div className="relative h-0.5 w-full grow overflow-hidden rounded-full bg-secondary data-[orientation=horizontal]:h-0.5 data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-2">
 										<div
-											className="absolute bg-primary data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full h-full"
+											className="absolute h-full bg-primary data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full"
 											style={{ left: "0%", width: "100%" }}
 										/>
 									</div>
 									<div
-										className="block h-5 w-5 rounded-full border-2 border-primary bg-background transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-disabled:cursor-not-allowed cursor-grab"
+										className="block h-5 w-5 cursor-grab rounded-full border-2 border-primary bg-background transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-disabled:cursor-not-allowed"
 										style={{
 											position: "absolute",
 											left: "0%",
@@ -210,7 +210,7 @@ export function ProductFiltersSkeleton() {
 										}}
 									/>
 									<div
-										className="block h-5 w-5 rounded-full border-2 border-primary bg-background transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-disabled:cursor-not-allowed cursor-grab"
+										className="block h-5 w-5 cursor-grab rounded-full border-2 border-primary bg-background transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-ring/40 data-disabled:cursor-not-allowed"
 										style={{
 											position: "absolute",
 											left: "100%",
@@ -222,12 +222,12 @@ export function ProductFiltersSkeleton() {
 
 							{/* Sort By Filter */}
 							<div className="flex flex-col gap-2">
-								<div className="h-4 text-sm font-medium relative">
+								<div className="relative h-4 font-medium text-sm">
 									<span className="text-transparent">Sort By</span>
 									<Skeleton className="absolute inset-0" />
 								</div>
-								<div className="h-9 w-[15ch] px-3 py-2 text-sm rounded-md border border-border bg-background relative">
-									<span className="text-transparent flex items-center justify-between">
+								<div className="relative h-9 w-[15ch] rounded-md border border-border bg-background px-3 py-2 text-sm">
+									<span className="flex items-center justify-between text-transparent">
 										Relevant
 										<svg
 											width="15"
@@ -253,7 +253,7 @@ export function ProductFiltersSkeleton() {
 					)}
 
 					{/* Bottom handle indicator */}
-					<div className="mx-auto h-1.5 w-[5rem] rounded-full bg-secondary shrink-0" />
+					<div className="mx-auto h-1.5 w-[5rem] shrink-0 rounded-full bg-secondary" />
 				</div>
 			</div>
 		</div>

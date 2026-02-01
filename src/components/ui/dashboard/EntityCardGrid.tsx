@@ -40,8 +40,8 @@ export function EntityCard<T>({
 			style={{ transition: "var(--transition-standard)" }}
 			className={cn(
 				isVerticalLayout
-					? "group flex flex-col p-0 cursor-pointer border-none w-auto text-left bg-transparent"
-					: "group flex items-center space-x-2 p-2 rounded-md hover:bg-muted cursor-pointer border border-transparent hover:border-border w-full text-left bg-transparent",
+					? "group flex w-auto cursor-pointer flex-col border-none bg-transparent p-0 text-left"
+					: "group flex w-full cursor-pointer items-center space-x-2 rounded-md border border-transparent bg-transparent p-2 text-left hover:border-border hover:bg-muted",
 			)}
 		>
 			{/* Entity-specific content */}
@@ -50,7 +50,7 @@ export function EntityCard<T>({
 			{/* Hover indicator - Edit text on the right (only for horizontal layout) */}
 			{!isVerticalLayout && (
 				<div
-					className="opacity-0 md:group-hover:opacity-100 flex-shrink-0 text-sm text-muted-foreground"
+					className="flex-shrink-0 text-muted-foreground text-sm opacity-0 md:group-hover:opacity-100"
 					style={{ transition: "var(--transition-standard)" }}
 				>
 					Редактировать
@@ -76,7 +76,7 @@ export function EntityCardGrid<T>({
 	mode = "horizontal", // Default to horizontal for backward compatibility
 }: EntityCardGridProps<T>) {
 	return (
-		<div className="border border-border rounded-lg p-4 bg-transparent">
+		<div className="rounded-lg border border-border bg-transparent p-4">
 			<div className={gridClassName}>
 				{entities.map((entity) => (
 					<EntityCard

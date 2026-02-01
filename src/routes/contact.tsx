@@ -30,29 +30,29 @@ function ContactPage() {
 
 	return (
 		<section>
-			<h1 className="text-3xl font-bold mb-8">Контакты и Адреса</h1>
+			<h1 className="mb-8 font-bold text-3xl">Контакты и Адреса</h1>
 
 			<div className="flex flex-wrap gap-6">
-				<div className="bg-card p-6 rounded-lg border w-fit">
+				<div className="w-fit rounded-lg border bg-card p-6">
 					<div className="space-y-1">
 						<Link
 							href="tel:+79084466740"
 							variant="large"
-							className="text-muted-foreground hover:text-foreground block"
+							className="block text-muted-foreground hover:text-foreground"
 						>
 							8 908 446 6740
 						</Link>
 						<Link
 							href="tel:+79025559405"
 							variant="large"
-							className="text-muted-foreground hover:text-foreground block"
+							className="block text-muted-foreground hover:text-foreground"
 						>
 							8 902 555 9405
 						</Link>
 						<Link
 							href="tel:+79084486785"
 							variant="large"
-							className="text-muted-foreground hover:text-foreground block"
+							className="block text-muted-foreground hover:text-foreground"
 						>
 							8 908 448 6785
 						</Link>
@@ -68,7 +68,7 @@ function ContactPage() {
 				</div>
 
 				{storeLocations.map((location) => (
-					<div key={location.id} className="bg-card p-6 rounded-lg border">
+					<div key={location.id} className="rounded-lg border bg-card p-6">
 						<div className="space-y-3">
 							<div>
 								<Link
@@ -80,14 +80,14 @@ function ContactPage() {
 									Владивосток, {location.address}
 								</Link>
 								{location.description && (
-									<p className="text-sm text-muted-foreground mt-1">
+									<p className="mt-1 text-muted-foreground text-sm">
 										{location.description}
 									</p>
 								)}
 							</div>
 							<div>
 								<h6>Часы работы:</h6>
-								<div className="text-muted-foreground whitespace-pre-line">
+								<div className="whitespace-pre-line text-muted-foreground">
 									{location.openingHours}
 								</div>
 							</div>

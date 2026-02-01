@@ -5,8 +5,8 @@ import { Button } from "~/components/ui/shared/Button";
 export function NotFound({ children }: { children?: ReactNode }) {
 	const navigate = useNavigate();
 	return (
-		<div className="flex-1 flex flex-col">
-			<div className="flex-1 flex justify-center items-center">
+		<div className="flex flex-1 flex-col">
+			<div className="flex flex-1 items-center justify-center">
 				<div className="text-center">
 					<div className="">
 						{children || (
@@ -15,7 +15,7 @@ export function NotFound({ children }: { children?: ReactNode }) {
 							</div>
 						)}
 					</div>
-					<p className="flex items-center gap-3 flex-wrap justify-center mt-8">
+					<p className="mt-8 flex flex-wrap items-center justify-center gap-3">
 						<Button
 							size="lg"
 							onClick={() => window.history.back()}

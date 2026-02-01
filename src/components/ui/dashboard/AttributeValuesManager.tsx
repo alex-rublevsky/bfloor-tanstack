@@ -138,7 +138,7 @@ export default function AttributeValuesManager({
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center py-4">
-				<Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+				<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
 			</div>
 		);
 	}
@@ -153,13 +153,13 @@ export default function AttributeValuesManager({
 
 	return (
 		<div className="space-y-3">
-			<div className="text-sm font-medium text-foreground">
+			<div className="font-medium text-foreground text-sm">
 				Стандартизированные значения
 			</div>
 
 			{/* Existing values list */}
 			{values && values.length > 0 ? (
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+				<div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
 					{values.map((value) => (
 						<ValueItem
 							key={value.id}
@@ -170,14 +170,14 @@ export default function AttributeValuesManager({
 					))}
 				</div>
 			) : (
-				<div className="text-xs text-muted-foreground py-2">
+				<div className="py-2 text-muted-foreground text-xs">
 					Нет стандартизированных значений
 				</div>
 			)}
 
 			{/* Add new value */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-				<div className="flex items-center gap-2 p-2 rounded-md border border-border bg-card hover:bg-muted transition-colors">
+			<div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
+				<div className="flex items-center gap-2 rounded-md border border-border bg-card p-2 transition-colors hover:bg-muted">
 					<Input
 						value={newValue}
 						onChange={(e) => setNewValue(e.target.value)}
@@ -188,7 +188,7 @@ export default function AttributeValuesManager({
 							}
 						}}
 						placeholder="Введите новое значение..."
-						className="text-sm flex-1 h-8"
+						className="h-8 flex-1 text-sm"
 						disabled={isCreating}
 					/>
 					<Button
@@ -200,7 +200,7 @@ export default function AttributeValuesManager({
 						className="h-8 px-2"
 					>
 						{isCreating ? (
-							<Loader2 className="w-4 h-4 animate-spin" />
+							<Loader2 className="h-4 w-4 animate-spin" />
 						) : (
 							"Создать"
 						)}
@@ -237,7 +237,7 @@ function ValueItem({
 	};
 
 	return (
-		<div className="flex items-center gap-2 p-2 rounded-md border border-border bg-card hover:bg-muted transition-colors">
+		<div className="flex items-center gap-2 rounded-md border border-border bg-card p-2 transition-colors hover:bg-muted">
 			{isEditing ? (
 				<>
 					<Input
@@ -250,7 +250,7 @@ function ValueItem({
 								handleCancel();
 							}
 						}}
-						className="text-sm flex-1 h-8"
+						className="h-8 flex-1 text-sm"
 						autoFocus
 					/>
 					<Button
@@ -276,7 +276,7 @@ function ValueItem({
 				<>
 					<button
 						type="button"
-						className="text-sm flex-1 cursor-pointer text-left"
+						className="flex-1 cursor-pointer text-left text-sm"
 						onClick={() => setIsEditing(true)}
 						onKeyDown={(e) => {
 							if (e.key === "Enter" || e.key === " ") {
@@ -295,7 +295,7 @@ function ValueItem({
 						onClick={() => setIsEditing(true)}
 						className="h-8 px-2"
 					>
-						<Edit className="w-4 h-4" />
+						<Edit className="h-4 w-4" />
 					</Button>
 					<Button
 						type="button"

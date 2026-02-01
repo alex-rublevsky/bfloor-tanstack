@@ -8,19 +8,19 @@ export function BrandsPageSkeleton() {
 					<table className="min-w-full divide-y divide-border">
 						<thead>
 							<tr>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								<th className="px-6 py-3 text-left font-medium text-muted-foreground text-xs uppercase tracking-wider">
 									Name
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								<th className="px-6 py-3 text-left font-medium text-muted-foreground text-xs uppercase tracking-wider">
 									Slug
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								<th className="px-6 py-3 text-left font-medium text-muted-foreground text-xs uppercase tracking-wider">
 									Logo
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								<th className="px-6 py-3 text-left font-medium text-muted-foreground text-xs uppercase tracking-wider">
 									Status
 								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+								<th className="px-6 py-3 text-left font-medium text-muted-foreground text-xs uppercase tracking-wider">
 									Actions
 								</th>
 							</tr>
@@ -28,35 +28,35 @@ export function BrandsPageSkeleton() {
 						<tbody className="divide-y divide-border">
 							{Array.from({ length: 6 }, (_, index) => (
 								<tr key={`brand-skeleton-${Date.now()}-${index}`}>
-									<td className="px-6 py-4 whitespace-nowrap">
+									<td className="whitespace-nowrap px-6 py-4">
 										<div className="relative">
 											<span className="invisible">Brand Name</span>
 											<Skeleton className="absolute inset-0 w-24" />
 										</div>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
+									<td className="whitespace-nowrap px-6 py-4">
 										<div className="relative">
 											<span className="invisible">brand-slug</span>
 											<Skeleton className="absolute inset-0 w-20" />
 										</div>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
-										<div className="h-10 w-10 relative">
+									<td className="whitespace-nowrap px-6 py-4">
+										<div className="relative h-10 w-10">
 											<Skeleton className="absolute inset-0 rounded" />
 										</div>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
+									<td className="whitespace-nowrap px-6 py-4">
 										<div className="relative">
 											<span className="invisible">Active</span>
-											<Skeleton className="absolute inset-0 w-16 h-6 rounded-full" />
+											<Skeleton className="absolute inset-0 h-6 w-16 rounded-full" />
 										</div>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+									<td className="whitespace-nowrap px-6 py-4 font-medium text-sm">
 										<div className="flex space-x-4">
 											<div className="relative">
 												<button
 													type="button"
-													className="h-8 px-3 invisible"
+													className="invisible h-8 px-3"
 													disabled
 												>
 													<span>Edit</span>
@@ -66,7 +66,7 @@ export function BrandsPageSkeleton() {
 											<div className="relative">
 												<button
 													type="button"
-													className="h-8 px-3 invisible"
+													className="invisible h-8 px-3"
 													disabled
 												>
 													<span>Delete</span>
@@ -83,8 +83,8 @@ export function BrandsPageSkeleton() {
 			</div>
 
 			{/* Floating Action Button */}
-			<div className="fixed bottom-3 right-3 z-50">
-				<button type="button" className="h-12 px-6 invisible relative" disabled>
+			<div className="fixed right-3 bottom-3 z-50">
+				<button type="button" className="invisible relative h-12 px-6" disabled>
 					<span>Add New Brand</span>
 				</button>
 				<Skeleton className="absolute inset-0 rounded" />

@@ -45,7 +45,6 @@ export function ActiveFiltersDisplay({
 	onRemoveStoreLocation,
 	onRemoveAttributeValue,
 }: ActiveFiltersDisplayProps) {
-
 	// Resolve brand name from brands (for filter pill); title uses brandName prop when on brand page
 	const resolvedBrandName = useMemo(() => {
 		if (!selectedBrand) return null;
@@ -114,11 +113,11 @@ export function ActiveFiltersDisplay({
 		<div className="px-4 pt-6 pb-4">
 			{/* Title */}
 			{showTitleSkeleton ? (
-				<div className="h-10 md:h-12 bg-muted animate-pulse rounded w-48 mb-3" />
+				<div className="mb-3 h-10 w-48 animate-pulse rounded bg-muted md:h-12" />
 			) : (
 				<h1
 					key={categoryName ?? brandName ?? "all"}
-					className="text-2xl md:text-3xl font-semibold mb-3"
+					className="mb-3 font-semibold text-2xl md:text-3xl"
 					style={{
 						animation: "fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
 					}}
@@ -134,12 +133,12 @@ export function ActiveFiltersDisplay({
 				attributePills.length > 0) && (
 				<div className="flex flex-wrap gap-2">
 					{resolvedBrandName && (
-						<span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm bg-muted text-muted-foreground transition-all duration-200 hover:bg-muted/80">
+						<span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-muted-foreground text-sm transition-all duration-200 hover:bg-muted/80">
 							<span>{resolvedBrandName}</span>
 							<button
 								type="button"
 								onClick={onRemoveBrand}
-								className="h-4 w-4 p-0 rounded-full hover:bg-background/50 transition-standard"
+								className="h-4 w-4 rounded-full p-0 transition-standard hover:bg-background/50"
 								aria-label={`Remove ${resolvedBrandName} filter`}
 							>
 								<X
@@ -150,12 +149,12 @@ export function ActiveFiltersDisplay({
 						</span>
 					)}
 					{collectionName && (
-						<span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm bg-muted text-muted-foreground transition-all duration-200 hover:bg-muted/80">
+						<span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-muted-foreground text-sm transition-all duration-200 hover:bg-muted/80">
 							<span>{collectionName}</span>
 							<button
 								type="button"
 								onClick={onRemoveCollection}
-								className="h-4 w-4 p-0 rounded-full hover:bg-background/50 transition-standard"
+								className="h-4 w-4 rounded-full p-0 transition-standard hover:bg-background/50"
 								aria-label={`Remove ${collectionName} filter`}
 							>
 								<X
@@ -166,12 +165,12 @@ export function ActiveFiltersDisplay({
 						</span>
 					)}
 					{storeLocationAddress && onRemoveStoreLocation && (
-						<span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm bg-muted text-muted-foreground transition-all duration-200 hover:bg-muted/80">
+						<span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-muted-foreground text-sm transition-all duration-200 hover:bg-muted/80">
 							<span>{storeLocationAddress}</span>
 							<button
 								type="button"
 								onClick={onRemoveStoreLocation}
-								className="h-4 w-4 p-0 rounded-full hover:bg-background/50 transition-standard"
+								className="h-4 w-4 rounded-full p-0 transition-standard hover:bg-background/50"
 								aria-label={`Remove ${storeLocationAddress} filter`}
 							>
 								<X
@@ -185,7 +184,7 @@ export function ActiveFiltersDisplay({
 						pill.values.map((value) => (
 							<span
 								key={`${pill.attributeId}-${value.id}`}
-								className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm bg-muted text-muted-foreground transition-all duration-200 hover:bg-muted/80"
+								className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-muted-foreground text-sm transition-all duration-200 hover:bg-muted/80"
 							>
 								<span>{value.name}</span>
 								<button
@@ -193,7 +192,7 @@ export function ActiveFiltersDisplay({
 									onClick={() =>
 										onRemoveAttributeValue(pill.attributeId, value.id)
 									}
-									className="h-4 w-4 p-0 rounded-full hover:bg-background/50 transition-standard"
+									className="h-4 w-4 rounded-full p-0 transition-standard hover:bg-background/50"
 									aria-label={`Remove ${value.name} filter`}
 								>
 									<X

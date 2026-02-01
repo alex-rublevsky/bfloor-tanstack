@@ -91,13 +91,13 @@ function SortableImageItem({
 		<div
 			ref={setNodeRef}
 			style={style}
-			className="relative group bg-background rounded-lg border border-border overflow-hidden"
+			className="group relative overflow-hidden rounded-lg border border-border bg-background"
 		>
 			<div className="relative w-full">
 				<img
 					src={imageSrc}
 					alt={`Product ${index + 1}`}
-					className="w-full h-auto object-contain"
+					className="h-auto w-full object-contain"
 					style={viewTransitionStyle}
 					onLoad={() => {}}
 					onError={(e) => {
@@ -110,27 +110,27 @@ function SortableImageItem({
 					type="button"
 					{...attributes}
 					{...listeners}
-					className="absolute top-1 left-1 p-1.5 bg-primary rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+					className="absolute top-1 left-1 cursor-grab rounded bg-primary p-1.5 opacity-100 transition-opacity active:cursor-grabbing md:opacity-0 md:group-hover:opacity-100"
 					title="Перетащите для перемещения"
 				>
-					<GripVertical className="w-3 h-3 text-background" />
+					<GripVertical className="h-3 w-3 text-background" />
 				</button>
 				{/* Delete Button */}
 				<button
 					type="button"
 					onClick={() => onRemove(index)}
-					className="absolute top-1 right-1 p-1.5 bg-accent rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-accent/90 cursor-pointer"
+					className="absolute top-1 right-1 cursor-pointer rounded bg-accent p-1.5 opacity-100 transition-opacity hover:bg-accent/90 md:opacity-0 md:group-hover:opacity-100"
 					title="Убрать изображение"
 				>
 					<Trash size={12} className="text-background" />
 				</button>
 			</div>
-			<div className="p-2 bg-background border-t border-border">
-				<p className="text-xs truncate font-mono text-muted-foreground">
+			<div className="border-border border-t bg-background p-2">
+				<p className="truncate font-mono text-muted-foreground text-xs">
 					{image.split("/").pop()}
 				</p>
 				{fileSize && (
-					<p className="text-xs text-muted-foreground mt-0.5">
+					<p className="mt-0.5 text-muted-foreground text-xs">
 						{formatFileSize(fileSize)}
 					</p>
 				)}
@@ -952,7 +952,7 @@ export function ImageUpload({
 			<div className="flex items-center justify-between">
 				<label
 					htmlFor={fileInputId}
-					className="block text-sm font-medium"
+					className="block font-medium text-sm"
 					id={`${fileInputId}-label`}
 				>
 					{label} {imageList.length > 0 && `(${imageList.length})`}
@@ -977,7 +977,7 @@ export function ImageUpload({
 				/>
 			) : (
 				<section
-					className="p-4 rounded-lg bg-muted/30 border border-border transition-colors image-upload-area"
+					className="image-upload-area rounded-lg border border-border bg-muted/30 p-4 transition-colors"
 					onDragOver={handleDragOver}
 					onDragLeave={handleDragLeave}
 					onDrop={handleDrop}
@@ -993,7 +993,7 @@ export function ImageUpload({
 						onDragEnd={handleDragEnd}
 					>
 						<SortableContext items={imageList} strategy={rectSortingStrategy}>
-							<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+							<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
 								{imageList.map((image, index) => {
 									return (
 										<SortableImageItem
@@ -1013,7 +1013,7 @@ export function ImageUpload({
 									type="button"
 									onClick={handleUploadClick}
 									disabled={isUploading || isPasting}
-									className="aspect-square rounded-lg border-2 border-dashed border-border/50 bg-background hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer group"
+									className="group flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-border/50 border-dashed bg-background text-muted-foreground transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
 								>
 									{isUploading || isPasting ? (
 										<>
@@ -1024,8 +1024,8 @@ export function ImageUpload({
 										</>
 									) : (
 										<>
-											<Upload className="w-6 h-6 group-hover:scale-110 transition-transform" />
-											<span className="text-xs text-center px-2">
+											<Upload className="h-6 w-6 transition-transform group-hover:scale-110" />
+											<span className="px-2 text-center text-xs">
 												Выберите файлы
 											</span>
 										</>
@@ -1035,7 +1035,7 @@ export function ImageUpload({
 						</SortableContext>
 					</DndContext>
 
-					<p className="text-xs text-muted-foreground mt-3 text-center">
+					<p className="mt-3 text-center text-muted-foreground text-xs">
 						Перетащите файлы или вставьте (Ctrl+V)
 					</p>
 				</section>

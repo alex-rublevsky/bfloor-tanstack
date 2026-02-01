@@ -29,7 +29,7 @@ export const Thumb: React.FC<PropType> = (props) => {
 	return (
 		<div
 			className={"embla-thumbs__slide".concat(
-				selected ? " embla-thumbs__slide--selected" : "",
+				selected ? "embla-thumbs__slide--selected" : "",
 			)}
 		>
 			<button
@@ -89,7 +89,7 @@ const EmblaCarousel: React.FC<EmblaPropType> = (props) => {
 										<Link
 											href={slide.url}
 											disableAnimation
-											className="block w-full h-full no-underline hover:no-underline"
+											className="block h-full w-full no-underline hover:no-underline"
 										>
 											<picture>
 												<source

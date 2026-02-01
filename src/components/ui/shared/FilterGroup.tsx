@@ -69,7 +69,7 @@ function FilterButton({
 			}}
 			className={cn(
 				// Use cursor-not-allowed for disabled buttons, cursor-pointer for enabled buttons
-				"cursor-pointer shrink-0 whitespace-nowrap",
+				"shrink-0 cursor-pointer whitespace-nowrap",
 				buttonVariants({ variant, state }),
 				className,
 			)}
@@ -177,8 +177,8 @@ export function FilterGroup({
 				<div
 					className={cn(
 						variant === "product"
-							? "text-xs font-medium text-muted-foreground mb-1"
-							: "text-sm font-medium",
+							? "mb-1 font-medium text-muted-foreground text-xs"
+							: "font-medium text-sm",
 						titleClassName,
 					)}
 				>
