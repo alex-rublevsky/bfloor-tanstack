@@ -85,9 +85,9 @@ function CheckoutScreen() {
 	const emailId = useId();
 
 	const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
-		fullName: "Иван Иванович Иванов",
-		phone: "+7 908 541 43 81",
-		email: "ivanov@yandex.com",
+		fullName: "",
+		phone: "",
+		email: "",
 		notes: "",
 		contactMethod: "whatsapp",
 		shippingMethod: "standard",
@@ -261,18 +261,42 @@ function CheckoutScreen() {
 		<div className="w-full min-h-screen">
 			<div className="max-w-[1400px] mx-auto px-4 py-8">
 				{/* Cart Title Section */}
-				<div className="mb-6 flex items-center gap-3">
-					<button
-						type="button"
-						onClick={() => navigate({ to: "/store" })}
-						className="flex items-center justify-center w-8 h-8 hover:bg-muted rounded transition-colors"
-						aria-label="Назад"
-					>
-						<ChevronLeft size={20} />
-					</button>
-					<h1 className="text-3xl font-bold">
-						Корзина {cart.items.length > 0 && `(${cart.items.length})`}
-					</h1>
+				<div className="mb-6 flex items-center justify-between">
+					<div className="flex items-center gap-3">
+						<button
+							type="button"
+							onClick={() => navigate({ to: "/store" })}
+							className="flex items-center justify-center w-8 h-8 hover:bg-muted rounded transition-colors"
+							aria-label="Назад"
+						>
+							<ChevronLeft size={20} />
+						</button>
+						<h1 className="text-3xl font-bold">
+							Корзина {cart.items.length > 0 && `(${cart.items.length})`}
+						</h1>
+					</div>
+					
+					{/* Cart Actions - Moved to header */}
+					{cart.items.length > 0 && (
+						<div className="flex items-center gap-4">
+							<button
+								type="button"
+								onClick={handleSaveToPDF}
+								className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+							>
+								<Download size={18} />
+								<span>Сохранить в PDF</span>
+							</button>
+							<button
+								type="button"
+								onClick={handleClearCart}
+								className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+							>
+								<Trash size={18} />
+								<span>Очистить корзину</span>
+							</button>
+						</div>
+					)}
 				</div>
 
 				<div className="border-t border-border mb-6"></div>
@@ -298,7 +322,7 @@ function CheckoutScreen() {
 						) : (
 							<>
 								{/* Cart Items */}
-								<div className="space-y-6 mb-6">
+								<div className="space-y-6">
 									{enrichedItems.map((item) => {
 										const imageArray = parseImages(item.images);
 										const itemTotal = item.discount
@@ -396,26 +420,6 @@ function CheckoutScreen() {
 										);
 									})}
 								</div>
-
-								{/* Cart Actions */}
-								<div className="flex justify-end gap-4 mb-8">
-									<button
-										type="button"
-										onClick={handleSaveToPDF}
-										className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-									>
-										<Download size={18} />
-										<span>Сохранить в PDF</span>
-									</button>
-									<button
-										type="button"
-										onClick={handleClearCart}
-										className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-									>
-										<Trash size={18} />
-										<span>Очистить корзину</span>
-									</button>
-								</div>
 							</>
 						)}
 					</div>
@@ -440,7 +444,6 @@ function CheckoutScreen() {
 								id={fullNameId}
 								name="fullName"
 								label="Фамилия Имя Отчество"
-								required
 								value={customerInfo.fullName}
 								onChange={handleInputChange}
 							/>
@@ -450,7 +453,6 @@ function CheckoutScreen() {
 								name="phone"
 								type="tel"
 								label="Телефон"
-								required
 								value={customerInfo.phone}
 								onChange={handleInputChange}
 							/>
@@ -460,7 +462,6 @@ function CheckoutScreen() {
 								name="email"
 								type="email"
 								label="Электронная почта"
-								required
 								value={customerInfo.email}
 								onChange={handleInputChange}
 							/>
@@ -472,7 +473,6 @@ function CheckoutScreen() {
 									label="Комментарий"
 									value={customerInfo.notes}
 									onChange={handleInputChange}
-									placeholder="Не обязательно"
 									rows={4}
 								/>
 							</div>
@@ -498,7 +498,7 @@ function CheckoutScreen() {
 													contactMethod: value as CustomerInfo["contactMethod"],
 												}))
 											}
-											className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-colors ${
+											className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-colors cursor-pointer ${
 												customerInfo.contactMethod === value
 													? "border-primary bg-primary/10"
 													: "border-border hover:border-primary/50"
