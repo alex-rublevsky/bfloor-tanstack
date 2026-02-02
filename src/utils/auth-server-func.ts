@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "~/utils/auth-middleware";
-import { env } from "~/utils/env";
 
 type User = {
 	id?: string;
@@ -14,20 +13,23 @@ type AuthContext = {
 };
 
 /**
- * Parse and cache admin emails from environment variable.
- * Creates a Set for O(1) lookup performance.
- * ADMIN_EMAILS should be a comma-separated list: "email1@example.com,email2@example.com"
+ * Get admin emails Set from current env (read at request time so secrets/env updates are always used).
+ * ADMIN_EMAILS: comma-separated list, e.g. "a@x.com,b@y.com" (spaces/newlines around entries are trimmed).
  */
-const adminEmailsSet = new Set(
-	(env.ADMIN_EMAILS || "")
-		.split(",")
+function getAdminEmailsSet(): Set<string> {
+	const raw =
+		typeof process !== "undefined" && process.env?.ADMIN_EMAILS != null
+			? process.env.ADMIN_EMAILS
+			: "";
+	const list = raw
+		.split(/[\s,]+/)
 		.map((email) => email.trim().toLowerCase())
-		.filter((email) => email.length > 0),
-);
+		.filter((email) => email.length > 0);
+	return new Set(list);
+}
 
 /**
  * Check if a user email matches any of the admin emails.
- * Uses Set for O(1) lookup performance.
  *
  * @param userEmail - The user's email address (normalized)
  * @returns true if the email matches any admin email, false otherwise
@@ -36,9 +38,8 @@ function isAdminEmail(userEmail: string | null): boolean {
 	if (!userEmail) {
 		return false;
 	}
-
-	// O(1) Set lookup (much faster than array.includes)
-	return adminEmailsSet.has(userEmail.trim().toLowerCase());
+	const normalized = userEmail.trim().toLowerCase();
+	return getAdminEmailsSet().has(normalized);
 }
 
 /**
