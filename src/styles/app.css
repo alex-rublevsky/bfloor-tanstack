@@ -532,7 +532,7 @@ number-flow {
 /* Typography */
 
 /* fluid responsive */
-html {
+/* html {
 	font-size: calc(0.5668103448275863rem + 0.5172413793103448vw);
 }
 
@@ -558,7 +558,7 @@ html {
 	html {
 		font-size: 1rem;
 	}
-}
+} */
 
 h1 {
 	font-size: 2.9rem;
