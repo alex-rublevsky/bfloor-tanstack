@@ -37,28 +37,26 @@ export function CheckboxList({
 				const isChecked = selectedIds.includes(item.id);
 
 				return (
-					<label
+					<Checkbox
 						key={item.id}
-						htmlFor={`${idPrefix}-${item.id}`}
-						className="flex cursor-pointer items-center space-x-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
-					>
-						<Checkbox
-							id={`${idPrefix}-${item.id}`}
-							name={`${idPrefix}-${item.id}`}
-							checked={isChecked}
-							onCheckedChange={(checked) => {
-								onItemChange(item.id, !!checked);
-							}}
-						/>
-						<div className="flex flex-col">
-							<span className="font-medium text-sm">{item.label}</span>
-							{item.description && (
-								<span className="text-muted-foreground text-xs">
-									{item.description}
-								</span>
-							)}
-						</div>
-					</label>
+						id={`${idPrefix}-${item.id}`}
+						name={`${idPrefix}-${item.id}`}
+						checked={isChecked}
+						onCheckedChange={(checked) => {
+							onItemChange(item.id, !!checked);
+						}}
+						wrapperClassName="rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
+						label={
+							<div className="flex flex-col">
+								<span className="font-medium text-sm">{item.label}</span>
+								{item.description && (
+									<span className="text-muted-foreground text-xs">
+										{item.description}
+									</span>
+								)}
+							</div>
+						}
+					/>
 				);
 			})}
 		</div>

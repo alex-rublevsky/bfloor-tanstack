@@ -1,0 +1,193 @@
+/* Checkbox component styles with spring animations */
+
+.checkbox-wrapper {
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	user-select: none;
+	position: relative; /* Contains the absolutely positioned input */
+}
+
+.checkbox-input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+}
+
+.checkbox-check {
+	--border-radius: 6px;
+	--border-width: 2px;
+	--outline-offset: 3px;
+	--outline-width: 2px;
+	--outline-color: var(--primary);
+	--initial-scale: 0.5;
+	/* non-bouncy spring: */
+	/* prettier-ignore */
+	--fill-spring: linear(
+			0,
+			0.0033 0.81%,
+			0.027 2.42%,
+			0.0916 4.84%,
+			0.4745 15.32%,
+			0.6422 20.97%,
+			0.7175,
+			0.7789,
+			0.8283 30.64%,
+			0.876,
+			0.9111 38.71%,
+			0.941,
+			0.9611 48.39%,
+			0.9707,
+			0.978 54.84%,
+			0.9885 62.1%,
+			0.9949 70.97%,
+			0.9982 82.26%,
+			0.9997 100%
+		)
+		0.498s;
+
+	display: block;
+	flex-shrink: 0;
+	height: 1.25rem;
+	width: 1.25rem;
+	position: relative;
+	border-radius: var(--border-radius);
+	container-type: inline-size;
+}
+
+.checkbox-check::before {
+	content: "";
+	position: absolute;
+	border-radius: inherit;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0.3;
+	transition: opacity 0.2s ease;
+	border: var(--border-width) solid var(--primary);
+}
+
+.checkbox-fill {
+	background: var(--primary);
+	border-radius: inherit;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	opacity: 0;
+	transition: opacity ease 0.2s;
+	width: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.checkbox-fill {
+		border-radius: 0;
+		/* Compute the proper border radius to start from */
+		/* prettier-ignore */
+		--nested-border-radius: max(
+			0px,
+			(var(--border-radius) - (100cqw * var(--initial-scale) / 2)) /
+			var(--initial-scale)
+		);
+		clip-path: inset(0 round var(--nested-border-radius));
+		scale: var(--initial-scale);
+		transition:
+			opacity ease 0.2s,
+			scale var(--fill-spring),
+			clip-path var(--fill-spring);
+	}
+}
+
+.checkbox-fill svg {
+	height: 0.6rem;
+	width: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.checkbox-fill svg path {
+		/* prettier-ignore */
+		transition: stroke-dashoffset
+			linear(
+				0,
+				0.0089 1.34%,
+				0.0665 4.01%,
+				0.4534 14.71%,
+				0.6529 21.39%,
+				0.7147 24.06%,
+				0.7899 28.08%,
+				0.8297 30.75%,
+				0.8768,
+				0.9116 38.77%,
+				0.9438,
+				0.9646,
+				0.9779 54.81%,
+				0.9879 61.5%,
+				0.9948 70.86%,
+				0.9981 81.55%,
+				0.9996 98.93%
+			)
+			0.3868s;
+		stroke-dashoffset: 1;
+	}
+}
+
+/* Make sure the opacity stays the same between :hover -> :checked (but not :focus-visible -> :checked) */
+.checkbox-input:checked:not(:focus-visible) + .checkbox-check::before,
+.checkbox-input:indeterminate:not(:focus-visible) + .checkbox-check::before {
+	opacity: 0.5;
+}
+
+.checkbox-input:checked + .checkbox-check .checkbox-fill,
+.checkbox-input:indeterminate + .checkbox-check .checkbox-fill {
+	opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.checkbox-input:checked + .checkbox-check .checkbox-fill,
+	.checkbox-input:indeterminate + .checkbox-check .checkbox-fill {
+		clip-path: inset(0 round var(--border-radius));
+		scale: 1;
+	}
+
+	.checkbox-input:checked + .checkbox-check .checkbox-fill path {
+		stroke-dashoffset: 0;
+		transition-delay: 33ms;
+	}
+}
+
+.checkbox-input:focus-visible + .checkbox-check {
+	box-shadow:
+		0 0 0 var(--outline-offset) var(--background),
+		0 0 0 calc(var(--outline-offset) + var(--outline-width))
+		var(--outline-color);
+}
+
+.checkbox-input:focus-visible + .checkbox-check,
+.checkbox-input:focus-visible + .checkbox-check * {
+	transition: none;
+}
+
+.checkbox-wrapper:hover .checkbox-check::before {
+	opacity: 0.5;
+}
+
+/* Disabled state */
+.checkbox-input:disabled + .checkbox-check {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.checkbox-input:disabled ~ * {
+	cursor: not-allowed;
+}
+
+.checkbox-wrapper:has(.checkbox-input:disabled) {
+	cursor: not-allowed;
+}

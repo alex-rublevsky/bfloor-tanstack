@@ -5,7 +5,7 @@ import { updateCategoryOrder } from "~/server_functions/dashboard/categories/upd
 import type { Category } from "~/types";
 import { cn } from "~/utils/utils";
 import { Button } from "../shared/Button";
-import { GripVertical, Check, X } from "../shared/Icon";
+import { Check, GripVertical, X } from "../shared/Icon";
 
 interface CategoryWithCount extends Category {
 	productCount: number | null;
