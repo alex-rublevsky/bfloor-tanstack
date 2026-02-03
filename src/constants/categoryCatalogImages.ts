@@ -41,4 +41,12 @@ export const CATEGORY_CATALOG_IMAGES: Record<
 		image: "2026/02/untitled-2.webp",
 		productSlug: "stupen-120030027-5",
 	},
+	background: {
+		image: "2024/01/img-20200412-wa0005.jpg",
+		productSlug: "1721",
+	},
+	rubber: {
+		image: "2026/02/untitled-3.webp",
+		productSlug: "6-mm-20-cherno-sinyaya",
+	},
 };
