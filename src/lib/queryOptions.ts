@@ -113,7 +113,7 @@ export const storeDataInfiniteQueryOptions = (
 					attributeFilters: filters?.attributeFilters ?? undefined,
 					minPrice: filters?.minPrice ?? undefined,
 					maxPrice: filters?.maxPrice ?? undefined,
-					sort: filters?.sort ?? undefined,
+					sort: filters?.sort ?? "best-selling",
 				},
 			}),
 		staleTime: 1000 * 60 * 60 * 24 * 7, // 7 days - products cached aggressively

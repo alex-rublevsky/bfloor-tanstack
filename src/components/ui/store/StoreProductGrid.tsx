@@ -603,24 +603,26 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 					: undefined,
 			sort: sortBy,
 		}),
-		// Keep previous data during filter change so CSS can crossfade feed → skeleton
-		placeholderData: (previousData) => previousData,
 	});
 
 	// Sync price range from first page bounds (real min/max for current filter set)
 	const firstPageBounds = storeData?.pages?.[0]?.priceBounds;
 	useEffect(() => {
 		if (firstPageBounds && firstPageBounds.max >= firstPageBounds.min) {
-			setPriceRange({ min: firstPageBounds.min, max: firstPageBounds.max });
+			const newMin = firstPageBounds.min;
+			const newMax = firstPageBounds.max;
+			setPriceRange({ min: newMin, max: newMax });
+			// Also update currentPriceRange to match the real bounds (not the hardcoded defaults)
+			// This prevents the query from thinking a price filter is applied when it's not
+			setCurrentPriceRange([newMin, newMax]);
 		}
 	}, [firstPageBounds]);
 
-	// Reset price filter to full range only when category (page) changes or when bounds change (new data loaded).
-	// Other filters (brand, collection, etc.) do not reset the price.
+	// Reset price filter to full range when category changes
 	// biome-ignore lint/correctness/useExhaustiveDependencies: categorySlug triggers reset on category navigation only
 	useEffect(() => {
 		setCurrentPriceRange([priceRange.min, priceRange.max]);
-	}, [categorySlug, priceRange.min, priceRange.max]);
+	}, [categorySlug]);
 
 	// Get store locations (hardcoded data)
 	const storeLocations = getAllStoreLocations();
