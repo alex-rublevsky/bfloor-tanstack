@@ -4,7 +4,8 @@ import { eq } from "drizzle-orm";
 import { DB } from "~/db";
 import { brands } from "~/schema";
 import type { BrandFormData } from "~/types";
-import { moveSingleStagingImage } from "../store/moveStagingImages";
+import { getStorageBucket } from "~/utils/storage";
+import { moveStagingImagesWithBucket } from "../store/moveStagingImages";
 
 export const createBrand = createServerFn({ method: "POST" })
 	.inputValidator((data: BrandFormData) => data)
@@ -30,12 +31,23 @@ export const createBrand = createServerFn({ method: "POST" })
 				throw new Error("A brand with this slug already exists");
 			}
 
-			// Move staging images to final location before saving
-			const finalLogo = await moveSingleStagingImage(brandData.logo, {
-				finalFolder: "brands",
-				slug: brandData.slug,
-				productName: brandData.name,
-			});
+			// Move staging images to final location before saving (in same request)
+			let finalLogo = brandData.logo || "";
+			if (finalLogo?.startsWith("staging/")) {
+				const bucket = getStorageBucket();
+				const moveResult = await moveStagingImagesWithBucket(bucket, {
+					imagePaths: [finalLogo],
+					finalFolder: "brands",
+					slug: brandData.slug,
+					productName: brandData.name,
+				});
+
+				if (moveResult?.pathMap?.[finalLogo]) {
+					finalLogo = moveResult.pathMap[finalLogo];
+				} else if (moveResult?.movedImages && moveResult.movedImages.length > 0) {
+					finalLogo = moveResult.movedImages[0];
+				}
+			}
 
 			// Insert the brand
 			const insertResult = await db

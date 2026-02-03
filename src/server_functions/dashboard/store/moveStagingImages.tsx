@@ -234,6 +234,10 @@ export const moveStagingImages = createServerFn({ method: "POST" })
  * Helper function to move a single staging image and return the final path.
  * This simplifies the common pattern of checking if an image is staging,
  * moving it, and extracting the final path.
+ * 
+ * @deprecated This function calls the server function version which creates a separate HTTP request.
+ * For server-side code, use moveStagingImagesWithBucket(getStorageBucket(), ...) directly instead
+ * to ensure the move runs in the same request/environment. See updateBrand.tsx for the correct pattern.
  */
 export async function moveSingleStagingImage(
 	imagePath: string | null | undefined,

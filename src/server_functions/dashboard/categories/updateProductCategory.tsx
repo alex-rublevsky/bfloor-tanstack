@@ -4,7 +4,8 @@ import { eq } from "drizzle-orm";
 import { DB } from "~/db";
 import { categories } from "~/schema";
 import type { CategoryFormData } from "~/types";
-import { moveSingleStagingImage } from "../store/moveStagingImages";
+import { getStorageBucket } from "~/utils/storage";
+import { moveStagingImagesWithBucket } from "../store/moveStagingImages";
 
 export const updateProductCategory = createServerFn({ method: "POST" })
 	.inputValidator((data: { id: number; data: CategoryFormData }) => data)
@@ -49,12 +50,23 @@ export const updateProductCategory = createServerFn({ method: "POST" })
 				}
 			}
 
-			// Move staging images to final location before saving
-			const finalImage = await moveSingleStagingImage(categoryData.image, {
-				finalFolder: "categories",
-				slug: categoryData.slug,
-				productName: categoryData.name,
-			});
+			// Move staging images to final location before saving (in same request)
+			let finalImage = categoryData.image || "";
+			if (finalImage?.startsWith("staging/")) {
+				const bucket = getStorageBucket();
+				const moveResult = await moveStagingImagesWithBucket(bucket, {
+					imagePaths: [finalImage],
+					finalFolder: "categories",
+					slug: categoryData.slug,
+					productName: categoryData.name,
+				});
+
+				if (moveResult?.pathMap?.[finalImage]) {
+					finalImage = moveResult.pathMap[finalImage];
+				} else if (moveResult?.movedImages && moveResult.movedImages.length > 0) {
+					finalImage = moveResult.movedImages[0];
+				}
+			}
 
 			// Update the category
 			const updateResult = await db

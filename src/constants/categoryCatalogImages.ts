@@ -33,4 +33,12 @@ export const CATEGORY_CATALOG_IMAGES: Record<
 		image: "2024/01/eurocol-140.png",
 		productSlug: "klej-forbo-140-euromix-pu-extra",
 	},
+	accessories: {
+		image: "2026/02/lenta.webp",
+		productSlug: "mednaya-lenta",
+	},
+	"rezinovye-nakladki-na-stupeni": {
+		image: "2026/02/untitled-2.webp",
+		productSlug: "stupen-120030027-5",
+	},
 };
