@@ -277,18 +277,16 @@ const Slider = React.forwardRef<
 		const hasTwoValues = internalValue.length >= 2;
 
 		return (
-			<div
-				className={cn("w-full min-w-52 space-y-4 sm:max-w-[20rem]", className)}
-			>
+			<div className={cn("w-full min-w-52 sm:max-w-[20rem]", className)}>
 				{(label || valueDisplay) && (
-					<div className="flex items-center justify-between gap-2">
+					<div className="mb-1 flex items-center justify-between gap-2">
 						{label && <p className="font-medium text-sm">{label}</p>}
 						{valueDisplay}
 					</div>
 				)}
 
 				{showInputs && hasTwoValues && (
-					<div className="flex w-full items-center gap-0">
+					<div className="mb-3 flex w-full items-center gap-0">
 						<div className="flex-1">
 							<Input
 								type="number"

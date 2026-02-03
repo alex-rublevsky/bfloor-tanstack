@@ -60,7 +60,7 @@ export function usePrefetch() {
 				collectionSlug: null,
 				storeLocationId: null,
 				attributeFilters: {},
-				sort: "relevant",
+				sort: "best-selling",
 			}),
 		);
 	}, [queryClient]);

@@ -40,7 +40,7 @@ export function CheckboxList({
 					<label
 						key={item.id}
 						htmlFor={`${idPrefix}-${item.id}`}
-						className="flex cursor-pointer items-center space-x-2 rounded-md p-2 transition-colors hover:bg-muted"
+						className="flex cursor-pointer items-center space-x-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
 					>
 						<Checkbox
 							id={`${idPrefix}-${item.id}`}

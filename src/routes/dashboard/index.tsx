@@ -54,13 +54,13 @@ const searchParamsSchema = z.object({
 	storeLocation: z.number().optional(),
 	attributeFilters: z.string().optional(), // JSON string of Record<number, string[]>
 	sort: z
-		.enum(["relevant", "name", "price-asc", "price-desc", "newest", "oldest"])
+		.enum(["name", "price-asc", "price-desc", "newest", "oldest"])
 		.optional(),
 });
 
 // Default values for search params (used for stripping defaults from URL)
 const defaultSearchValues = {
-	sort: "relevant" as const,
+	sort: "name" as const,
 };
 
 export const Route = createFileRoute("/dashboard/")({
@@ -135,8 +135,8 @@ function RouteComponent() {
 		Record<number, string[]>
 	>(parseAttributeFilters(searchParams.attributeFilters));
 	const [sortBy, setSortBy] = useState<
-		"relevant" | "name" | "price-asc" | "price-desc" | "newest" | "oldest"
-	>(searchParams.sort ?? "relevant");
+		"name" | "price-asc" | "price-desc" | "newest" | "oldest"
+	>(searchParams.sort ?? "name");
 
 	// Table sorting state
 	const [sorting, setSorting] = useState<SortingState>([]);
@@ -151,7 +151,7 @@ function RouteComponent() {
 		setSelectedAttributeFilters(
 			parseAttributeFilters(searchParams.attributeFilters),
 		);
-		const newSortBy = searchParams.sort ?? "relevant";
+		const newSortBy = searchParams.sort ?? "name";
 		setSortBy(newSortBy);
 
 		// Sync table sorting state with URL sort param
@@ -529,13 +529,8 @@ function RouteComponent() {
 		setSorting(newSorting);
 
 		// Convert TanStack Table sorting to our sort format
-		let newSortBy:
-			| "relevant"
-			| "name"
-			| "price-asc"
-			| "price-desc"
-			| "newest"
-			| "oldest" = "relevant";
+		let newSortBy: "name" | "price-asc" | "price-desc" | "newest" | "oldest" =
+			"name";
 
 		if (newSorting.length > 0) {
 			const sort = newSorting[0];
@@ -556,7 +551,7 @@ function RouteComponent() {
 		navigate({
 			search: (prev) => ({
 				...prev,
-				sort: newSortBy === "relevant" ? undefined : newSortBy,
+				sort: newSortBy === "name" ? undefined : newSortBy,
 			}),
 			replace: true,
 		});

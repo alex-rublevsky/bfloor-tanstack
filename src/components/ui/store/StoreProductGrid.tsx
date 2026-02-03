@@ -393,12 +393,12 @@ interface StoreProductGridProps {
 		storeLocation?: number;
 		attributeFilters?: string;
 		sort?:
-			| "relevant"
 			| "name"
 			| "price-asc"
 			| "price-desc"
 			| "newest"
-			| "oldest";
+			| "oldest"
+			| "best-selling";
 	};
 	/**
 	 * Navigate function from route (supports search updates and to for navigation)
@@ -449,13 +449,7 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 		Record<number, string[]>
 	>(parseAttributeFilters(searchParams.attributeFilters));
 	const [sortBy, setSortBy] = useState<
-		| "relevant"
-		| "name"
-		| "price-asc"
-		| "price-desc"
-		| "newest"
-		| "oldest"
-		| "best-selling"
+		"name" | "price-asc" | "price-desc" | "newest" | "oldest" | "best-selling"
 	>(searchParams.sort ?? defaultStoreSearchValues.sort);
 	const DEFAULT_PRICE: [number, number] = [0, 1000000];
 	const [currentPriceRange, setCurrentPriceRange] =
@@ -757,10 +751,18 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 		return (
 			<div ref={containerRef} className="flex h-full overflow-hidden">
 				<aside className="flex min-h-0 w-72 shrink-0 flex-col overflow-y-auto border-border border-r bg-background">
-					<div className="flex flex-col gap-4 p-4">
-						<h1 className="sticky top-0 z-999 bg-backgorund bg-background pb-1 text-3xl!">
-							{pageTitle}
-						</h1>
+					<h1
+						className="sticky top-0 z-999 border-border border-b px-4 py-3 text-3xl!"
+						style={{
+							backgroundColor:
+								"color-mix(in oklch, var(--background) 80%, transparent)",
+							backdropFilter: "blur(8px)",
+							WebkitBackdropFilter: "blur(8px)",
+						}}
+					>
+						{pageTitle}
+					</h1>
+					<div className="flex flex-col p-4 pt-0">
 						<ProductFilters {...filterProps} variant="sidebar" />
 					</div>
 				</aside>

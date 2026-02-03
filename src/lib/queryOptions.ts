@@ -77,7 +77,6 @@ export const storeDataInfiniteQueryOptions = (
 		minPrice?: number | null;
 		maxPrice?: number | null;
 		sort?:
-			| "relevant"
 			| "name"
 			| "price-asc"
 			| "price-desc"
@@ -98,7 +97,7 @@ export const storeDataInfiniteQueryOptions = (
 				attributeFilters: JSON.stringify(filters?.attributeFilters ?? {}),
 				minPrice: filters?.minPrice ?? null,
 				maxPrice: filters?.maxPrice ?? null,
-				sort: filters?.sort ?? "relevant",
+				sort: filters?.sort ?? "best-selling",
 			},
 		],
 		queryFn: ({ pageParam = 1 }) =>
@@ -522,7 +521,6 @@ export const productsInfiniteQueryOptions = (
 		minPrice?: number | null;
 		maxPrice?: number | null;
 		sort?:
-			| "relevant"
 			| "name"
 			| "price-asc"
 			| "price-desc"
@@ -543,7 +541,7 @@ export const productsInfiniteQueryOptions = (
 				attributeFilters: JSON.stringify(filters?.attributeFilters ?? {}),
 				minPrice: filters?.minPrice ?? null,
 				maxPrice: filters?.maxPrice ?? null,
-				sort: filters?.sort ?? "relevant",
+				sort: filters?.sort ?? "best-selling",
 			},
 		],
 		queryFn: ({ pageParam = 1 }) =>

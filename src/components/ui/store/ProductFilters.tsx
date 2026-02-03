@@ -56,7 +56,7 @@ const ProductFilters = memo(function ProductFilters({
 	priceRange,
 	currentPriceRange,
 	onPriceRangeChange,
-	sortBy = "relevant",
+	sortBy = "best-selling",
 	onSortChange,
 	attributeFilters = [],
 	selectedAttributeFilters = {},
@@ -181,13 +181,13 @@ const ProductFilters = memo(function ProductFilters({
 		// Sort filter
 		filterSections.push(
 			<div key="sort" className="min-w-fit">
-				<div className="mb-2 font-medium text-sm">Сортировка</div>
+				<div className="mb-1 font-medium text-sm">Сортировка</div>
 				<Select
 					value={sortBy}
 					onValueChange={handleSortChange}
 					className="field-sizing-content font-normal"
+					disableSelectedStyling={true}
 					options={[
-						{ value: "relevant", label: "По релевантности" },
 						{ value: "best-selling", label: "Популярные" },
 						{ value: "price-asc", label: "Сначала дешёвые" },
 						{ value: "price-desc", label: "Сначала дорогие" },
@@ -217,7 +217,7 @@ const ProductFilters = memo(function ProductFilters({
 		if (brands.length > 1) {
 			filterSections.push(
 				<div key="brands" className="min-w-fit">
-					<div className="mb-2 flex items-center justify-between">
+					<div className="mb-1 flex items-center justify-between">
 						<div className="font-medium text-sm">Бренды</div>
 					</div>
 					<CheckboxList
@@ -243,7 +243,7 @@ const ProductFilters = memo(function ProductFilters({
 		if (collections.length > 1) {
 			filterSections.push(
 				<div key="collections" className="min-w-fit">
-					<div className="mb-2 flex items-center justify-between">
+					<div className="mb-1 flex items-center justify-between">
 						<div className="font-medium text-sm">Коллекции</div>
 					</div>
 					<CheckboxList
@@ -269,7 +269,7 @@ const ProductFilters = memo(function ProductFilters({
 		if (storeLocations.length > 1) {
 			filterSections.push(
 				<div key="store-locations" className="min-w-fit">
-					<div className="mb-2 flex items-center justify-between">
+					<div className="mb-1 flex items-center justify-between">
 						<div className="font-medium text-sm">Адрес магазина</div>
 					</div>
 					<CheckboxList
@@ -319,7 +319,7 @@ const ProductFilters = memo(function ProductFilters({
 
 			filterSections.push(
 				<div key={`attr-${attrFilter.attributeId}`} className="min-w-fit">
-					<div className="mb-2 font-medium text-sm">
+					<div className="mb-1 font-medium text-sm">
 						{attrFilter.attributeName}
 					</div>
 					<CheckboxList
@@ -346,13 +346,13 @@ const ProductFilters = memo(function ProductFilters({
 		// Sort
 		sections.push(
 			<div key="sort" className="min-w-fit">
-				<div className="mb-2 font-medium text-sm">Сортировка</div>
+				<div className="mb-1 font-medium text-sm">Сортировка</div>
 				<Select
 					value={sortBy}
 					onValueChange={handleSortChange}
 					className="field-sizing-content font-normal"
+					disableSelectedStyling={true}
 					options={[
-						{ value: "relevant", label: "По релевантности" },
 						{ value: "best-selling", label: "Популярные" },
 						{ value: "price-asc", label: "Сначала дешёвые" },
 						{ value: "price-desc", label: "Сначала дорогие" },

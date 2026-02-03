@@ -23,7 +23,6 @@ export const getStoreData = createServerFn({ method: "GET" })
 				minPrice?: number;
 				maxPrice?: number;
 				sort?:
-					| "relevant"
 					| "name"
 					| "price-asc"
 					| "price-desc"

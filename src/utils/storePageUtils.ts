@@ -14,7 +14,6 @@ export const storeSearchParamsSchema = z.object({
 	attributeFilters: z.string().optional(), // JSON string of Record<number, string[]>
 	sort: z
 		.enum([
-			"relevant",
 			"name",
 			"price-asc",
 			"price-desc",
@@ -58,7 +57,6 @@ export function parseAttributeFilters(
 export function isValidSort(
 	v: string,
 ): v is
-	| "relevant"
 	| "name"
 	| "price-asc"
 	| "price-desc"
@@ -66,7 +64,6 @@ export function isValidSort(
 	| "oldest"
 	| "best-selling" {
 	return (
-		v === "relevant" ||
 		v === "name" ||
 		v === "price-asc" ||
 		v === "price-desc" ||
