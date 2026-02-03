@@ -570,6 +570,7 @@ function RouteComponent() {
 	// Create table instance
 	const table = useReactTable({
 		data: flatData,
+		// @ts-expect-error - TanStack Table has complex union types that TypeScript struggles with
 		columns,
 		state: {
 			sorting,
