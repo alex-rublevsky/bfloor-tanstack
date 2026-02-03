@@ -1,6 +1,5 @@
 import { useId } from "react";
 import { ProductSettingsFields } from "~/components/ui/dashboard/ProductSettingsFields";
-import { SelectWithCreate } from "~/components/ui/dashboard/SelectWithCreate";
 import { SlugField } from "~/components/ui/dashboard/SlugField";
 import { Input } from "~/components/ui/shared/input";
 import { Select } from "~/components/ui/shared/Select";
@@ -23,7 +22,6 @@ interface ProductBasicInfoFieldsProps {
 	categories?: Category[];
 	brands?: Brand[];
 	collections?: Collection[];
-	onEntityCreated: () => void;
 	productId?: number | string; // product ID for view transition
 }
 
@@ -38,7 +36,6 @@ export function ProductBasicInfoFields({
 	categories = [],
 	brands = [],
 	collections = [],
-	onEntityCreated,
 	productId,
 }: ProductBasicInfoFieldsProps) {
 	const categoryId = useId();
@@ -146,9 +143,14 @@ export function ProductBasicInfoFields({
 				/>
 
 				<div>
+					<label
+						htmlFor={unitId}
+						className="mb-2 block font-medium text-foreground text-sm"
+					>
+						Единица количества <span className="text-destructive">*</span>
+					</label>
 					<Select
 						id={unitId}
-						label="Единица количества"
 						required
 						className="w-full"
 						value={formData.unitOfMeasurement || "упаковка"}
@@ -167,8 +169,17 @@ export function ProductBasicInfoFields({
 
 				<div className="col-span-2 flex flex-wrap gap-4">
 					<div className="min-w-[150px] flex-1">
-						<SelectWithCreate
-							value={formData.categorySlug}
+						<label
+							htmlFor={categoryId}
+							className="mb-2 block font-medium text-foreground text-sm"
+						>
+							Категория <span className="text-destructive">*</span>
+						</label>
+						<Select
+							id={categoryId}
+							required
+							className="w-full"
+							value={formData.categorySlug || ""}
 							onValueChange={(value) => {
 								onChange({
 									target: {
@@ -178,52 +189,58 @@ export function ProductBasicInfoFields({
 								} as React.ChangeEvent<HTMLSelectElement>);
 							}}
 							placeholder="Выберите категорию"
-							label="Категория"
-							required
-							id={categoryId}
-							entityType="category"
-							options={categories}
-							onEntityCreated={onEntityCreated}
-							error={
-								hasAttemptedSubmit && !formData.categorySlug
-									? "обязательно"
-									: undefined
-							}
+							options={categories.map((c) => ({
+								value: c.slug,
+								label: c.name,
+							}))}
 						/>
+						{hasAttemptedSubmit && !formData.categorySlug && (
+							<p className="mt-1 text-red-500 text-sm">обязательно</p>
+						)}
 					</div>
 
 					<div className="min-w-[150px] flex-1">
-						<SelectWithCreate
-							value={formData.brandSlug}
+						<label
+							htmlFor={brandId}
+							className="mb-2 block font-medium text-foreground text-sm"
+						>
+							Бренд
+						</label>
+						<Select
+							id={brandId}
+							className="w-full"
+							value={formData.brandSlug || ""}
 							onValueChange={(value) => {
 								onChange({
 									target: { name: "brandSlug", value },
 								} as React.ChangeEvent<HTMLSelectElement>);
 							}}
 							placeholder="Выберите бренд"
-							label="Бренд"
-							id={brandId}
-							entityType="brand"
-							options={brands}
-							onEntityCreated={onEntityCreated}
+							options={brands.map((b) => ({ value: b.slug, label: b.name }))}
 						/>
 					</div>
 
 					<div className="min-w-[150px] flex-1">
-						<SelectWithCreate
-							value={formData.collectionSlug || null}
+						<label
+							htmlFor={collectionId}
+							className="mb-2 block font-medium text-foreground text-sm"
+						>
+							Коллекция
+						</label>
+						<Select
+							id={collectionId}
+							className="w-full"
+							value={formData.collectionSlug || ""}
 							onValueChange={(value) => {
 								onChange({
 									target: { name: "collectionSlug", value },
 								} as React.ChangeEvent<HTMLSelectElement>);
 							}}
 							placeholder="Выберите коллекцию"
-							label="Коллекция"
-							id={collectionId}
-							entityType="collection"
-							options={collections}
-							brands={brands}
-							onEntityCreated={onEntityCreated}
+							options={collections.map((c) => ({
+								value: c.slug,
+								label: c.name,
+							}))}
 						/>
 					</div>
 				</div>

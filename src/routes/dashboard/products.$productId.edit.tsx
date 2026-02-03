@@ -19,6 +19,7 @@ import { transformProductToFormData } from "~/utils/productFormHelpers";
 export const Route = createFileRoute("/dashboard/products/$productId/edit")({
 	component: EditProductPage,
 	// Loader fetches and transforms product data before component renders
+	// OPTIMIZATION: Check cache first for instant navigation (like storefront)
 	// Following TanStack Router best practices: return data from loader, use useLoaderData()
 	loader: async ({ context: { queryClient }, params }) => {
 		const productIdNum = parseInt(params.productId, 10);
@@ -26,7 +27,13 @@ export const Route = createFileRoute("/dashboard/products/$productId/edit")({
 			throw new Error("Invalid product ID");
 		}
 
-		// Fetch product data
+		// OPTIMIZATION: Try to get cached product from list view first
+		// This enables instant navigation similar to storefront product pages
+		// The cache seeding happens on hover in the table (seedDashboardProductCache)
+		// ensureQueryData is smart:
+		// - If data exists (from cache/seed) → returns immediately (instant!)
+		// - If data is stale → returns cached, refetches in background
+		// - If no data → fetches and waits
 		const product = await queryClient.ensureQueryData(
 			dashboardProductQueryOptions(productIdNum),
 		);
@@ -254,13 +261,12 @@ function EditProductPage() {
 					onSelectedVariationAttributesChange={
 						productForm.setSelectedVariationAttributes
 					}
-					onSlugChange={productForm.handleSlugManualChange}
-					onAutoSlugChange={productForm.handleAutoSlugChange}
-					onEntityCreated={productForm.handleEntityCreated}
-					onAttributesChange={handleAttributesChange}
+				onSlugChange={productForm.handleSlugManualChange}
+				onAutoSlugChange={productForm.handleAutoSlugChange}
+				onAttributesChange={handleAttributesChange}
 					onTagsChange={handleTagsChange}
 					idPrefix="edit"
-					productId={loaderData.productIdNum}
+					productId={loaderData.originalSlug}
 				/>
 
 				{/* Delete Product Section */}

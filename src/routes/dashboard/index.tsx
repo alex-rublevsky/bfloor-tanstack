@@ -1,33 +1,46 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import {
 	createFileRoute,
+	Link,
 	stripSearchParams,
 	useElementScrollRestoration,
 } from "@tanstack/react-router";
+import {
+	type ColumnDef,
+	flexRender,
+	getCoreRowModel,
+	type OnChangeFn,
+	type SortingState,
+	useReactTable,
+} from "@tanstack/react-table";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { zodValidator } from "@tanstack/zod-adapter";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { AdminProductCard } from "~/components/ui/dashboard/AdminProductCard";
+import DashboardFilters from "~/components/ui/dashboard/DashboardFilters";
 import { ProductsPageSkeleton } from "~/components/ui/dashboard/skeletons/ProductsPageSkeleton";
-import { ActiveFiltersDisplay } from "~/components/ui/shared/ActiveFiltersDisplay";
+import { Button } from "~/components/ui/shared/Button";
+import { Checkbox } from "~/components/ui/shared/Checkbox";
 import { EmptyState } from "~/components/ui/shared/EmptyState";
-import { ProductGridSkeleton } from "~/components/ui/shared/ProductGridSkeleton";
-import ProductFilters from "~/components/ui/store/ProductFilters";
+import { Icon } from "~/components/ui/shared/Icon";
+import { ASSETS_BASE_URL } from "~/constants/urls";
 import { getAllStoreLocations } from "~/data/storeLocations";
+import { usePrefetch } from "~/hooks/usePrefetch";
 import {
 	attributeValuesForFilteringDashboardQueryOptions,
 	categoriesQueryOptions,
 	filteredBrandsDashboardQueryOptions,
 	filteredCollectionsDashboardQueryOptions,
+	productCategoryCountsQueryOptions,
 	productsInfiniteQueryOptions,
 } from "~/lib/queryOptions";
-import type {
-	Brand,
-	CategoryWithCount,
-	Collection,
-	ProductWithVariations,
-} from "~/types";
+import { bulkDeleteProducts } from "~/server_functions/dashboard/store/bulkDeleteProducts";
+import type { Brand, Collection, ProductWithVariations } from "~/types";
+import { seedDashboardProductCache } from "~/utils/dashboardCache";
 
 // Zod schema for search params validation
 const searchParamsSchema = z.object({
@@ -60,37 +73,6 @@ export const Route = createFileRoute("/dashboard/")({
 	},
 });
 
-// Hook to get responsive columns per row based on screen size
-function useResponsiveColumns() {
-	const [columnsPerRow, setColumnsPerRow] = useState(6);
-
-	useEffect(() => {
-		const updateColumns = () => {
-			const width = window.innerWidth;
-			if (width >= 1536) {
-				setColumnsPerRow(6); // 2xl
-			} else if (width >= 1280) {
-				setColumnsPerRow(5); // xl
-			} else if (width >= 1024) {
-				setColumnsPerRow(4); // lg
-			} else if (width >= 768) {
-				setColumnsPerRow(3); // md
-			} else {
-				setColumnsPerRow(2); // sm and below
-			}
-		};
-
-		// Set initial value
-		updateColumns();
-
-		// Update on resize
-		window.addEventListener("resize", updateColumns);
-		return () => window.removeEventListener("resize", updateColumns);
-	}, []);
-
-	return columnsPerRow;
-}
-
 function RouteComponent() {
 	// Get search params from URL using TanStack Router
 	const searchParams = Route.useSearch();
@@ -102,8 +84,6 @@ function RouteComponent() {
 		const trimmed = rawValue.trim().replace(/\s+/g, " ");
 		return trimmed.length >= 2 ? trimmed : undefined;
 	})();
-	const containerRef = useRef<HTMLDivElement>(null);
-	const columnsPerRow = useResponsiveColumns();
 
 	// Parse attribute filters from URL
 	const parseAttributeFilters = useCallback(
@@ -130,6 +110,14 @@ function RouteComponent() {
 		[],
 	);
 
+	// Track if filter drawer has been opened (for lazy loading attribute filters on mobile)
+	const [filtersOpened, setFiltersOpened] = useState(false);
+
+	// Bulk delete state
+	const [isDeleting, setIsDeleting] = useState(false);
+	const queryClient = useQueryClient();
+	const { prefetchDashboardProduct } = usePrefetch();
+
 	// Initialize filter state from URL search params
 	const [selectedCategory, setSelectedCategory] = useState<string | null>(
 		searchParams.category ?? null,
@@ -147,17 +135,12 @@ function RouteComponent() {
 		Record<number, string[]>
 	>(parseAttributeFilters(searchParams.attributeFilters));
 	const [sortBy, setSortBy] = useState<
-		| "relevant"
-		| "name"
-		| "price-asc"
-		| "price-desc"
-		| "newest"
-		| "oldest"
-		| "best-selling"
+		"relevant" | "name" | "price-asc" | "price-desc" | "newest" | "oldest"
 	>(searchParams.sort ?? "relevant");
-	const [currentPriceRange, setCurrentPriceRange] = useState<[number, number]>([
-		0, 1000000,
-	]);
+
+	// Table sorting state
+	const [sorting, setSorting] = useState<SortingState>([]);
+	const [rowSelection, setRowSelection] = useState({});
 
 	// Sync state with URL when search params change (e.g., from browser back/forward)
 	useEffect(() => {
@@ -168,7 +151,23 @@ function RouteComponent() {
 		setSelectedAttributeFilters(
 			parseAttributeFilters(searchParams.attributeFilters),
 		);
-		setSortBy(searchParams.sort ?? "relevant");
+		const newSortBy = searchParams.sort ?? "relevant";
+		setSortBy(newSortBy);
+
+		// Sync table sorting state with URL sort param
+		const newSorting: SortingState = [];
+		if (newSortBy === "name") {
+			newSorting.push({ id: "name", desc: false });
+		} else if (newSortBy === "price-asc") {
+			newSorting.push({ id: "price", desc: false });
+		} else if (newSortBy === "price-desc") {
+			newSorting.push({ id: "price", desc: true });
+		} else if (newSortBy === "newest") {
+			newSorting.push({ id: "id", desc: false });
+		} else if (newSortBy === "oldest") {
+			newSorting.push({ id: "id", desc: true });
+		}
+		setSorting(newSorting);
 	}, [
 		searchParams.category,
 		searchParams.brand,
@@ -178,17 +177,6 @@ function RouteComponent() {
 		searchParams.sort,
 		parseAttributeFilters,
 	]);
-
-	const isValidSort = (v: string): v is typeof sortBy => {
-		return (
-			v === "relevant" ||
-			v === "name" ||
-			v === "price-asc" ||
-			v === "price-desc" ||
-			v === "newest" ||
-			v === "oldest"
-		);
-	};
 
 	// Update URL when filters change - using functional form as recommended by TanStack Router
 	const updateCategory = (category: string | null) => {
@@ -235,17 +223,6 @@ function RouteComponent() {
 		});
 	};
 
-	const updateSort = (sort: typeof sortBy) => {
-		setSortBy(sort);
-		navigate({
-			search: (prev) => ({
-				...prev,
-				sort: sort !== "relevant" ? sort : undefined,
-			}),
-			replace: true,
-		});
-	};
-
 	const updateAttributeFilter = (attributeId: number, valueIds: string[]) => {
 		const newFilters = { ...selectedAttributeFilters };
 		if (valueIds.length === 0) {
@@ -283,15 +260,11 @@ function RouteComponent() {
 			collectionSlug: selectedCollection ?? undefined,
 			storeLocationId: selectedStoreLocation ?? undefined,
 			attributeFilters: selectedAttributeFilters,
-			minPrice: currentPriceRange[0] !== 0 ? currentPriceRange[0] : undefined,
-			maxPrice:
-				currentPriceRange[1] !== 1000000 ? currentPriceRange[1] : undefined,
 			sort: sortBy,
 		}),
 	});
 
-	// Fetch attribute filters based on current filters (including attribute filters)
-	// This ensures only values available in the current filtered product set are shown
+	// Fetch attribute filters: always fetch on desktop, on mobile only after drawer opened
 	const { data: attributeFilters = [] } = useQuery({
 		...attributeValuesForFilteringDashboardQueryOptions(
 			selectedCategory ?? undefined,
@@ -300,6 +273,7 @@ function RouteComponent() {
 			selectedAttributeFilters,
 			selectedStoreLocation ?? undefined,
 		),
+		enabled: filtersOpened || true, // Always enabled for now, can optimize for mobile later
 	});
 
 	// Fetch filtered brands and collections based on current filters
@@ -323,6 +297,11 @@ function RouteComponent() {
 		...categoriesQueryOptions(),
 	});
 
+	// Load category counts
+	const { data: categoryCounts = {} } = useQuery(
+		productCategoryCountsQueryOptions(),
+	);
+
 	// Get store locations (hardcoded data)
 	const storeLocations = getAllStoreLocations();
 
@@ -336,101 +315,361 @@ function RouteComponent() {
 		return () => window.removeEventListener("dashboardAction", handleAction);
 	}, []);
 
-	const formatPrice = (price: number | string | null): string => {
-		if (price === null) return "$0.00";
-		const numericPrice = typeof price === "string" ? parseFloat(price) : price;
-		return new Intl.NumberFormat("en-CA", {
-			style: "currency",
-			currency: "р",
-		}).format(numericPrice);
-	};
-
 	// Merge products from all pages
-	const products =
-		productsData?.pages
-			?.flatMap((page) => page?.products ?? [])
-			?.filter(Boolean) ?? [];
+	const flatData = useMemo(
+		() =>
+			productsData?.pages
+				?.flatMap((page) => page?.products ?? [])
+				?.filter(Boolean) ?? [],
+		[productsData],
+	);
 
-	// Debug logging removed
+	// Create lookup maps for categories and brands
+	const categoryMap = useMemo(() => {
+		const map = new Map<string, { name: string }>();
+		for (const cat of categories) {
+			map.set(cat.slug, { name: cat.name });
+		}
+		return map;
+	}, [categories]);
 
-	// Use merged products directly (search is applied server-side)
-	const allProducts = products;
+	const brandMap = useMemo(() => {
+		const map = new Map<string, { name: string; image: string | null }>();
+		for (const brand of brands) {
+			map.set(brand.slug, { name: brand.name, image: brand.image });
+		}
+		return map;
+	}, [brands]);
 
-	// Server-side filtered list
-	const displayProducts = allProducts;
+	// Define table columns
+	const columns: ColumnDef<ProductWithVariations>[] = useMemo(
+		() => [
+			{
+				id: "select",
+				header: ({ table }) => {
+					const isAllSelected = table.getIsAllRowsSelected();
+					const isSomeSelected = table.getIsSomeRowsSelected();
+					return (
+						<Checkbox
+							checked={
+								isAllSelected ? true : isSomeSelected ? "indeterminate" : false
+							}
+							onCheckedChange={(value) => {
+								table.toggleAllRowsSelected(!!value);
+							}}
+						/>
+					);
+				},
+				cell: ({ row }) => (
+					<button
+						type="button"
+						onClick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+						}}
+						className="flex items-center"
+					>
+						<Checkbox
+							checked={row.getIsSelected()}
+							disabled={!row.getCanSelect()}
+							onCheckedChange={(value) => {
+								row.toggleSelected(!!value);
+							}}
+						/>
+					</button>
+				),
+				size: 50,
+			},
+			{
+				accessorKey: "images",
+				header: "Фото",
+				cell: ({ row }) => {
+					const product = row.original;
+					const imageArray = (() => {
+						if (!product.images) return [];
+						try {
+							return JSON.parse(product.images) as string[];
+						} catch {
+							return product.images
+								.split(",")
+								.map((img) => img.trim())
+								.filter(Boolean);
+						}
+					})();
+					const primaryImage = imageArray[0];
 
-	// Scroll restoration for virtualized list
-	// Following TanStack Router docs: https://tanstack.com/router/v1/docs/framework/react/guide/scroll-restoration#manual-scroll-restoration
+					return (
+						<div className="relative h-16 w-16 overflow-hidden rounded-md">
+							{primaryImage ? (
+								<img
+									src={`${ASSETS_BASE_URL}/${primaryImage}`}
+									alt={product.name}
+									className="h-full w-full object-cover"
+									style={{
+										viewTransitionName: `product-image-${product.slug}`,
+									}}
+								/>
+							) : (
+								<div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground text-xs">
+									No image
+								</div>
+							)}
+						</div>
+					);
+				},
+				size: 100,
+			},
+			{
+				accessorKey: "name",
+				header: "Название",
+				cell: ({ getValue }) => (
+					<div className="max-w-xs truncate">{getValue() as string}</div>
+				),
+				size: 300,
+			},
+			{
+				accessorKey: "price",
+				header: "Цена",
+				cell: ({ row }) => {
+					const product = row.original;
+					const displayPrice = (() => {
+						if (
+							product.hasVariations &&
+							product.variations &&
+							product.variations.length > 0
+						) {
+							const prices = product.variations.map((v) => v.price);
+							return Math.max(...prices);
+						}
+						return product.price;
+					})();
+
+					return (
+						<div className="flex items-baseline gap-1">
+							{product.discount ? (
+								<>
+									<span className="font-medium">
+										{Math.round(displayPrice * (1 - product.discount / 100))} р
+									</span>
+									<span className="text-muted-foreground text-xs line-through">
+										{Math.round(displayPrice)}
+									</span>
+									<span className="rounded bg-green-100 px-1 py-0.5 text-green-800 text-xs">
+										-{product.discount}%
+									</span>
+								</>
+							) : (
+								<span className="font-medium">
+									{Math.round(displayPrice)} р
+								</span>
+							)}
+						</div>
+					);
+				},
+				size: 150,
+			},
+			{
+				accessorKey: "categorySlug",
+				header: "Категория",
+				cell: ({ getValue }) => {
+					const slug = getValue() as string | null;
+					if (!slug) return <span className="text-muted-foreground">—</span>;
+					const category = categoryMap.get(slug);
+					return category ? (
+						<span>{category.name}</span>
+					) : (
+						<span className="text-muted-foreground">{slug}</span>
+					);
+				},
+				size: 150,
+			},
+			{
+				accessorKey: "brandSlug",
+				header: "Бренд",
+				cell: ({ getValue }) => {
+					const slug = getValue() as string | null;
+					if (!slug) return <span className="text-muted-foreground">—</span>;
+					const brand = brandMap.get(slug);
+					if (!brand) {
+						return <span className="text-muted-foreground">{slug}</span>;
+					}
+					return brand.image ? (
+						<div className="-mx-4 -my-3 flex h-full w-full items-center justify-center p-2">
+							<img
+								src={`${ASSETS_BASE_URL}/${brand.image}`}
+								alt={brand.name}
+								title={brand.name}
+								className="h-full w-full object-contain"
+							/>
+						</div>
+					) : (
+						<span>{brand.name}</span>
+					);
+				},
+				size: 100,
+			},
+			{
+				accessorKey: "viewCount",
+				header: "Просмотры",
+				size: 110,
+			},
+		],
+		[categoryMap, brandMap],
+	);
+
+	// Scroll restoration - window scroll
 	const scrollEntry = useElementScrollRestoration({
 		getElement: () => window,
 	});
 
-	// Virtualizer configuration - responsive columns handled by useResponsiveColumns hook
-	// Using dynamic sizing: row heights are unknown until rendered, so we estimate and measure
-	// Following TanStack Virtual dynamic example pattern: https://tanstack.com/virtual/latest/docs/framework/react/examples/dynamic
-	// Simply use measureElement ref - virtualizer handles everything automatically
-	const estimatedRowHeight = 365;
-	const rowCount = Math.ceil(displayProducts.length / columnsPerRow);
+	// Handle table sorting changes - convert to server-side sort
+	const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
+		const newSorting =
+			typeof updater === "function" ? updater(sorting) : updater;
+		setSorting(newSorting);
 
-	const virtualizer = useWindowVirtualizer({
-		count: rowCount,
-		estimateSize: () => estimatedRowHeight,
-		overscan: 8,
+		// Convert TanStack Table sorting to our sort format
+		let newSortBy:
+			| "relevant"
+			| "name"
+			| "price-asc"
+			| "price-desc"
+			| "newest"
+			| "oldest" = "relevant";
+
+		if (newSorting.length > 0) {
+			const sort = newSorting[0];
+			const { id, desc } = sort;
+
+			// Map column id to our sort format
+			if (id === "name") {
+				newSortBy = "name";
+			} else if (id === "price") {
+				newSortBy = desc ? "price-desc" : "price-asc";
+			} else if (id === "id") {
+				newSortBy = desc ? "oldest" : "newest";
+			}
+		}
+
+		// Update sort state and URL
+		setSortBy(newSortBy);
+		navigate({
+			search: (prev) => ({
+				...prev,
+				sort: newSortBy === "relevant" ? undefined : newSortBy,
+			}),
+			replace: true,
+		});
+
+		// Scroll to top when sorting changes
+		if (table.getRowModel().rows.length) {
+			rowVirtualizer.scrollToIndex?.(0);
+		}
+	};
+
+	// Create table instance
+	const table = useReactTable({
+		data: flatData,
+		columns,
+		state: {
+			sorting,
+			rowSelection,
+		},
+		onSortingChange: handleSortingChange,
+		onRowSelectionChange: setRowSelection,
+		getCoreRowModel: getCoreRowModel(),
+		// Removed getSortedRowModel() - using server-side sorting
+		manualSorting: true, // Enable server-side sorting
+		enableRowSelection: true,
+		debugTable: true,
+	});
+
+	const { rows } = table.getRowModel();
+
+	// Virtualizer for table rows - window-based scrolling
+	const rowVirtualizer = useWindowVirtualizer({
+		count: rows.length,
+		estimateSize: () => 65,
+		overscan: 10,
 		initialOffset: scrollEntry?.scrollY,
 	});
 
-	// Re-measure rows when the number of columns changes (affects row layout)
-	// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally re-measure when columns change
-	useEffect(() => {
-		virtualizer.measure();
-	}, [columnsPerRow, virtualizer]);
-
-	// Helper function to get products for a specific row
-	const getProductsForRow = (rowIndex: number) => {
-		const startIndex = rowIndex * columnsPerRow;
-		const endIndex = Math.min(
-			startIndex + columnsPerRow,
-			displayProducts.length,
-		);
-		return displayProducts.slice(startIndex, endIndex);
-	};
-
-	// Infinite scroll - load more products when user scrolls near the end
-	const virtualItems = virtualizer.getVirtualItems();
+	// Infinite scroll - load more when scrolling near bottom
+	const virtualItems = rowVirtualizer.getVirtualItems();
 	useEffect(() => {
 		const lastItem = virtualItems[virtualItems.length - 1];
-
-		// Don't fetch if already fetching, no next page, or no items rendered
 		if (!lastItem || !hasNextPage || isFetchingNextPage) return;
 
-		// Fetch next page when user scrolls near the end
-		// lastItem.index is the row index, rowCount is total rows
-		// Trigger when within 15 rows of the end (prefetch for smooth scrolling)
-		const threshold = rowCount - 4;
-
+		// Fetch when within 10 rows of the end
+		const threshold = rows.length - 10;
 		if (lastItem.index >= threshold) {
 			fetchNextPage();
 		}
-	}, [virtualItems, hasNextPage, isFetchingNextPage, rowCount, fetchNextPage]);
+	}, [
+		virtualItems,
+		hasNextPage,
+		isFetchingNextPage,
+		rows.length,
+		fetchNextPage,
+	]);
 
 	// Determine if we should show the skeleton
-	// Show skeleton only when:
-	// 1. No data yet (!productsData)
-	// 2. Fetching initial data or filter changes (isFetching && !isFetchingNextPage)
-	// Don't show skeleton when just fetching next page for infinite scroll
 	const showSkeleton = !productsData || (isFetching && !isFetchingNextPage);
 
+	// Get selected rows count and IDs
+	const selectedCount = Object.keys(rowSelection).length;
+	const selectedProductIds = useMemo(() => {
+		return Object.keys(rowSelection)
+			.map((index) => flatData[Number(index)]?.id)
+			.filter((id): id is number => id !== undefined);
+	}, [rowSelection, flatData]);
+
+	// Handle bulk delete
+	const handleBulkDelete = async () => {
+		if (selectedProductIds.length === 0) return;
+
+		const confirmed = window.confirm(
+			`Вы уверены, что хотите удалить ${selectedProductIds.length} товар${selectedProductIds.length === 1 ? "" : "ов"}?`,
+		);
+
+		if (!confirmed) return;
+
+		setIsDeleting(true);
+		try {
+			await bulkDeleteProducts({ data: { ids: selectedProductIds } });
+
+			// Clear selection
+			setRowSelection({});
+
+			// Invalidate queries to refetch data
+			await queryClient.invalidateQueries({
+				queryKey: ["bfloorDashboardProductsInfinite"],
+			});
+			await queryClient.invalidateQueries({
+				queryKey: ["productCategoryCounts"],
+			});
+
+			// Success feedback (optional - could add toast notification)
+			console.log("Products deleted successfully");
+		} catch (error) {
+			console.error("Failed to delete products:", error);
+			alert("Ошибка при удалении товаров");
+		} finally {
+			setIsDeleting(false);
+		}
+	};
+
 	return (
-		<>
-			{/* Filters bar (reusing store ProductFilters for hide-on-scroll behavior) */}
-			<div ref={containerRef}>
-				<ProductFilters
-					categories={categories.map(
-						(c): CategoryWithCount => ({
-							...c,
-							count: 0,
-						}),
-					)}
+		<div>
+			{/* Sticky Filters and Table Header Container */}
+			<div className="dashboard-sticky-filters sticky z-9999 overflow-visible border-border border-b bg-background/80 backdrop-blur-sm">
+				{/* Filters Bar */}
+				<DashboardFilters
+					categories={categories.map((c) => ({
+						slug: c.slug,
+						name: c.name,
+						count: categoryCounts[c.slug] ?? 0,
+					}))}
 					selectedCategory={selectedCategory}
 					onCategoryChange={updateCategory}
 					brands={brands.map((b: Brand) => ({ slug: b.slug, name: b.name }))}
@@ -445,109 +684,159 @@ function RouteComponent() {
 					storeLocations={storeLocations}
 					selectedStoreLocation={selectedStoreLocation}
 					onStoreLocationChange={updateStoreLocation}
-					priceRange={{ min: 0, max: 1000000 }}
-					currentPriceRange={currentPriceRange}
-					onPriceRangeChange={setCurrentPriceRange}
-					sortBy={sortBy}
-					onSortChange={(v) => {
-						if (isValidSort(v)) updateSort(v);
-					}}
 					attributeFilters={attributeFilters}
 					selectedAttributeFilters={selectedAttributeFilters}
 					onAttributeFilterChange={updateAttributeFilter}
+					onFiltersOpen={() => setFiltersOpened(true)}
 				/>
-				{/* Active Filters Display - Always show, even during loading */}
-				<ActiveFiltersDisplay
-					categories={categories.map(
-						(c): CategoryWithCount => ({
-							...c,
-							count: 0,
-						}),
-					)}
-					selectedCategory={selectedCategory}
-					brands={brands}
-					selectedBrand={selectedBrand}
-					collections={collections}
-					selectedCollection={selectedCollection}
-					storeLocations={storeLocations}
-					selectedStoreLocation={selectedStoreLocation}
-					attributeFilters={attributeFilters}
-					selectedAttributeFilters={selectedAttributeFilters}
-					onRemoveBrand={() => updateBrand(null)}
-					onRemoveCollection={() => updateCollection(null)}
-					onRemoveStoreLocation={() => updateStoreLocation(null)}
-					onRemoveAttributeValue={(attributeId, valueId) => {
-						const currentValues = selectedAttributeFilters[attributeId] || [];
-						const newValues = currentValues.filter((id) => id !== valueId);
-						updateAttributeFilter(attributeId, newValues);
-					}}
-				/>
-				{/* Products List - Show skeleton during loading, otherwise show products */}
-				{showSkeleton ? (
-					<ProductGridSkeleton itemCount={18} gridClassName="px-4" />
-				) : displayProducts.length === 0 ? (
+
+				{/* Selection Info */}
+				{selectedCount > 0 && (
+					<div className="flex items-center justify-between gap-4 border-t bg-muted/50 px-4 py-2">
+						<span className="text-sm">
+							Выбрано: {selectedCount} товар
+							{selectedCount === 1 ? "" : selectedCount < 5 ? "а" : "ов"}
+						</span>
+						<div className="flex items-center gap-2">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setRowSelection({})}
+								disabled={isDeleting}
+							>
+								Отменить
+							</Button>
+							<Button
+								variant="destructive"
+								size="sm"
+								onClick={handleBulkDelete}
+								disabled={isDeleting}
+							>
+								<Icon name="trash" className="mr-1.5 h-4 w-4" />
+								{isDeleting ? "Удаление..." : "Удалить"}
+							</Button>
+						</div>
+					</div>
+				)}
+
+				{/* Table Header - only show when there's data */}
+				{!showSkeleton && flatData.length > 0 && (
+					<div className="border-t bg-background">
+						<div className="px-4">
+							{table.getHeaderGroups().map((headerGroup) => (
+								<div key={headerGroup.id} className="flex border-b">
+									{headerGroup.headers.map((header) => {
+										const canSort = header.column.getCanSort();
+										return (
+											<div
+												key={header.id}
+												className="flex items-center border-r px-4 py-3 text-left font-medium text-sm last:border-r-0"
+												style={{ width: header.getSize() }}
+											>
+												{canSort ? (
+													<button
+														type="button"
+														className="flex cursor-pointer select-none items-center gap-2"
+														onClick={header.column.getToggleSortingHandler()}
+														onKeyDown={(e) => {
+															if (e.key === "Enter" || e.key === " ") {
+																e.preventDefault();
+																header.column.getToggleSortingHandler()?.(e);
+															}
+														}}
+													>
+														{flexRender(
+															header.column.columnDef.header,
+															header.getContext(),
+														)}
+														{{
+															asc: " 🔼",
+															desc: " 🔽",
+														}[header.column.getIsSorted() as string] ?? null}
+													</button>
+												) : (
+													<div className="flex items-center gap-2">
+														{flexRender(
+															header.column.columnDef.header,
+															header.getContext(),
+														)}
+													</div>
+												)}
+											</div>
+										);
+									})}
+								</div>
+							))}
+						</div>
+					</div>
+				)}
+			</div>
+
+			{/* Table Content */}
+			{showSkeleton ? (
+				<div className="flex min-h-screen items-center justify-center">
+					<p className="text-muted-foreground">Loading products...</p>
+				</div>
+			) : flatData.length === 0 ? (
+				<div className="px-4 py-8">
 					<EmptyState
 						entityType="products"
 						isSearchResult={!!normalizedSearch}
 					/>
-				) : (
-					<>
-						<div
-							className="relative px-4 py-4"
-							style={{
-								height: `${virtualizer.getTotalSize()}px`,
-								width: "100%",
-								position: "relative",
-							}}
-						>
-							{/* Dynamic sizing: Following TanStack Virtual documentation pattern */}
-							{/* Simply use measureElement ref - virtualizer handles everything automatically */}
-							{virtualizer.getVirtualItems().map((virtualRow) => {
-								const rowProducts = getProductsForRow(virtualRow.index);
-								return (
-									<div
-										key={virtualRow.key}
-										data-index={virtualRow.index}
-										ref={virtualizer.measureElement}
-										className="virtualized-row"
-										style={{
-											position: "absolute",
-											top: 0,
-											left: 0,
-											width: "100%",
-											// Critical: No height constraint - let content determine height
-											// The virtualizer will measure this element's natural height
-											transform: `translateY(${virtualRow.start}px)`,
-										}}
-									>
-										{/* Grid container - height determined by tallest card in row */}
-										{/* CSS Grid automatically makes container height = tallest item */}
-										{/* Add bottom margin to create spacing between rows */}
+				</div>
+			) : (
+				<div className="px-4">
+					<div
+						className="relative"
+						style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+					>
+						{rowVirtualizer.getVirtualItems().map((virtualRow) => {
+							const row = rows[virtualRow.index];
+							const productId = row.original.id;
+
+							return (
+								<Link
+									key={row.id}
+									to="/dashboard/products/$productId/edit"
+									params={{ productId: String(productId) }}
+									data-index={virtualRow.index}
+									ref={(node) => rowVirtualizer.measureElement(node)}
+									className="absolute left-0 flex w-full border-b transition-colors hover:bg-muted/50"
+									style={{
+										transform: `translateY(${virtualRow.start}px)`,
+									}}
+									viewTransition={true}
+									preload="intent"
+									onMouseEnter={() => {
+										// Seed cache with list data for instant navigation
+										seedDashboardProductCache(queryClient, productId);
+										// Also prefetch to ensure fresh data
+										prefetchDashboardProduct(productId);
+									}}
+								>
+									{row.getVisibleCells().map((cell) => (
 										<div
-											className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
-											style={{ marginBottom: "0.75rem" }}
+											key={cell.id}
+											className="flex items-center border-r px-4 py-3 text-sm last:border-r-0"
+											style={{ width: cell.column.getSize() }}
 										>
-											{rowProducts.map((product: ProductWithVariations) => (
-												<AdminProductCard
-													key={product.id}
-													product={product}
-													formatPrice={formatPrice}
-												/>
-											))}
+											{flexRender(
+												cell.column.columnDef.cell,
+												cell.getContext(),
+											)}
 										</div>
-									</div>
-								);
-							})}
+									))}
+								</Link>
+							);
+						})}
+					</div>
+					{isFetchingNextPage && (
+						<div className="flex w-full items-center justify-center p-4">
+							<p className="text-muted-foreground">Loading more...</p>
 						</div>
-						{/* Loading indicator for next page */}
-						{isFetchingNextPage && (
-							<div className="flex w-full items-center justify-center p-8">
-								<p className="text-muted-foreground">Загрузка...</p>
-							</div>
-						)}
-					</>
-				)}
-			</div>
-		</>
+					)}
+				</div>
+			)}
+		</div>
 	);
 }

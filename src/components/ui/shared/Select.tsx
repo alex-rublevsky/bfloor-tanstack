@@ -22,12 +22,12 @@ interface SelectProps {
 	onValueChange?: (value: string) => void;
 	options: SelectOption[] | (SelectOption | SelectOptionGroup)[];
 	placeholder?: string;
-	label?: string;
 	required?: boolean;
-	labelBackgroundColor?: string;
 	id?: string;
 	className?: string;
 	disabled?: boolean;
+	size?: "sm" | "default"; // Size variant
+	disableSelectedStyling?: boolean; // Disable primary bg on selected state
 }
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
@@ -38,12 +38,12 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 			onValueChange,
 			options,
 			placeholder,
-			label,
 			required,
-			labelBackgroundColor,
 			id: idProp,
 			className,
 			disabled,
+			size = "default",
+			disableSelectedStyling = false,
 		},
 		ref,
 	) => {
@@ -96,40 +96,53 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 			return list;
 		}, [options, placeholder]);
 
+		// Determine if value is selected (not empty or default)
+		const isSelected = value && value !== "" && value !== defaultValue;
+
+		// Find first option's value to check if it's a placeholder/default
+		const firstOptionValue = React.useMemo(() => {
+			if (placeholder) return "";
+			const firstOpt = options[0];
+			return firstOpt && "value" in firstOpt ? firstOpt.value : "";
+		}, [options, placeholder]);
+
+		const hasNonDefaultValue =
+			isSelected || (value && value !== firstOptionValue);
+
+		// Check if field-sizing-content is in className
+		const hasFieldSizingContent =
+			className?.includes("field-sizing-content") ?? false;
+
 		return (
-			<div className="relative h-9">
-				{label && (
-					<label
-						htmlFor={id}
-						className={cn(
-							"-translate-y-1/2 pointer-events-none absolute top-0 left-3 z-10 origin-left scale-75 px-1 text-foreground text-sm",
-							labelBackgroundColor ?? "bg-background",
-						)}
-					>
-						<span className="flex items-center gap-1">
-							{label}
-							{required && <span className="text-destructive">*</span>}
-						</span>
-					</label>
+			<select
+				ref={ref}
+				id={id}
+				value={value ?? ""}
+				onChange={handleChange}
+				disabled={disabled}
+				required={required}
+				className={cn(
+					"select-native cursor-pointer rounded-lg border border-input bg-background text-foreground shadow-black/5 shadow-sm transition-standard",
+					"hover:border-primary active:border-primary",
+					"focus:border-ring focus:outline-none focus:ring-[3px] focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50",
+					// Only apply layout classes if NOT using field-sizing-content
+					!hasFieldSizingContent && "flex min-w-0",
+					// Size variants
+					!hasFieldSizingContent &&
+						(size === "sm"
+							? "h-8 px-2.5 py-1.5 text-xs leading-tight"
+							: "h-9 px-3 py-2 text-sm"),
+					// When using field-sizing-content, still apply h-8 class for CSS selector
+					hasFieldSizingContent && size === "sm" && "h-8",
+					// Selected state styling - full primary bg with primary-foreground text
+					!disableSelectedStyling &&
+						hasNonDefaultValue &&
+						"border-primary bg-primary text-primary-foreground hover:bg-primary/90",
+					className,
 				)}
-				<select
-					ref={ref}
-					id={id}
-					value={value ?? ""}
-					onChange={handleChange}
-					disabled={disabled}
-					required={required}
-					className={cn(
-						"select-native flex h-9 min-w-0 cursor-pointer rounded-lg border border-input bg-background px-3 py-2 text-foreground text-sm shadow-black/5 shadow-sm transition-standard",
-						"hover:border-primary active:border-primary",
-						"focus:border-ring focus:outline-none focus:ring-[3px] focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50",
-						label && "pt-4",
-						className,
-					)}
-				>
-					{opts}
-				</select>
-			</div>
+			>
+				{opts}
+			</select>
 		);
 	},
 );

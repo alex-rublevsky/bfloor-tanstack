@@ -76,7 +76,7 @@ function SortableImageItem({
 		return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 	};
 
-	// Apply view transition to first image if productId is provided
+	// Apply view transition to first image if productId (slug) is provided
 	const viewTransitionStyle =
 		index === 0 && productId
 			? { viewTransitionName: `product-image-${productId}` }

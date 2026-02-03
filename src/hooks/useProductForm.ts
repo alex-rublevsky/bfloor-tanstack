@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import {
 	generateVariationSKU,
@@ -68,7 +67,6 @@ export function useProductForm({
 	onImagesChange,
 	validate,
 }: UseProductFormOptions) {
-	const queryClient = useQueryClient();
 	const { data: attributes } = useProductAttributes();
 
 	const [formData, setFormData] = useState<ProductFormData>(initialFormData);
@@ -197,12 +195,6 @@ export function useProductForm({
 		[variations, attributes],
 	);
 
-	const handleEntityCreated = useCallback(() => {
-		queryClient.invalidateQueries({ queryKey: ["bfloorBrands"] });
-		queryClient.invalidateQueries({ queryKey: ["bfloorCollections"] });
-		queryClient.invalidateQueries({ queryKey: ["bfloorCategories"] });
-	}, [queryClient]);
-
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setHasAttemptedSubmit(true);
@@ -275,7 +267,6 @@ export function useProductForm({
 		handleImagesChange,
 		handleStoreLocationChange,
 		handleVariationsChange,
-		handleEntityCreated,
 		handleSubmit,
 		handleAutoSlugChange,
 		handleSlugManualChange,

@@ -5,17 +5,35 @@
  */
 
 /* Defensive CSS for field-sizing: content (select only) */
+/* Based on Chrome recommendations: https://developer.chrome.com/docs/css-ui/css-field-sizing */
 select.field-sizing-content,
 .select-native.field-sizing-content {
+	/* Enable CSS field-sizing for auto width */
+	field-sizing: content;
+	/* Defensive sizing - prevents collapsing too small or growing too large */
 	min-inline-size: 5ch;
 	min-block-size: 1.5lh;
-	max-inline-size: 30ch;
+	max-inline-size: 50ch;
+	/* Allow width to adjust to content */
+	width: fit-content;
 }
 
-/* Content-sized select: trigger padding */
+/* Content-sized select: trigger padding (default size) */
 .select-native.field-sizing-content {
 	padding-inline: 0.75rem 1rem;
 	padding-block: 0.5rem;
+	font-size: 0.875rem; /* text-sm */
+	line-height: 1.25rem;
+	height: 2.25rem; /* h-9 equivalent */
+}
+
+/* Content-sized select: trigger padding (small size) */
+.select-native.field-sizing-content.h-8 {
+	padding-inline: 0.625rem 0.875rem;
+	padding-block: 0.375rem;
+	font-size: 0.75rem; /* text-xs */
+	line-height: 1rem;
+	height: 2rem; /* h-8 equivalent */
 }
 
 /* Opt in to customizable select */
@@ -28,7 +46,8 @@ select.field-sizing-content,
 /* Dropdown list (top-layer popover) – no container padding */
 /* biome-ignore lint/correctness/noUnknownPseudoElement: native select picker (Chrome 126+) */
 .select-native::picker(select) {
-	overflow: hidden;
+	overflow-y: auto;
+	overflow-x: hidden;
 	max-height: 24rem;
 	min-width: 8rem;
 	border-radius: 1rem;
@@ -39,6 +58,8 @@ select.field-sizing-content,
 		0 4px 6px -1px rgb(0 0 0 / 0.1),
 		0 2px 4px -2px rgb(0 0 0 / 0.1);
 	padding: 0;
+	/* Ensure it's on top of everything */
+	z-index: 9999;
 }
 
 /* Padding and text size on each option so hover fills the full row */
@@ -46,6 +67,20 @@ select.field-sizing-content,
 	padding-block: 0.5rem;
 	padding-inline: 0.75rem;
 	font-size: 0.875rem; /* text-sm */
+}
+
+/* Small size variant - smaller text and padding in dropdown */
+.select-native.h-8 option {
+	padding-block: 0.375rem;
+	padding-inline: 0.625rem;
+	font-size: 0.75rem; /* text-xs */
+	line-height: 1.25; /* Tighter line height for better centering */
+}
+
+/* Small size variant - ensure proper vertical alignment */
+.select-native.h-8 {
+	display: flex;
+	align-items: center;
 }
 
 /* Chevron icon on the trigger */

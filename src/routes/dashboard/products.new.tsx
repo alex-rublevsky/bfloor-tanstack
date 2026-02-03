@@ -115,10 +115,9 @@ function NewProductPage() {
 					onSelectedVariationAttributesChange={
 						productForm.setSelectedVariationAttributes
 					}
-					onSlugChange={productForm.handleSlugManualChange}
-					onAutoSlugChange={productForm.handleAutoSlugChange}
-					onEntityCreated={productForm.handleEntityCreated}
-					onAttributesChange={handleAttributesChange}
+				onSlugChange={productForm.handleSlugManualChange}
+				onAutoSlugChange={productForm.handleAutoSlugChange}
+				onAttributesChange={handleAttributesChange}
 					onTagsChange={handleTagsChange}
 					idPrefix="create"
 				/>

@@ -1074,6 +1074,27 @@ input[type="number"] {
 	transform: translateY(0);
 }
 
+/* Dashboard filters: coordinate with navbar animation */
+.dashboard-sticky-filters {
+	top: 60px; /* Position below navbar */
+	/* Use transform for GPU-accelerated smooth animation */
+	transform: translateY(0);
+	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	will-change: transform;
+}
+
+/* When navbar is hidden, translate filters up by exactly navbar height */
+.navbar-scroll-aware.navbar-hidden ~ * .dashboard-sticky-filters,
+body:has(.navbar-scroll-aware.navbar-hidden) .dashboard-sticky-filters {
+	transform: translateY(-60px);
+}
+
+/* When navbar is visible, keep filters in place */
+.navbar-scroll-aware.navbar-visible ~ * .dashboard-sticky-filters,
+body:has(.navbar-scroll-aware.navbar-visible) .dashboard-sticky-filters {
+	transform: translateY(0);
+}
+
 /* Backdrop blur for modern browsers - with enhanced browser support */
 @supports (
 		(-webkit-backdrop-filter: blur(8px)) or

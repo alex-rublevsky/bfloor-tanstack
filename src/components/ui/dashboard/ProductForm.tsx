@@ -36,11 +36,10 @@ interface ProductFormProps {
 	onSelectedVariationAttributesChange: (attributes: string[]) => void;
 	onSlugChange: (slug: string) => void;
 	onAutoSlugChange: (isAuto: boolean) => void;
-	onEntityCreated: () => void;
 	onAttributesChange: (attributes: ProductFormData["attributes"]) => void;
 	onTagsChange: (itemId: string, checked: boolean) => void;
 	idPrefix: "edit" | "add" | "create";
-	productId?: number;
+	productId?: number | string; // Can be numeric ID or slug for view transitions
 }
 
 export function ProductForm({
@@ -57,7 +56,6 @@ export function ProductForm({
 	onSelectedVariationAttributesChange,
 	onSlugChange,
 	onAutoSlugChange,
-	onEntityCreated,
 	onAttributesChange,
 	onTagsChange,
 	idPrefix,
@@ -141,7 +139,6 @@ export function ProductForm({
 						categories={categories?.map((c) => ({ ...c, count: 0 }))}
 						brands={brands}
 						collections={collections}
-						onEntityCreated={onEntityCreated}
 						productId={productId}
 					/>
 				</DrawerSection>
