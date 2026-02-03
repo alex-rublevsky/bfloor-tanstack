@@ -44,7 +44,10 @@ export const createProductCategory = createServerFn({ method: "POST" })
 
 				if (moveResult?.pathMap?.[finalImage]) {
 					finalImage = moveResult.pathMap[finalImage];
-				} else if (moveResult?.movedImages && moveResult.movedImages.length > 0) {
+				} else if (
+					moveResult?.movedImages &&
+					moveResult.movedImages.length > 0
+				) {
 					finalImage = moveResult.movedImages[0];
 				}
 			}

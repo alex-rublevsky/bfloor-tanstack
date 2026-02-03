@@ -58,7 +58,10 @@ export const updateBrand = createServerFn({ method: "POST" })
 
 				if (moveResult?.pathMap?.[finalLogo]) {
 					finalLogo = moveResult.pathMap[finalLogo];
-				} else if (moveResult?.movedImages && moveResult.movedImages.length > 0) {
+				} else if (
+					moveResult?.movedImages &&
+					moveResult.movedImages.length > 0
+				) {
 					finalLogo = moveResult.movedImages[0];
 				}
 			}
