@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { Button } from "~/components/ui/shared/Button";
 import {
 	CheckboxList,
@@ -10,6 +10,7 @@ import {
 	DrawerContent,
 	DrawerFooter,
 } from "~/components/ui/shared/Drawer";
+import { FilterGroup } from "~/components/ui/shared/FilterGroup";
 import {
 	Select,
 	SelectContent,
@@ -44,6 +45,8 @@ interface ProductFiltersProps {
 	selectedAttributeFilters?: Record<number, string[]>; // attributeId -> array of value IDs (as strings)
 	onAttributeFilterChange?: (attributeId: number, valueIds: string[]) => void;
 	onFiltersOpen?: () => void; // Callback when filter drawer opens (for lazy loading)
+	/** When "sidebar", renders only filter content (no button/drawer). When "drawer", shows floating button + drawer. */
+	variant?: "drawer" | "sidebar";
 }
 
 const ProductFilters = memo(function ProductFilters({
@@ -65,11 +68,17 @@ const ProductFilters = memo(function ProductFilters({
 	selectedAttributeFilters = {},
 	onAttributeFilterChange,
 	onFiltersOpen,
+	variant = "drawer",
 }: ProductFiltersProps) {
 	useDeviceType();
 	// no masked backdrop needed in current layout
 
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+	// Load filter options when sidebar is shown (desktop)
+	useEffect(() => {
+		if (variant === "sidebar") onFiltersOpen?.();
+	}, [variant, onFiltersOpen]);
 	const { prefetchFilterOptions } = usePrefetch();
 
 	// Prefetch filter options when user hovers over filters button
@@ -328,27 +337,183 @@ const ProductFilters = memo(function ProductFilters({
 			);
 		});
 
-		return (
-			<div className="space-y-4">
-				{/* Filters in flex row with wrap and space-between */}
-				<div className="flex flex-row flex-wrap justify-between gap-x-4 gap-y-4">
-					{filterSections}
-				</div>
-			</div>
-		);
+		return <div className="flex flex-col gap-4">{filterSections}</div>;
 	};
 
+	// Mobile drawer: horizontal scrolling pill buttons (same component as ProductCard variations, bigger size)
+	const renderFilterContentMobile = () => {
+		const pillSectionClass =
+			"min-w-0 overflow-x-auto overflow-y-hidden pb-1 -mx-1 px-1";
+		const sections = [];
+
+		// Sort
+		sections.push(
+			<div key="sort" className="min-w-fit">
+				<div className="mb-2 font-medium text-sm">Сортировка</div>
+				<Select value={sortBy} onValueChange={handleSortChange}>
+					<SelectTrigger className="field-sizing-content font-normal text-xs">
+						<SelectValue placeholder="Выберите сортировку" />
+					</SelectTrigger>
+					<SelectContent className="bg-background font-normal text-xs">
+						<SelectItem className="font-normal text-xs" value="relevant">
+							По релевантности
+						</SelectItem>
+						<SelectItem className="font-normal text-xs" value="best-selling">
+							Популярные
+						</SelectItem>
+						<SelectItem className="font-normal text-xs" value="price-asc">
+							Сначала дешёвые
+						</SelectItem>
+						<SelectItem className="font-normal text-xs" value="price-desc">
+							Сначала дорогие
+						</SelectItem>
+						<SelectItem className="font-normal text-xs" value="newest">
+							Сначала новые
+						</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>,
+		);
+
+		// Price
+		sections.push(
+			<div key="price" className="min-w-fit">
+				<Slider
+					value={currentPriceRange}
+					min={priceRange.min}
+					max={priceRange.max}
+					step={1}
+					onValueChange={handlePriceRangeChange}
+					showTooltip
+					tooltipContent={(value) => `${value} р`}
+					label="Цена"
+				/>
+			</div>,
+		);
+
+		// Brands – horizontal pills
+		if (brands.length > 1) {
+			sections.push(
+				<div key="brands" className="min-w-0">
+					<FilterGroup
+						title="Бренды"
+						options={brands}
+						selectedOptions={selectedBrand}
+						onOptionChange={(slug: string | null) => handleBrandChange(slug)}
+						variant="filterMobile"
+						noWrap
+						className={pillSectionClass}
+					/>
+				</div>,
+			);
+		}
+
+		// Collections – horizontal pills
+		if (collections.length > 1) {
+			sections.push(
+				<div key="collections" className="min-w-0">
+					<FilterGroup
+						title="Коллекции"
+						options={collections}
+						selectedOptions={selectedCollection}
+						onOptionChange={(slug: string | null) =>
+							handleCollectionChange(slug)
+						}
+						variant="filterMobile"
+						noWrap
+						className={pillSectionClass}
+					/>
+				</div>,
+			);
+		}
+
+		// Store locations – horizontal pills (slug = id as string)
+		if (storeLocations.length > 1) {
+			sections.push(
+				<div key="store-locations" className="min-w-0">
+					<FilterGroup
+						title="Адрес магазина"
+						options={storeLocations.map((loc) => ({
+							slug: String(loc.id),
+							name: loc.address,
+						}))}
+						selectedOptions={
+							selectedStoreLocation !== null
+								? String(selectedStoreLocation)
+								: null
+						}
+						onOptionChange={(slug: string | null) =>
+							handleStoreLocationChange(slug ? Number(slug) : null)
+						}
+						variant="filterMobile"
+						noWrap
+						className={pillSectionClass}
+					/>
+				</div>,
+			);
+		}
+
+		// Attribute filters – horizontal pills, multi-select
+		attributeFilters.forEach((attrFilter) => {
+			if (attrFilter.values.length <= 1) return;
+			const selectedValueIds =
+				selectedAttributeFilters[attrFilter.attributeId] || [];
+			sections.push(
+				<div key={`attr-${attrFilter.attributeId}`} className="min-w-0">
+					<FilterGroup
+						title={attrFilter.attributeName}
+						options={attrFilter.values.map((v) => ({
+							slug: v.id.toString(),
+							name: v.value,
+						}))}
+						selectedOptions={selectedValueIds}
+						onOptionChange={(valueIds: string[]) =>
+							handleAttributeFilterChange(attrFilter.attributeId)(valueIds)
+						}
+						variant="filterMobile"
+						noWrap
+						multiSelect
+						showAllOption={false}
+						className={pillSectionClass}
+					/>
+				</div>,
+			);
+		});
+
+		return <div className="flex flex-col gap-5">{sections}</div>;
+	};
+
+	// Sidebar: only filter content + reset (no label, no drawer)
+	if (variant === "sidebar") {
+		return (
+			<div className="flex flex-col gap-4">
+				{hasAnyActiveFilters && (
+					<Button
+						type="button"
+						variant="accent"
+						size="sm"
+						onClick={resetAll}
+						className="w-full"
+					>
+						Сбросить фильтры
+					</Button>
+				)}
+				{renderFilterContent()}
+			</div>
+		);
+	}
+
+	// Drawer: floating button + drawer (mobile)
 	return (
 		<>
-			{/* Filters button - desktop and mobile */}
 			<Button
 				size="sm"
 				onClick={() => {
 					setIsDrawerOpen(true);
-					onFiltersOpen?.(); // Trigger lazy loading
+					onFiltersOpen?.();
 				}}
 				onMouseEnter={handleFiltersButtonHover}
-				className="md:-translate-x-1/2 fixed bottom-22 left-2 z-100 inline-flex items-center gap-2 rounded-full bg-primary px-3 py-2 text-primary-foreground text-xs shadow-md md:bottom-4 md:left-1/2"
+				className="fixed bottom-22 left-2 z-100 inline-flex items-center gap-2 rounded-full bg-primary px-3 py-2 text-primary-foreground text-xs shadow-md lg:hidden"
 				aria-label="Открыть фильтры"
 			>
 				<svg
@@ -368,11 +533,10 @@ const ProductFilters = memo(function ProductFilters({
 				Фильтры
 			</Button>
 
-			{/* Drawer - REACTIVE: Changes apply immediately */}
 			<Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
 				<DrawerContent width="full" className="border-primary">
 					<DrawerBody className="w-full">
-						<div className="space-y-4">{renderFilterContent()}</div>
+						<div className="space-y-4">{renderFilterContentMobile()}</div>
 					</DrawerBody>
 
 					<DrawerFooter className="border-border border-t bg-background px-4 sm:px-6 lg:px-8">

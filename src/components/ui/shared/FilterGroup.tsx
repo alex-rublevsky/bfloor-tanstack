@@ -12,7 +12,7 @@ interface FilterButtonProps {
 	isDisabled?: boolean;
 	children: React.ReactNode;
 	className?: string;
-	variant?: "default" | "product";
+	variant?: "default" | "product" | "filterMobile";
 	title?: string;
 }
 
@@ -21,6 +21,7 @@ const buttonVariants = cva("transition-all duration-200 border", {
 		variant: {
 			default: "text-xs px-1.5 md:px-2 py-1 md:py-1.5 rounded-full",
 			product: "px-1.5 py-0.5 rounded-full",
+			filterMobile: "text-sm px-3 py-2 rounded-full",
 		},
 		state: {
 			selected: "border-primary bg-primary text-primary-foreground",
@@ -97,7 +98,7 @@ interface FilterGroupProps {
 	className?: string;
 	showAllOption?: boolean;
 	allOptionLabel?: string;
-	variant?: "default" | "product";
+	variant?: "default" | "product" | "filterMobile";
 	getOptionAvailability?: (option: string) => boolean;
 	titleClassName?: string;
 	/**

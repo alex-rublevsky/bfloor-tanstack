@@ -284,10 +284,10 @@ const ProductCard = memo(
 				onMouseLeave={handleMouseLeave}
 			>
 				<div
-					className="product-card group w-full overflow-hidden"
+					className="product-card group h-full w-full overflow-hidden"
 					id={styles.productCard}
 				>
-					<div className="flex flex-col bg-background">
+					<div className="flex h-full flex-col bg-background">
 						<div className="relative aspect-square overflow-hidden">
 							<div>
 								{/* Primary Image */}
@@ -424,10 +424,10 @@ const ProductCard = memo(
 							</Button>
 						</div>
 
-						{/* Content Section */}
-						<div className="flex h-auto flex-col pb-4 md:h-full md:p-4">
-							{/* Info Section - with horizontal and top padding on mobile, no padding on desktop */}
-							<div className="flex h-auto flex-col px-4 pt-4 md:h-full md:px-0 md:pt-0">
+						{/* Content Section - flex-1 so card fills row height (equal-height cards per row) */}
+						<div className="flex min-h-0 flex-1 flex-col pb-4 md:p-4">
+							{/* Info Section - horizontal/top padding on mobile, none on desktop (outer has p-4) */}
+							<div className="flex min-h-0 flex-1 flex-col px-4 pt-4 md:px-0 md:pt-0">
 								{/* Price */}
 								<div className="mb-2 flex flex-col">
 									<div className="flex w-full flex-wrap items-baseline gap-3">

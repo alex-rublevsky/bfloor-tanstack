@@ -23,6 +23,8 @@ interface ActiveFiltersDisplayProps {
 	onRemoveCollection: () => void;
 	onRemoveStoreLocation?: () => void;
 	onRemoveAttributeValue: (attributeId: number, valueId: string) => void;
+	/** When false, the title (h1) is not rendered. Use when title is shown elsewhere (e.g. sidebar). */
+	showTitle?: boolean;
 }
 
 /**
@@ -44,6 +46,7 @@ export function ActiveFiltersDisplay({
 	onRemoveCollection,
 	onRemoveStoreLocation,
 	onRemoveAttributeValue,
+	showTitle = true,
 }: ActiveFiltersDisplayProps) {
 	// Resolve brand name from brands (for filter pill); title uses brandName prop when on brand page
 	const resolvedBrandName = useMemo(() => {
@@ -112,19 +115,20 @@ export function ActiveFiltersDisplay({
 	return (
 		<div className="px-4 pt-6 pb-4">
 			{/* Title */}
-			{showTitleSkeleton ? (
-				<div className="mb-3 h-10 w-48 animate-pulse rounded bg-muted md:h-12" />
-			) : (
-				<h1
-					key={categoryName ?? brandName ?? "all"}
-					className="mb-3 font-semibold text-2xl md:text-3xl"
-					style={{
-						animation: "fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-					}}
-				>
-					{brandName ?? categoryName ?? "Все товары"}
-				</h1>
-			)}
+			{showTitle &&
+				(showTitleSkeleton ? (
+					<div className="mb-3 h-10 w-48 animate-pulse rounded bg-muted md:h-12" />
+				) : (
+					<h1
+						key={categoryName ?? brandName ?? "all"}
+						className="mb-3 font-semibold text-2xl md:text-3xl"
+						style={{
+							animation: "fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+						}}
+					>
+						{brandName ?? categoryName ?? "Все товары"}
+					</h1>
+				))}
 
 			{/* Filter Pills */}
 			{(resolvedBrandName ||

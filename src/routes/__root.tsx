@@ -122,6 +122,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 	const isDashboard = pathname.startsWith("/dashboard");
 	const isLogin = pathname === "/login";
 	const isHome = pathname === "/";
+	// Store category/brand page: /store/:slug (not /store or /store/checkout) — lock viewport so only the two columns scroll
+	const isStoreCategoryPage =
+		isStore && pathname.length > 7 && !pathname.startsWith("/store/checkout");
 
 	return (
 		<html
@@ -132,7 +135,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<head>
 				<HeadContent />
 			</head>
-			<body className={"flex min-h-screen flex-col"} suppressHydrationWarning>
+			<body
+				className={
+					isStoreCategoryPage
+						? "store-category-viewport flex min-h-0 flex-col overflow-hidden"
+						: "flex min-h-screen flex-col"
+				}
+				style={isStoreCategoryPage ? { height: "100vh" } : undefined}
+				suppressHydrationWarning
+			>
 				<NavBar />
 
 				<main className="flex min-h-0 flex-1 flex-col">{children}</main>

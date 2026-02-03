@@ -5,7 +5,13 @@ import {
 } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { StoreProductGrid } from "~/components/ui/store/StoreProductGrid";
-import { brandQueryOptions, categoryQueryOptions } from "~/lib/queryOptions";
+import {
+	attributeValuesForFilteringQueryOptions,
+	brandQueryOptions,
+	categoryQueryOptions,
+	filteredBrandsQueryOptions,
+	filteredCollectionsQueryOptions,
+} from "~/lib/queryOptions";
 import { seo } from "~/utils/seo";
 import {
 	defaultStoreSearchValues,
@@ -26,12 +32,28 @@ export const Route = createFileRoute("/store/$categorySlug")({
 		// Uses ensureQueryData for caching (7 days staleTime, 14 days gcTime)
 		// - If cached → returns instantly
 		// - If stale → returns cached, refetches in background
-		// - If not found → queryOptions converts to notFound() automatically
 		try {
 			const category = await queryClient.ensureQueryData(
 				categoryQueryOptions(slug),
 			);
 			if (category?.isActive) {
+				// Prefetch filter options so sidebar filters are ready when the page renders
+				await Promise.all([
+					queryClient.ensureQueryData(
+						attributeValuesForFilteringQueryOptions(
+							slug,
+							undefined,
+							undefined,
+							{},
+						),
+					),
+					queryClient.ensureQueryData(
+						filteredBrandsQueryOptions(slug, undefined, undefined),
+					),
+					queryClient.ensureQueryData(
+						filteredCollectionsQueryOptions(slug, undefined, undefined),
+					),
+				]);
 				return { type: "category" as const, category };
 			}
 		} catch {
@@ -42,6 +64,20 @@ export const Route = createFileRoute("/store/$categorySlug")({
 		try {
 			const brand = await queryClient.ensureQueryData(brandQueryOptions(slug));
 			if (brand?.isActive) {
+				// Prefetch filter options for brand page (brand filter is hidden)
+				await Promise.all([
+					queryClient.ensureQueryData(
+						attributeValuesForFilteringQueryOptions(
+							undefined,
+							slug,
+							undefined,
+							{},
+						),
+					),
+					queryClient.ensureQueryData(
+						filteredCollectionsQueryOptions(undefined, slug, undefined),
+					),
+				]);
 				return { type: "brand" as const, brand };
 			}
 		} catch {

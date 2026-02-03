@@ -267,36 +267,36 @@ export default function ProductSlider({
 					)}
 				</div>
 
-			{/* Carousel Controls - shown when products are loaded */}
-			{!isLoading && products.length > 0 && (
-				<div className="product-slider__controls">
-					<EmblaArrowButtons emblaApi={emblaApi} />
+				{/* Carousel Controls - shown when products are loaded */}
+				{!isLoading && products.length > 0 && (
+					<div className="product-slider__controls">
+						<EmblaArrowButtons emblaApi={emblaApi} />
+					</div>
+				)}
+			</div>
+
+			{/* Loading State */}
+			{isLoading && (
+				<div className="product-slider__loading">
+					<p className="text-muted-foreground">Загрузка товаров...</p>
 				</div>
 			)}
-		</div>
 
-		{/* Loading State */}
-		{isLoading && (
-			<div className="product-slider__loading">
-				<p className="text-muted-foreground">Загрузка товаров...</p>
-			</div>
-		)}
+			{/* Empty State */}
+			{!isLoading && products.length === 0 && (
+				<div className="product-slider__empty">
+					<p className="text-muted-foreground">
+						{mode === "tabs"
+							? "Нет товаров для выбранной категории"
+							: mode === "recentlyVisited"
+								? "Нет просмотренных товаров"
+								: "Нет товаров"}
+					</p>
+				</div>
+			)}
 
-		{/* Empty State */}
-		{!isLoading && products.length === 0 && (
-			<div className="product-slider__empty">
-				<p className="text-muted-foreground">
-					{mode === "tabs"
-						? "Нет товаров для выбранной категории"
-						: mode === "recentlyVisited"
-							? "Нет просмотренных товаров"
-							: "Нет товаров"}
-				</p>
-			</div>
-		)}
-
-		{/* Carousel */}
-		{!isLoading && products.length > 0 && (
+			{/* Carousel */}
+			{!isLoading && products.length > 0 && (
 				<>
 					{/* Carousel Viewport */}
 					<div className="embla__viewport" ref={emblaRef}>

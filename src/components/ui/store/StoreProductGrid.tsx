@@ -6,7 +6,8 @@
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useElementScrollRestoration } from "@tanstack/react-router";
-import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { useVirtualizer, useWindowVirtualizer } from "@tanstack/react-virtual";
+import type { RefObject } from "react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActiveFiltersDisplay } from "~/components/ui/shared/ActiveFiltersDisplay";
 import { EmptyState } from "~/components/ui/shared/EmptyState";
@@ -14,6 +15,7 @@ import { ProductGridSkeleton } from "~/components/ui/shared/ProductGridSkeleton"
 import ProductCard from "~/components/ui/store/ProductCard";
 import ProductFilters from "~/components/ui/store/ProductFilters";
 import { getAllStoreLocations } from "~/data/storeLocations";
+import { useDeviceType } from "~/hooks/use-mobile";
 import { useClientSearch } from "~/lib/clientSearchContext";
 import {
 	attributeValuesForFilteringQueryOptions,
@@ -31,10 +33,56 @@ import {
 
 // Cache for virtualizer measurements - persists across navigations
 const measurementCache = new Map<string, number>();
+// Per-cacheKey running sum/count for unmeasured row estimate (reduces scroll jitter)
+const measurementStats = new Map<string, { sum: number; count: number }>();
 
-// Separate component for the virtualized product list
-// This isolates the virtualizer re-renders from the parent component
-const VirtualizedProductList = memo(
+const itemHeight = 365;
+
+function getEstimatedRowHeight(cacheKey: string, index: number): number {
+	const cached = measurementCache.get(`${cacheKey}-${index}`);
+	if (cached !== undefined) return cached;
+	const stats = measurementStats.get(cacheKey);
+	if (stats && stats.count > 0) return stats.sum / stats.count;
+	return itemHeight;
+}
+
+function setRowMeasurement(
+	cacheKey: string,
+	index: number,
+	height: number,
+): void {
+	const key = `${cacheKey}-${index}`;
+	const oldHeight = measurementCache.get(key);
+	measurementCache.set(key, height);
+	let stats = measurementStats.get(cacheKey);
+	if (!stats) {
+		stats = { sum: 0, count: 0 };
+		measurementStats.set(cacheKey, stats);
+	}
+	if (oldHeight !== undefined) stats.sum -= oldHeight;
+	stats.sum += height;
+	if (oldHeight === undefined) stats.count += 1;
+}
+
+function measureRowHeight(
+	element: Element,
+	entry: ResizeObserverEntry | undefined,
+	cacheKey: string,
+): number {
+	const indexStr = element.getAttribute("data-index");
+	if (indexStr === null) return itemHeight;
+	const index = Number.parseInt(indexStr, 10);
+	const raw =
+		entry?.borderBoxSize?.[0]?.blockSize ??
+		(element as HTMLElement).getBoundingClientRect?.()?.height ??
+		itemHeight;
+	const height = Math.round(raw);
+	setRowMeasurement(cacheKey, index, height);
+	return height;
+}
+
+// Virtualized list for window scroll (mobile)
+const VirtualizedProductListWindow = memo(
 	({
 		displayProducts,
 		columnsPerRow,
@@ -52,17 +100,11 @@ const VirtualizedProductList = memo(
 		hasNextPage: boolean;
 		isFetchingNextPage: boolean;
 	}) => {
-		const itemHeight = 365;
 		const rowCount = Math.ceil(displayProducts.length / columnsPerRow);
-
-		// Track last checked row index for infinite scroll
-		// Use cacheKey as part of ref key to reset on navigation
 		const lastCheckRef = useRef<{ cacheKey: string; index: number }>({
 			cacheKey,
 			index: 0,
 		});
-
-		// Reset index if cacheKey changed (new query/navigation)
 		if (lastCheckRef.current.cacheKey !== cacheKey) {
 			lastCheckRef.current = { cacheKey, index: 0 };
 		}
@@ -70,26 +112,14 @@ const VirtualizedProductList = memo(
 		const virtualizer = useWindowVirtualizer({
 			count: rowCount,
 			estimateSize: useCallback(
-				(index: number) => {
-					const cached = measurementCache.get(`${cacheKey}-${index}`);
-					return cached ?? itemHeight;
-				},
+				(index: number) => getEstimatedRowHeight(cacheKey, index),
 				[cacheKey],
 			),
-			overscan: 8,
+			overscan: 12,
 			initialOffset: scrollEntry?.scrollY,
 			measureElement: useCallback(
-				(element: Element, entry: ResizeObserverEntry | undefined) => {
-					const index = element.getAttribute("data-index");
-					if (index === null) return itemHeight;
-
-					// Prefer ResizeObserver entry over getBoundingClientRect for performance
-					// ResizeObserver is more efficient and doesn't force layout
-					const height = entry?.borderBoxSize?.[0]?.blockSize ?? itemHeight;
-
-					measurementCache.set(`${cacheKey}-${index}`, height);
-					return height;
-				},
+				(element: Element, entry: ResizeObserverEntry | undefined) =>
+					measureRowHeight(element, entry, cacheKey),
 				[cacheKey],
 			),
 		});
@@ -166,7 +196,8 @@ const VirtualizedProductList = memo(
 								transform: `translateY(${virtualRow.start}px)`,
 							}}
 						>
-							<div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+							{/* items-stretch: equal-height cards per row; pb-3: room for hover shadow so it doesn't overlap next row */}
+							<div className="grid grid-cols-2 items-stretch gap-2 pb-3 sm:grid-cols-2 md:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
 								{rowProducts.map((product) => (
 									<ProductCard key={product.id} product={product} />
 								))}
@@ -178,7 +209,164 @@ const VirtualizedProductList = memo(
 		);
 	},
 );
-VirtualizedProductList.displayName = "VirtualizedProductList";
+VirtualizedProductListWindow.displayName = "VirtualizedProductListWindow";
+
+// Virtualized list for custom scroll container (desktop sidebar layout)
+const VirtualizedProductListContainer = memo(
+	({
+		displayProducts,
+		columnsPerRow,
+		cacheKey,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+		scrollRef,
+	}: {
+		displayProducts: ProductWithVariations[];
+		columnsPerRow: number;
+		cacheKey: string;
+		fetchNextPage: () => void;
+		hasNextPage: boolean;
+		isFetchingNextPage: boolean;
+		scrollRef: RefObject<HTMLDivElement | null>;
+	}) => {
+		const rowCount = Math.ceil(displayProducts.length / columnsPerRow);
+		const lastCheckRef = useRef<{ cacheKey: string; index: number }>({
+			cacheKey,
+			index: 0,
+		});
+		if (lastCheckRef.current.cacheKey !== cacheKey) {
+			lastCheckRef.current = { cacheKey, index: 0 };
+		}
+
+		const virtualizer = useVirtualizer({
+			count: rowCount,
+			getScrollElement: useCallback(() => scrollRef.current, [scrollRef]),
+			estimateSize: useCallback(
+				(index: number) => getEstimatedRowHeight(cacheKey, index),
+				[cacheKey],
+			),
+			overscan: 12,
+			measureElement: useCallback(
+				(element: Element, entry: ResizeObserverEntry | undefined) =>
+					measureRowHeight(element, entry, cacheKey),
+				[cacheKey],
+			),
+		});
+
+		// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally re-measure when columns change
+		useEffect(() => {
+			virtualizer.measure();
+		}, [columnsPerRow, virtualizer]);
+
+		const getProductsForRow = useCallback(
+			(rowIndex: number) => {
+				const startIndex = rowIndex * columnsPerRow;
+				const endIndex = Math.min(
+					startIndex + columnsPerRow,
+					displayProducts.length,
+				);
+				return displayProducts.slice(startIndex, endIndex);
+			},
+			[columnsPerRow, displayProducts],
+		);
+
+		const virtualItems = virtualizer.getVirtualItems();
+		useEffect(() => {
+			const lastItem = virtualItems[virtualItems.length - 1];
+			if (!lastItem || !hasNextPage || isFetchingNextPage) return;
+			const threshold = rowCount - 4;
+			if (
+				lastItem.index >= threshold &&
+				lastCheckRef.current.index < threshold
+			) {
+				lastCheckRef.current.index = threshold;
+				fetchNextPage();
+			}
+		}, [
+			virtualItems,
+			hasNextPage,
+			isFetchingNextPage,
+			rowCount,
+			fetchNextPage,
+		]);
+
+		return (
+			<div
+				className="relative py-4"
+				style={{
+					height: `${virtualizer.getTotalSize()}px`,
+					width: "100%",
+					position: "relative",
+					animation: "fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+				}}
+			>
+				{virtualizer.getVirtualItems().map((virtualRow) => {
+					const rowProducts = getProductsForRow(virtualRow.index);
+					return (
+						<div
+							key={virtualRow.key}
+							data-index={virtualRow.index}
+							ref={virtualizer.measureElement}
+							style={{
+								position: "absolute",
+								top: 0,
+								left: 0,
+								width: "100%",
+								transform: `translateY(${virtualRow.start}px)`,
+							}}
+						>
+							{/* items-stretch: equal-height cards per row; pb-3: room for hover shadow so it doesn't overlap next row */}
+							<div className="grid grid-cols-2 items-stretch gap-2 pb-3 sm:grid-cols-2 md:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+								{rowProducts.map((product) => (
+									<ProductCard key={product.id} product={product} />
+								))}
+							</div>
+						</div>
+					);
+				})}
+			</div>
+		);
+	},
+);
+VirtualizedProductListContainer.displayName = "VirtualizedProductListContainer";
+
+// Chooses window or container virtualizer based on scrollRef
+function VirtualizedProductList(props: {
+	displayProducts: ProductWithVariations[];
+	columnsPerRow: number;
+	scrollEntry: { scrollY?: number } | null | undefined;
+	cacheKey: string;
+	fetchNextPage: () => void;
+	hasNextPage: boolean;
+	isFetchingNextPage: boolean;
+	scrollRef?: RefObject<HTMLDivElement | null>;
+}) {
+	if (props.scrollRef) {
+		return (
+			<VirtualizedProductListContainer
+				displayProducts={props.displayProducts}
+				columnsPerRow={props.columnsPerRow}
+				cacheKey={props.cacheKey}
+				fetchNextPage={props.fetchNextPage}
+				hasNextPage={props.hasNextPage}
+				isFetchingNextPage={props.isFetchingNextPage}
+				scrollRef={props.scrollRef}
+			/>
+		);
+	}
+	return (
+		<VirtualizedProductListWindow
+			displayProducts={props.displayProducts}
+			columnsPerRow={props.columnsPerRow}
+			scrollEntry={props.scrollEntry}
+			cacheKey={props.cacheKey}
+			fetchNextPage={props.fetchNextPage}
+			hasNextPage={props.hasNextPage}
+			isFetchingNextPage={props.isFetchingNextPage}
+		/>
+	);
+}
 
 interface StoreProductGridProps {
 	/**
@@ -232,7 +420,10 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 	navigate,
 }: StoreProductGridProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
+	const productScrollRef = useRef<HTMLDivElement>(null);
 	const columnsPerRow = useResponsiveColumns();
+	const { isMobileOrTablet } = useDeviceType();
+	const isDesktop = !isMobileOrTablet;
 
 	// Get search term from context (same as dashboard)
 	const clientSearch = useClientSearch();
@@ -380,9 +571,8 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 		}),
 	});
 
-	// Fetch attribute filters based on current filters (including attribute filters)
-	// This ensures only values available in the current filtered product set are shown
-	// OPTIMIZATION: Only fetch when filter drawer has been opened (lazy loading)
+	// Fetch attribute filters: on desktop always (sidebar visible); on mobile when drawer opened
+	const filtersVisible = filtersOpened || isDesktop;
 	const { data: attributeFilters = [] } = useQuery({
 		...attributeValuesForFilteringQueryOptions(
 			categorySlug ?? undefined,
@@ -390,17 +580,16 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 			selectedCollection ?? undefined,
 			selectedAttributeFilters,
 		),
-		enabled: filtersOpened, // Only fetch after user opens filters
+		enabled: filtersVisible,
 	});
 
-	// Fetch filtered brands and collections based on current filters (skip brands when on brand page)
 	const { data: brands = [] } = useQuery({
 		...filteredBrandsQueryOptions(
 			categorySlug ?? undefined,
 			selectedCollection ?? undefined,
 			selectedStoreLocation ?? undefined,
 		),
-		enabled: filtersOpened && !brandSlug,
+		enabled: filtersVisible && !brandSlug,
 	});
 
 	const { data: collections = [] } = useQuery({
@@ -409,7 +598,7 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 			selectedBrand ?? undefined,
 			selectedStoreLocation ?? undefined,
 		),
-		enabled: filtersOpened,
+		enabled: filtersVisible,
 	});
 
 	// Get store locations (hardcoded data)
@@ -472,86 +661,112 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 	// Don't show skeleton when just fetching next page for infinite scroll
 	const showSkeleton = !storeData || (isFetching && !isFetchingNextPage);
 
-	return (
+	const filterProps = {
+		brands: brandsForFilters,
+		selectedBrand: selectedBrand,
+		onBrandChange: updateBrand,
+		collections: collectionsForFilters,
+		selectedCollection: selectedCollection,
+		onCollectionChange: updateCollection,
+		storeLocations,
+		selectedStoreLocation,
+		onStoreLocationChange: updateStoreLocation,
+		priceRange: { min: 0, max: 1000000 },
+		currentPriceRange,
+		onPriceRangeChange: setCurrentPriceRange,
+		sortBy,
+		onSortChange: (v: string) => {
+			if (isValidSort(v)) updateSort(v);
+		},
+		attributeFilters,
+		selectedAttributeFilters,
+		onAttributeFilterChange: updateAttributeFilter,
+		onFiltersOpen: () => setFiltersOpened(true),
+	};
+
+	const activeFiltersProps = {
+		categoryName,
+		brandName: brand?.name ?? null,
+		brands: brand ? [brand] : brands,
+		selectedBrand,
+		collections,
+		selectedCollection,
+		storeLocations,
+		selectedStoreLocation,
+		attributeFilters,
+		selectedAttributeFilters,
+		onRemoveBrand: brandSlug
+			? () => navigate({ to: "/store" })
+			: () => updateBrand(null),
+		onRemoveCollection: () => updateCollection(null),
+		onRemoveStoreLocation: () => updateStoreLocation(null),
+		onRemoveAttributeValue: (attributeId: number, valueId: string) => {
+			const currentValues = selectedAttributeFilters[attributeId] || [];
+			const newValues = currentValues.filter((id) => id !== valueId);
+			updateAttributeFilter(attributeId, newValues);
+		},
+	};
+
+	const productContent = showSkeleton ? (
+		<ProductGridSkeleton itemCount={18} />
+	) : displayProducts.length === 0 ? (
+		<EmptyState entityType="products" isSearchResult={!!normalizedSearch} />
+	) : (
 		<>
-			{/* Filters bar (reusing store ProductFilters for hide-on-scroll behavior) */}
-			<div ref={containerRef}>
-				<ProductFilters
-					brands={brandsForFilters}
-					selectedBrand={selectedBrand}
-					onBrandChange={updateBrand}
-					collections={collectionsForFilters}
-					selectedCollection={selectedCollection}
-					onCollectionChange={updateCollection}
-					storeLocations={storeLocations}
-					selectedStoreLocation={selectedStoreLocation}
-					onStoreLocationChange={updateStoreLocation}
-					priceRange={{ min: 0, max: 1000000 }}
-					currentPriceRange={currentPriceRange}
-					onPriceRangeChange={setCurrentPriceRange}
-					sortBy={sortBy}
-					onSortChange={(v) => {
-						if (isValidSort(v)) updateSort(v);
-					}}
-					attributeFilters={attributeFilters}
-					selectedAttributeFilters={selectedAttributeFilters}
-					onAttributeFilterChange={updateAttributeFilter}
-					onFiltersOpen={() => setFiltersOpened(true)} // Track when filters open
-				/>
-				{/* Active Filters Display - Always show, even during loading */}
-				<ActiveFiltersDisplay
-					categoryName={categoryName}
-					brandName={brand?.name ?? null}
-					brands={brand ? [brand] : brands}
-					selectedBrand={selectedBrand}
-					collections={collections}
-					selectedCollection={selectedCollection}
-					storeLocations={storeLocations}
-					selectedStoreLocation={selectedStoreLocation}
-					attributeFilters={attributeFilters}
-					selectedAttributeFilters={selectedAttributeFilters}
-					onRemoveBrand={
-						brandSlug
-							? () => navigate({ to: "/store" })
-							: () => updateBrand(null)
-					}
-					onRemoveCollection={() => updateCollection(null)}
-					onRemoveStoreLocation={() => updateStoreLocation(null)}
-					onRemoveAttributeValue={(attributeId, valueId) => {
-						const currentValues = selectedAttributeFilters[attributeId] || [];
-						const newValues = currentValues.filter((id) => id !== valueId);
-						updateAttributeFilter(attributeId, newValues);
-					}}
-				/>
-				{/* Products List - Show skeleton during loading, otherwise show products */}
-				{showSkeleton ? (
-					<ProductGridSkeleton itemCount={18} />
-				) : displayProducts.length === 0 ? (
-					<EmptyState
-						entityType="products"
-						isSearchResult={!!normalizedSearch}
-					/>
-				) : (
-					<>
-						<VirtualizedProductList
-							key={categorySlug ?? brandSlug ?? "all"}
-							displayProducts={displayProducts}
-							columnsPerRow={columnsPerRow}
-							scrollEntry={scrollEntry}
-							cacheKey={cacheKey}
-							fetchNextPage={fetchNextPage}
-							hasNextPage={hasNextPage ?? false}
-							isFetchingNextPage={isFetchingNextPage}
-						/>
-						{/* Loading indicator for next page */}
-						{isFetchingNextPage && (
-							<div className="flex w-full items-center justify-center p-8">
-								<p className="text-muted-foreground">Загрузка...</p>
-							</div>
-						)}
-					</>
-				)}
-			</div>
+			<VirtualizedProductList
+				key={categorySlug ?? brandSlug ?? "all"}
+				displayProducts={displayProducts}
+				columnsPerRow={columnsPerRow}
+				scrollEntry={scrollEntry}
+				cacheKey={cacheKey}
+				fetchNextPage={fetchNextPage}
+				hasNextPage={hasNextPage ?? false}
+				isFetchingNextPage={isFetchingNextPage}
+				scrollRef={isDesktop ? productScrollRef : undefined}
+			/>
+			{isFetchingNextPage && (
+				<div className="flex w-full items-center justify-center p-8">
+					<p className="text-muted-foreground">Загрузка...</p>
+				</div>
+			)}
 		</>
+	);
+
+	const pageTitle = categoryName ?? brand?.name ?? "Каталог";
+
+	// Desktop: fill the content area (below navbar) so only the two columns scroll, never the page.
+	// Use h-full so height comes from the layout chain (main = 100vh - navbar), not a guessed calc.
+	if (isDesktop) {
+		return (
+			<div ref={containerRef} className="flex h-full overflow-hidden">
+				<aside className="flex min-h-0 w-72 shrink-0 flex-col overflow-y-auto border-border border-r bg-background">
+					<div className="flex flex-col gap-4 p-4">
+						<h1 className="sticky top-0 z-999 bg-backgorund bg-background pb-1 text-3xl!">
+							{pageTitle}
+						</h1>
+						<ProductFilters {...filterProps} variant="sidebar" />
+						<ActiveFiltersDisplay {...activeFiltersProps} showTitle={false} />
+					</div>
+				</aside>
+				<main
+					ref={productScrollRef}
+					className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden"
+				>
+					<div className="px-4 py-4">{productContent}</div>
+				</main>
+			</div>
+		);
+	}
+
+	// Mobile: single column, window scroll, filter drawer
+	return (
+		<div ref={containerRef}>
+			<h1 className="px-4 py-6 font-semibold text-2xl md:py-8 md:text-3xl">
+				{pageTitle}
+			</h1>
+			<ProductFilters {...filterProps} />
+			<ActiveFiltersDisplay {...activeFiltersProps} showTitle={false} />
+			<div className="py-4">{productContent}</div>
+		</div>
 	);
 });
