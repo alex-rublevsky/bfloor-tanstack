@@ -753,7 +753,7 @@ span {
 /* Firefox */
 * {
 	scrollbar-width: thin;
-	scrollbar-color: var(--primary) transparent;
+	scrollbar-color: var(--muted) transparent;
 }
 
 /* WebKit browsers (Chrome, Edge, Safari, iOS Safari) */
@@ -769,7 +769,7 @@ span {
 }
 
 *::-webkit-scrollbar-thumb {
-	background-color: var(--primary);
+	background-color: var(--muted);
 	border-radius: 10px;
 	border: 2px solid transparent;
 	background-clip: padding-box;
@@ -777,7 +777,11 @@ span {
 }
 
 *::-webkit-scrollbar-thumb:hover {
-	background-color: var(--color-primary-hover);
+	background-color: color-mix(
+		in oklch,
+		var(--muted) 85%,
+		var(--muted-foreground)
+	);
 	cursor: grab;
 }
 
@@ -804,7 +808,7 @@ span {
 	}
 
 	*::-webkit-scrollbar-thumb {
-		background-color: var(--primary);
+		background-color: var(--muted);
 		border-radius: 10px;
 		border: 2px solid transparent;
 		background-clip: padding-box;
