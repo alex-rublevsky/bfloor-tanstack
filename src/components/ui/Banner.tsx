@@ -28,12 +28,10 @@ export const Thumb: React.FC<PropType> = (props) => {
 
 	return (
 		<div
-			className={
-				"embla-thumbs__slide".concat(
-					// biome-ignore lint/nursery/useSortedClasses: Dynamic class concatenation requires space before modifier class
-					selected ? " embla-thumbs__slide--selected" : "",
-				)
-			}
+			className={"embla-thumbs__slide".concat(
+				// biome-ignore lint/nursery/useSortedClasses: Dynamic class concatenation requires space before modifier class
+				selected ? " embla-thumbs__slide--selected" : "",
+			)}
 		>
 			<button
 				onClick={onClick}
