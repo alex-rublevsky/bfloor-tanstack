@@ -12,13 +12,7 @@ import { EntityCardContent } from "~/components/ui/dashboard/EntityCardContent";
 import { EntityCardGrid } from "~/components/ui/dashboard/EntityCardGrid";
 import { ImageUpload } from "~/components/ui/dashboard/ImageUpload";
 import { CategoriesPageSkeleton } from "~/components/ui/dashboard/skeletons/CategoriesPageSkeleton";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "~/components/ui/shared/Select";
+import { Select } from "~/components/ui/shared/Select";
 import {
 	categoriesQueryOptions,
 	productCategoryCountsQueryOptions,
@@ -56,29 +50,22 @@ const CategoryFormFields = ({
 					Родительская категория (опционально)
 				</label>
 				<Select
+					id={parentCategoryId}
+					className="w-full"
 					value={(formData as CategoryFormData).parentSlug || "none"}
-					onValueChange={(value: string) => {
-						onFieldChange("parentSlug", value === "none" ? null : value);
-					}}
-				>
-					<SelectTrigger id={parentCategoryId}>
-						<SelectValue placeholder="Нет (корневая категория)" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="none">Нет (корневая категория)</SelectItem>
-						{entities
+					onValueChange={(v) => onFieldChange("parentSlug", v === "none" ? null : v)}
+					placeholder="Нет (корневая категория)"
+					options={[
+						{ value: "none", label: "Нет (корневая категория)" },
+						...entities
 							.filter(
 								(cat) =>
 									cat.isActive &&
 									(!editingEntity || cat.slug !== editingEntity.slug),
 							)
-							.map((category) => (
-								<SelectItem key={category.slug} value={category.slug}>
-									{category.name}
-								</SelectItem>
-							))}
-					</SelectContent>
-				</Select>
+							.map((c) => ({ value: c.slug, label: c.name })),
+					]}
+				/>
 			</div>
 
 			{/* Image Upload */}

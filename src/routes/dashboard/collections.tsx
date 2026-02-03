@@ -15,13 +15,7 @@ import {
 } from "~/components/ui/dashboard/DashboardEntityManager";
 import { EntityCardContent } from "~/components/ui/dashboard/EntityCardContent";
 import { EntityCardGrid } from "~/components/ui/dashboard/EntityCardGrid";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "~/components/ui/shared/Select";
+import { Select } from "~/components/ui/shared/Select";
 import {
 	brandsQueryOptions,
 	collectionsQueryOptions,
@@ -59,23 +53,14 @@ const CollectionFormFields = ({
 					Бренд <span className="text-red-500">*</span>
 				</label>
 				<Select
+					id={`${idPrefix}-collection-brand`}
+					className="w-full"
 					value={(formData as CollectionFormData).brandSlug || ""}
-					onValueChange={(value: string) => {
-						onFieldChange("brandSlug", value);
-					}}
+					onValueChange={(v) => onFieldChange("brandSlug", v)}
 					required
-				>
-					<SelectTrigger id={`${idPrefix}-collection-brand`}>
-						<SelectValue placeholder="Выберите бренд" />
-					</SelectTrigger>
-					<SelectContent>
-						{brands.map((brand) => (
-							<SelectItem key={brand.slug} value={brand.slug}>
-								{brand.name}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+					placeholder="Выберите бренд"
+					options={brands.map((b) => ({ value: b.slug, label: b.name }))}
+				/>
 			</div>
 		</>
 	);

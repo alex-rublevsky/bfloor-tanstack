@@ -52,6 +52,8 @@ type PaginatedResponse = {
 		hasNextPage: boolean;
 		hasPreviousPage: boolean;
 	};
+	/** Present on first page of getStoreData: min/max price for current filter set (no extra API call) */
+	priceBounds?: { min: number; max: number };
 };
 
 /**

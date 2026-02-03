@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
-import { eq, inArray, type SQL, sql } from "drizzle-orm";
+import { eq, inArray, max, min, type SQL, sql } from "drizzle-orm";
 import { DB } from "~/db";
 import { productStoreLocations, products, productVariations } from "~/schema";
 import type { Product, ProductVariationWithAttributes } from "~/types";
@@ -122,12 +122,6 @@ export const getStoreData = createServerFn({ method: "GET" })
 			if (collectionFilter) {
 				conditions.push(eq(products.collectionSlug, collectionFilter));
 			}
-			if (minPriceFilter !== undefined) {
-				conditions.push(sql`${products.price} >= ${minPriceFilter}`);
-			}
-			if (maxPriceFilter !== undefined) {
-				conditions.push(sql`${products.price} <= ${maxPriceFilter}`);
-			}
 
 			// Handle store location filter using EXISTS subquery (single query, more efficient)
 			if (storeLocationFilter !== undefined) {
@@ -156,9 +150,20 @@ export const getStoreData = createServerFn({ method: "GET" })
 				}
 			}
 
+			// Base conditions for price-bounds aggregation (all filters except price)
+			const baseWhereCondition = sql.join(conditions, sql` AND `);
+
+			// Add price filter for the main products query only
+			if (minPriceFilter !== undefined) {
+				conditions.push(sql`${products.price} >= ${minPriceFilter}`);
+			}
+			if (maxPriceFilter !== undefined) {
+				conditions.push(sql`${products.price} <= ${maxPriceFilter}`);
+			}
+
 			const finalWhereCondition = sql.join(conditions, sql` AND `);
 
-			// Determine ordering
+			// Determine ordering (needed for main query; independent of price bounds)
 			let orderSql: SQL | typeof products.name = products.name;
 			if (sort === "price-asc") {
 				orderSql = sql`${products.price} asc`;
@@ -182,10 +187,28 @@ export const getStoreData = createServerFn({ method: "GET" })
 				orderSql = sql.raw(`CASE ${caseStatements} ELSE 9999 END`);
 			}
 
-			// Fetch products first (no join) to avoid row explosion from variations
-			const pagedProducts =
+			// Price bounds: only when first page AND no price filter (client already has bounds when they applied price)
+			// Run aggregation and main query in parallel to reduce latency (max of both instead of sum)
+			const isFirstPage = page === 1;
+			const needPriceBounds =
+				isFirstPage &&
+				minPriceFilter === undefined &&
+				maxPriceFilter === undefined;
+
+			const boundsPromise = needPriceBounds
+				? db
+						.select({
+							minPrice: min(products.price),
+							maxPrice: max(products.price),
+						})
+						.from(products)
+						.where(baseWhereCondition)
+						.all()
+				: Promise.resolve([]);
+
+			const productsPromise =
 				offsetValue !== undefined && pageLimit
-					? await db
+					? db
 							.select()
 							.from(products)
 							.where(finalWhereCondition)
@@ -193,12 +216,52 @@ export const getStoreData = createServerFn({ method: "GET" })
 							.limit(pageLimit + 1)
 							.offset(offsetValue)
 							.all()
-					: await db
+					: db
 							.select()
 							.from(products)
 							.where(finalWhereCondition)
 							.orderBy(orderSql)
 							.all();
+
+			const [boundsRows, pagedProducts] = await Promise.all([
+				boundsPromise,
+				productsPromise,
+			]);
+
+			let priceBounds: { min: number; max: number } | undefined;
+			if (needPriceBounds && boundsRows.length > 0) {
+				const row = boundsRows[0];
+				let minVal =
+					row?.minPrice != null && Number.isFinite(Number(row.minPrice))
+						? Math.floor(Number(row.minPrice))
+						: 0;
+				let maxVal =
+					row?.maxPrice != null && Number.isFinite(Number(row.maxPrice))
+						? Math.ceil(Number(row.maxPrice))
+						: 0;
+				// When no rows match filters (null/0), fall back to global active-product bounds so the slider is usable
+				if (minVal === 0 && maxVal === 0) {
+					const globalRows = await db
+						.select({
+							minPrice: min(products.price),
+							maxPrice: max(products.price),
+						})
+						.from(products)
+						.where(eq(products.isActive, true))
+						.all();
+					const global = globalRows[0];
+					if (
+						global?.minPrice != null &&
+						Number.isFinite(Number(global.minPrice)) &&
+						global?.maxPrice != null &&
+						Number.isFinite(Number(global.maxPrice))
+					) {
+						minVal = Math.floor(Number(global.minPrice));
+						maxVal = Math.ceil(Number(global.maxPrice));
+					}
+				}
+				priceBounds = { min: minVal, max: Math.max(maxVal, minVal) };
+			}
 
 			const hasNextPage =
 				offsetValue !== undefined && pageLimit
@@ -245,9 +308,19 @@ export const getStoreData = createServerFn({ method: "GET" })
 				variations: variationsByProduct.get(product.id) || [],
 			}));
 
-			const result = {
+			const result: {
+				products: typeof productsArray;
+				pagination?: {
+					page: number;
+					limit: number;
+					hasNextPage: boolean;
+					hasPreviousPage: boolean;
+				};
+				priceBounds?: { min: number; max: number };
+			} = {
 				products: productsArray,
 			};
+			if (priceBounds) result.priceBounds = priceBounds;
 
 			// Add pagination info if pagination was used
 			if (
@@ -256,16 +329,13 @@ export const getStoreData = createServerFn({ method: "GET" })
 				offsetValue !== undefined
 			) {
 				const hasPreviousPage = page > 1;
-
-				return {
-					...result,
-					pagination: {
-						page,
-						limit: pageLimit,
-						hasNextPage,
-						hasPreviousPage,
-					},
+				result.pagination = {
+					page,
+					limit: pageLimit,
+					hasNextPage,
+					hasPreviousPage,
 				};
+				return result;
 			}
 
 			return result;

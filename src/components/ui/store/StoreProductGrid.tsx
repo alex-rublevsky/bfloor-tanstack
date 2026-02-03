@@ -458,9 +458,9 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 		| "oldest"
 		| "best-selling"
 	>(searchParams.sort ?? defaultStoreSearchValues.sort);
-	const [currentPriceRange, setCurrentPriceRange] = useState<[number, number]>([
-		0, 1000000,
-	]);
+	const DEFAULT_PRICE: [number, number] = [0, 1000000];
+	const [currentPriceRange, setCurrentPriceRange] =
+		useState<[number, number]>(DEFAULT_PRICE);
 	// Track if filter drawer has been opened (for lazy loading attribute filters)
 	const [filtersOpened, setFiltersOpened] = useState(false);
 
@@ -550,27 +550,6 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 		});
 	};
 
-	// Use infinite query to track loading state
-	const {
-		data: storeData,
-		isFetching,
-		fetchNextPage,
-		hasNextPage,
-		isFetchingNextPage,
-	} = useInfiniteQuery({
-		...storeDataInfiniteQueryOptions(normalizedSearch, {
-			categorySlug: categorySlug ?? undefined,
-			brandSlug: brandSlug ?? selectedBrand ?? undefined,
-			collectionSlug: selectedCollection ?? undefined,
-			storeLocationId: selectedStoreLocation ?? undefined,
-			attributeFilters: selectedAttributeFilters,
-			minPrice: currentPriceRange[0] !== 0 ? currentPriceRange[0] : undefined,
-			maxPrice:
-				currentPriceRange[1] !== 1000000 ? currentPriceRange[1] : undefined,
-			sort: sortBy,
-		}),
-	});
-
 	// Fetch attribute filters: on desktop always (sidebar visible); on mobile when drawer opened
 	const filtersVisible = filtersOpened || isDesktop;
 	const { data: attributeFilters = [] } = useQuery({
@@ -600,6 +579,53 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 		),
 		enabled: filtersVisible,
 	});
+
+	// Price range for filter UI: starts as default, updated from first page's priceBounds (same request, no extra API call)
+	const [priceRange, setPriceRange] = useState({
+		min: DEFAULT_PRICE[0],
+		max: DEFAULT_PRICE[1],
+	});
+
+	// Use infinite query; first page response includes priceBounds (one aggregation when page=1, no extra HTTP round-trip)
+	const {
+		data: storeData,
+		isFetching,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery({
+		...storeDataInfiniteQueryOptions(normalizedSearch, {
+			categorySlug: categorySlug ?? undefined,
+			brandSlug: brandSlug ?? selectedBrand ?? undefined,
+			collectionSlug: selectedCollection ?? undefined,
+			storeLocationId: selectedStoreLocation ?? undefined,
+			attributeFilters: selectedAttributeFilters,
+			minPrice:
+				currentPriceRange[0] !== priceRange.min
+					? currentPriceRange[0]
+					: undefined,
+			maxPrice:
+				currentPriceRange[1] !== priceRange.max
+					? currentPriceRange[1]
+					: undefined,
+			sort: sortBy,
+		}),
+	});
+
+	// Sync price range from first page bounds (real min/max for current filter set)
+	const firstPageBounds = storeData?.pages?.[0]?.priceBounds;
+	useEffect(() => {
+		if (firstPageBounds && firstPageBounds.max >= firstPageBounds.min) {
+			setPriceRange({ min: firstPageBounds.min, max: firstPageBounds.max });
+		}
+	}, [firstPageBounds]);
+
+	// Reset price filter to full range only when category (page) changes or when bounds change (new data loaded).
+	// Other filters (brand, collection, etc.) do not reset the price.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: categorySlug triggers reset on category navigation only
+	useEffect(() => {
+		setCurrentPriceRange([priceRange.min, priceRange.max]);
+	}, [categorySlug, priceRange.min, priceRange.max]);
 
 	// Get store locations (hardcoded data)
 	const storeLocations = getAllStoreLocations();
@@ -671,7 +697,7 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 		storeLocations,
 		selectedStoreLocation,
 		onStoreLocationChange: updateStoreLocation,
-		priceRange: { min: 0, max: 1000000 },
+		priceRange,
 		currentPriceRange,
 		onPriceRangeChange: setCurrentPriceRange,
 		sortBy,

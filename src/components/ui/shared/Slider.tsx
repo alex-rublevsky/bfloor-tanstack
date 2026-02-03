@@ -19,6 +19,8 @@ interface SliderProps
 	showInputs?: boolean;
 	formatValue?: (value: number) => string;
 	parseValue?: (value: string) => number;
+	/** Called when user commits the value (e.g. releases thumb or blurs number input). */
+	onValueCommit?: (value: number[]) => void;
 }
 
 const Slider = React.forwardRef<
@@ -35,6 +37,7 @@ const Slider = React.forwardRef<
 			showInputs = true,
 			formatValue: formatValueProp,
 			parseValue: parseValueProp,
+			onValueCommit,
 			min = 0,
 			max = 100,
 			step = 1,
@@ -208,6 +211,7 @@ const Slider = React.forwardRef<
 
 							isInternalUpdateRef.current = true;
 							props.onValueChange?.(newSliderValue);
+							onValueCommit?.(newSliderValue);
 
 							return newSliderValue;
 						});
@@ -216,7 +220,7 @@ const Slider = React.forwardRef<
 					}
 				});
 			},
-			[formatValue, parseValue, min, max, props.onValueChange],
+			[formatValue, parseValue, min, max, props.onValueChange, onValueCommit],
 		);
 
 		const handlePointerDown = () => {
@@ -291,7 +295,7 @@ const Slider = React.forwardRef<
 								min={min}
 								max={max}
 								step={step}
-								className="h-8 rounded-r-none border-r-0 text-xs"
+								className="h-8 rounded-r-none border-r-0 text-s"
 								aria-label="Minimum value"
 							/>
 						</div>
@@ -304,7 +308,7 @@ const Slider = React.forwardRef<
 								min={min}
 								max={max}
 								step={step}
-								className="-ml-px h-8 rounded-l-none text-xs"
+								className="-ml-px h-8 rounded-l-none text-s"
 								aria-label="Maximum value"
 							/>
 						</div>
@@ -327,6 +331,7 @@ const Slider = React.forwardRef<
 						)}
 						value={internalValue}
 						onValueChange={handleValueChange}
+						onValueCommit={onValueCommit}
 						min={min}
 						max={max}
 						step={step}

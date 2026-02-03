@@ -3,13 +3,7 @@ import { toast } from "sonner";
 import { SlugField } from "~/components/ui/dashboard/SlugField";
 import { Button } from "~/components/ui/shared/Button";
 import { Input } from "~/components/ui/shared/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "~/components/ui/shared/Select";
+import { Select } from "~/components/ui/shared/Select";
 import { Switch } from "~/components/ui/shared/Switch";
 import { getActiveCountries } from "~/data/countries";
 import { useSlugGeneration } from "~/hooks/useSlugGeneration";
@@ -59,26 +53,24 @@ function BrandCountrySelect({
 	return (
 		<div>
 			<Select
+				id={`${entityType}-country`}
+				label="Страна"
 				value={formData.countryId?.toString() || ""}
-				onValueChange={(value) =>
+				onValueChange={(v) =>
 					setFormData((prev) => ({
 						...prev,
-						countryId: value ? parseInt(value, 10) : null,
+						countryId: v ? parseInt(v, 10) : null,
 					}))
 				}
-			>
-				<SelectTrigger id={`${entityType}-country`} label="Страна">
-					<SelectValue placeholder="Не указано" />
-				</SelectTrigger>
-				<SelectContent>
-					<SelectItem value="">Не указано</SelectItem>
-					{countries.map((country) => (
-						<SelectItem key={country.id} value={country.id.toString()}>
-							{country.name} ({country.code})
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
+				placeholder="Не указано"
+				options={[
+					{ value: "", label: "Не указано" },
+					...countries.map((c) => ({
+						value: c.id.toString(),
+						label: `${c.name} (${c.code})`,
+					})),
+				]}
+			/>
 		</div>
 	);
 }
@@ -251,6 +243,10 @@ export function SelectWithCreate({
 		<div className="space-y-2">
 			<div className="relative">
 				<Select
+					id={id}
+					label={label}
+					required={required}
+					className={cn("w-full", error && "border-red-500", className)}
 					value={value || "none"}
 					onValueChange={(newValue) => {
 						if (newValue === "create-new") {
@@ -259,37 +255,18 @@ export function SelectWithCreate({
 							onValueChange(newValue === "none" ? null : newValue);
 						}
 					}}
-					required={required}
-				>
-					<SelectTrigger
-						id={id}
-						label={label}
-						required={required}
-						className={cn("w-full", error && "border-red-500", className)}
-					>
-						<SelectValue placeholder={placeholder} />
-					</SelectTrigger>
-					<SelectContent>
-						{entityType !== "category" && (
-							<SelectItem value="none">
-								{entityType === "brand" ? "Нет" : "Нет"}
-							</SelectItem>
-						)}
-						{options.map((option) => (
-							<SelectItem key={option.slug} value={option.slug}>
-								{option.name}
-							</SelectItem>
-						))}
-						<SelectItem value="create-new" className="font-medium text-primary">
-							+ Создать новый{" "}
-							{entityType === "category"
-								? "категорию"
-								: entityType === "brand"
-									? "бренд"
-									: "коллекцию"}
-						</SelectItem>
-					</SelectContent>
-				</Select>
+					placeholder={placeholder}
+					options={[
+						...(entityType !== "category"
+							? [{ value: "none", label: "Нет" }]
+							: []),
+						...options.map((o) => ({ value: o.slug, label: o.name })),
+						{
+							value: "create-new",
+							label: `+ Создать новый ${entityType === "category" ? "категорию" : entityType === "brand" ? "бренд" : "коллекцию"}`,
+						},
+					]}
+				/>
 
 				{error && (
 					<span className="-bottom-5 absolute left-0 font-medium text-red-500 text-xs">
@@ -347,27 +324,19 @@ export function SelectWithCreate({
 						{entityType === "collection" && (
 							<div>
 								<Select
+									id={`${entityType}-brand`}
+									label="Бренд"
+									required
 									value={(formData as CollectionFormData).brandSlug}
 									onValueChange={(brandSlug) =>
 										setFormData((prev) => ({ ...prev, brandSlug }))
 									}
-									required
-								>
-									<SelectTrigger
-										id={`${entityType}-brand`}
-										label="Бренд"
-										required
-									>
-										<SelectValue placeholder="Выберите бренд" />
-									</SelectTrigger>
-									<SelectContent>
-										{(brands || []).map((brand) => (
-											<SelectItem key={brand.slug} value={brand.slug}>
-												{brand.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+									placeholder="Выберите бренд"
+									options={(brands || []).map((b) => ({
+										value: b.slug,
+										label: b.name,
+									}))}
+								/>
 							</div>
 						)}
 

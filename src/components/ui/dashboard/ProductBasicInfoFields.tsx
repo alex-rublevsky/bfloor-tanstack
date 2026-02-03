@@ -3,13 +3,7 @@ import { ProductSettingsFields } from "~/components/ui/dashboard/ProductSettings
 import { SelectWithCreate } from "~/components/ui/dashboard/SelectWithCreate";
 import { SlugField } from "~/components/ui/dashboard/SlugField";
 import { Input } from "~/components/ui/shared/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "~/components/ui/shared/Select";
+import { Select } from "~/components/ui/shared/Select";
 import { UNITS_OF_MEASUREMENT } from "~/constants/units";
 import { generateSlug } from "~/hooks/useSlugGeneration";
 import type { Brand, Category, Collection, ProductFormData } from "~/types";
@@ -153,25 +147,19 @@ export function ProductBasicInfoFields({
 
 				<div>
 					<Select
+						id={unitId}
+						label="Единица количества"
+						required
+						className="w-full"
 						value={formData.unitOfMeasurement || "упаковка"}
 						onValueChange={(value) => {
 							onChange({
 								target: { name: "unitOfMeasurement", value },
 							} as React.ChangeEvent<HTMLSelectElement>);
 						}}
-						required
-					>
-						<SelectTrigger id={unitId} label="Единица количества" required>
-							<SelectValue placeholder="Выберите единицу" />
-						</SelectTrigger>
-						<SelectContent>
-							{UNITS_OF_MEASUREMENT.map((unit) => (
-								<SelectItem key={unit} value={unit}>
-									{unit}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						placeholder="Выберите единицу"
+						options={UNITS_OF_MEASUREMENT.map((u) => ({ value: u, label: u }))}
+					/>
 					{hasAttemptedSubmit && !formData.unitOfMeasurement && (
 						<p className="mt-1 text-red-500 text-sm">обязательно</p>
 					)}

@@ -17,13 +17,7 @@ import {
 	ToggleGroup,
 	ToggleGroupItem,
 } from "~/components/ui/dashboard/toggle-group";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "~/components/ui/shared/Select";
+import { Select } from "~/components/ui/shared/Select";
 import { useIsMobile } from "~/hooks/use-mobile";
 
 const chartData = [
@@ -188,25 +182,17 @@ export function ChartAreaInteractive() {
 							Last 7 days
 						</ToggleGroupItem>
 					</ToggleGroup>
-					<Select value={timeRange} onValueChange={setTimeRange}>
-						<SelectTrigger
-							className="flex @[767px]/card:hidden w-40"
-							aria-label="Выбрать значение"
-						>
-							<SelectValue placeholder="Last 3 months" />
-						</SelectTrigger>
-						<SelectContent className="rounded-xl">
-							<SelectItem value="90d" className="rounded-lg">
-								Last 3 months
-							</SelectItem>
-							<SelectItem value="30d" className="rounded-lg">
-								Last 30 days
-							</SelectItem>
-							<SelectItem value="7d" className="rounded-lg">
-								Last 7 days
-							</SelectItem>
-						</SelectContent>
-					</Select>
+					<Select
+						value={timeRange}
+						onValueChange={setTimeRange}
+						className="flex @[767px]/card:hidden w-40"
+						placeholder="Last 3 months"
+						options={[
+							{ value: "90d", label: "Last 3 months" },
+							{ value: "30d", label: "Last 30 days" },
+							{ value: "7d", label: "Last 7 days" },
+						]}
+					/>
 				</div>
 			</CardHeader>
 			<CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">

@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/shared/Button";
 import {
 	CheckboxList,
@@ -11,13 +11,7 @@ import {
 	DrawerFooter,
 } from "~/components/ui/shared/Drawer";
 import { FilterGroup } from "~/components/ui/shared/FilterGroup";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "~/components/ui/shared/Select";
+import { Select } from "~/components/ui/shared/Select";
 import { Slider } from "~/components/ui/shared/Slider";
 import { useDeviceType } from "~/hooks/use-mobile";
 import { usePrefetch } from "~/hooks/usePrefetch";
@@ -98,12 +92,25 @@ const ProductFilters = memo(function ProductFilters({
 		selectedAttributeFilters,
 	]);
 
-	// REACTIVE FILTERS: Changes apply immediately (no "Apply" button needed)
-	// Local state is removed - we update global state directly
+	// Price slider: local state during drag; commit (fetch + reset button) only on release
+	const [sliderPriceRange, setSliderPriceRange] =
+		useState<[number, number]>(currentPriceRange);
+	const isDraggingPriceRef = useRef(false);
 
-	// REACTIVE: Apply changes immediately
-	const handlePriceRangeChange = useCallback(
+	useEffect(() => {
+		if (!isDraggingPriceRef.current) {
+			setSliderPriceRange(currentPriceRange);
+		}
+	}, [currentPriceRange]);
+
+	const handlePriceRangeChange = useCallback((newValue: number[]) => {
+		isDraggingPriceRef.current = true;
+		setSliderPriceRange([newValue[0], newValue[1]]);
+	}, []);
+
+	const handlePriceRangeCommit = useCallback(
 		(newValue: number[]) => {
+			isDraggingPriceRef.current = false;
 			const range: [number, number] = [newValue[0], newValue[1]];
 			onPriceRangeChange?.(range);
 		},
@@ -175,40 +182,31 @@ const ProductFilters = memo(function ProductFilters({
 		filterSections.push(
 			<div key="sort" className="min-w-fit">
 				<div className="mb-2 font-medium text-sm">Сортировка</div>
-				<Select value={sortBy} onValueChange={handleSortChange}>
-					<SelectTrigger className="field-sizing-content font-normal text-xs">
-						<SelectValue placeholder="Выберите сортировку" />
-					</SelectTrigger>
-					<SelectContent className="bg-background font-normal text-xs">
-						<SelectItem className="font-normal text-xs" value="relevant">
-							По релевантности
-						</SelectItem>
-						<SelectItem className="font-normal text-xs" value="best-selling">
-							Популярные
-						</SelectItem>
-						<SelectItem className="font-normal text-xs" value="price-asc">
-							Сначала дешёвые
-						</SelectItem>
-						<SelectItem className="font-normal text-xs" value="price-desc">
-							Сначала дорогие
-						</SelectItem>
-						<SelectItem className="font-normal text-xs" value="newest">
-							Сначала новые
-						</SelectItem>
-					</SelectContent>
-				</Select>
+				<Select
+					value={sortBy}
+					onValueChange={handleSortChange}
+					className="field-sizing-content font-normal"
+					options={[
+						{ value: "relevant", label: "По релевантности" },
+						{ value: "best-selling", label: "Популярные" },
+						{ value: "price-asc", label: "Сначала дешёвые" },
+						{ value: "price-desc", label: "Сначала дорогие" },
+						{ value: "newest", label: "Сначала новые" },
+					]}
+				/>
 			</div>,
 		);
 
-		// Price range filter
+		// Price range filter (always show; bounds come from current filter set)
 		filterSections.push(
 			<div key="price" className="min-w-fit">
 				<Slider
-					value={currentPriceRange}
+					value={sliderPriceRange}
 					min={priceRange.min}
 					max={priceRange.max}
 					step={1}
 					onValueChange={handlePriceRangeChange}
+					onValueCommit={handlePriceRangeCommit}
 					showTooltip
 					tooltipContent={(value) => `${value} р`}
 					label="Цена"
@@ -350,40 +348,31 @@ const ProductFilters = memo(function ProductFilters({
 		sections.push(
 			<div key="sort" className="min-w-fit">
 				<div className="mb-2 font-medium text-sm">Сортировка</div>
-				<Select value={sortBy} onValueChange={handleSortChange}>
-					<SelectTrigger className="field-sizing-content font-normal text-xs">
-						<SelectValue placeholder="Выберите сортировку" />
-					</SelectTrigger>
-					<SelectContent className="bg-background font-normal text-xs">
-						<SelectItem className="font-normal text-xs" value="relevant">
-							По релевантности
-						</SelectItem>
-						<SelectItem className="font-normal text-xs" value="best-selling">
-							Популярные
-						</SelectItem>
-						<SelectItem className="font-normal text-xs" value="price-asc">
-							Сначала дешёвые
-						</SelectItem>
-						<SelectItem className="font-normal text-xs" value="price-desc">
-							Сначала дорогие
-						</SelectItem>
-						<SelectItem className="font-normal text-xs" value="newest">
-							Сначала новые
-						</SelectItem>
-					</SelectContent>
-				</Select>
+				<Select
+					value={sortBy}
+					onValueChange={handleSortChange}
+					className="field-sizing-content font-normal"
+					options={[
+						{ value: "relevant", label: "По релевантности" },
+						{ value: "best-selling", label: "Популярные" },
+						{ value: "price-asc", label: "Сначала дешёвые" },
+						{ value: "price-desc", label: "Сначала дорогие" },
+						{ value: "newest", label: "Сначала новые" },
+					]}
+				/>
 			</div>,
 		);
 
-		// Price
+		// Price (always show; bounds from current filter set)
 		sections.push(
 			<div key="price" className="min-w-fit">
 				<Slider
-					value={currentPriceRange}
+					value={sliderPriceRange}
 					min={priceRange.min}
 					max={priceRange.max}
 					step={1}
 					onValueChange={handlePriceRangeChange}
+					onValueCommit={handlePriceRangeCommit}
 					showTooltip
 					tooltipContent={(value) => `${value} р`}
 					label="Цена"

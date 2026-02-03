@@ -1,0 +1,50 @@
+/**
+ * Select component – native <select> with appearance: base-select (Chrome 135+).
+ * https://developer.chrome.com/blog/a-customizable-select
+ * Imported by Select.tsx.
+ */
+
+/* Defensive CSS for field-sizing: content (select only) */
+select.field-sizing-content,
+.select-native.field-sizing-content {
+	min-inline-size: 5ch;
+	min-block-size: 1.5lh;
+	max-inline-size: 30ch;
+}
+
+/* Content-sized select: trigger padding */
+.select-native.field-sizing-content {
+	padding-inline: 0.75rem 1rem;
+	padding-block: 0.5rem;
+}
+
+/* Opt in to customizable select */
+.select-native,
+.select-native::picker(select) {
+	appearance: base-select;
+}
+
+/* Dropdown list (top-layer popover) – no container padding */
+.select-native::picker(select) {
+	overflow: hidden;
+	max-height: 24rem;
+	min-width: 8rem;
+	border-radius: 1rem;
+	border: 1px solid var(--primary);
+	background: var(--background);
+	color: var(--foreground);
+	box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	padding: 0;
+}
+
+/* Padding and text size on each option so hover fills the full row */
+.select-native option {
+	padding-block: 0.5rem;
+	padding-inline: 0.75rem;
+	font-size: 0.875rem; /* text-sm */
+}
+
+/* Chevron icon on the trigger */
+.select-native::picker-icon {
+	opacity: 0.5;
+}

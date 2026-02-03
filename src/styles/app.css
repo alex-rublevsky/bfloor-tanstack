@@ -43,8 +43,7 @@ body {
 	field-sizing: content;
 }
 
-/* Defensive CSS for field-sizing: content */
-select.field-sizing-content,
+/* Defensive CSS for field-sizing: content (combobox, textarea, input) */
 .field-sizing-content[role="combobox"] {
 	min-inline-size: 5ch;
 	min-block-size: 1.5lh;
