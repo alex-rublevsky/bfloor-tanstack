@@ -848,8 +848,8 @@ export function ImageUpload({
 
 		// Update local state immediately for instant preview
 		setImageList(newImages);
-		// Update parent with new list (no need to track deleted images anymore)
-		onImagesChange(newImagesString);
+		// Update parent with new list and track removed image for submit-time cleanup (backup if immediate R2 delete fails)
+		onImagesChange(newImagesString, [imageToRemove]);
 
 		// Immediately delete from R2 storage
 		// Pass current images to check for duplicate references before deleting

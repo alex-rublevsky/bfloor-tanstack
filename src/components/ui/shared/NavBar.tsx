@@ -68,7 +68,7 @@ const dashboardNavItems: NavItem[] = [
 ];
 
 const dashboardSecondaryItems: NavItem[] = [
-	{ name: "Назад на сайт", url: "/", icon: ArrowLeftFromLine },
+	{ name: "bfloor.ru", url: "/", icon: ArrowLeftFromLine },
 ];
 
 // Reusable dashboard navigation component - memoized to prevent re-renders
@@ -271,7 +271,7 @@ const DropdownNavMenu = ({
 							className="flex w-full cursor-pointer items-center gap-2 border-border border-b px-4 py-2 text-foreground text-sm transition-standard hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground [&_svg]:hover:text-primary-foreground [&_svg]:active:text-primary-foreground"
 						>
 							<LogOutIcon className="h-4 w-4" />
-							Выйти
+							Выйти из аккаунта
 						</button>
 					</>
 				)}

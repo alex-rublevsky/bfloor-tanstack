@@ -1,8 +1,13 @@
 /**
  * Environment Variables Utility
  *
- * Provides a unified way to access environment variables.
- * Uses standard process.env access (compatible with Vercel, Nitro, etc.)
+ * Single source of truth for app config. All access via process.env (no runtime secret fetching).
+ *
+ * Production (Yandex Serverless Container): All secrets and config are in Yandex Lockbox. At deploy
+ * time, the platform injects each Lockbox key as an environment variable (--secret ...). No Lockbox
+ * API calls at runtime; safest and most performant.
+ *
+ * Local / Vercel: Set variables in .env or platform env. Same code path: read process.env only.
  */
 
 /**
@@ -22,25 +27,11 @@ export const env = {
 	// Database (no longer needed with Turso, but kept for compatibility)
 	// DB is now accessed via db.ts
 
-	// Yandex Object Storage Configuration
-	// Supports R2_* variable names for backward compatibility (mapped from .env)
-	BFLOOR_STORAGE_BUCKET:
-		getEnvOptional("BFLOOR_STORAGE_BUCKET") ||
-		getEnvOptional("R2_BUCKET_NAME") ||
-		getEnvOptional("R2_BUCKET") ||
-		getEnvOptional("AWS_S3_BUCKET_NAME"),
-
-	AWS_ACCESS_KEY_ID:
-		getEnvOptional("R2_ACCESS_KEY_ID") || getEnvOptional("AWS_ACCESS_KEY_ID"),
-	AWS_SECRET_ACCESS_KEY:
-		getEnvOptional("R2_SECRET_ACCESS_KEY") ||
-		getEnvOptional("AWS_SECRET_ACCESS_KEY"),
-	AWS_REGION:
-		getEnvOptional("R2_REGION") ||
-		getEnvOptional("AWS_REGION") ||
-		"ru-central1",
-	AWS_S3_ENDPOINT:
-		getEnvOptional("R2_ENDPOINT") || getEnvOptional("AWS_S3_ENDPOINT"),
+	// Storage (Yandex Object Storage). Prod: injected from Lockbox at deploy. Local: .env.
+	BFLOOR_STORAGE_BUCKET: getEnvOptional("BFLOOR_STORAGE_BUCKET"),
+	AWS_ACCESS_KEY_ID: getEnvOptional("AWS_ACCESS_KEY_ID"),
+	AWS_SECRET_ACCESS_KEY: getEnvOptional("AWS_SECRET_ACCESS_KEY"),
+	AWS_S3_ENDPOINT: getEnvOptional("AWS_S3_ENDPOINT"),
 
 	// Admin emails (comma-separated list)
 	ADMIN_EMAILS: getEnvOptional("ADMIN_EMAILS"),

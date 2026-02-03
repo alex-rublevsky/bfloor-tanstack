@@ -157,7 +157,7 @@ export function BottomNavBar({
 		{ name: "Коллекции", url: "/dashboard/collections", icon: "📁" },
 		{ name: "Атрибуты", url: "/dashboard/attributes", icon: "🏷️" },
 		{ name: "Прочее", url: "/dashboard/misc", icon: "⚙️" },
-		{ name: "Назад на сайт", url: "/", icon: "🏠" },
+		{ name: "bfloor.ru", url: "/", icon: "🏠" },
 	];
 
 	const handleLogout = async () => {
@@ -278,7 +278,7 @@ export function BottomNavBar({
 												className="flex w-full items-center gap-3 px-4 py-2 text-left text-foreground text-sm transition-standard hover:bg-muted"
 											>
 												<span className="text-base">🚪</span>
-												<span>Выйти</span>
+												<span>Выйти из аккаунта</span>
 											</button>
 										</div>
 									</div>

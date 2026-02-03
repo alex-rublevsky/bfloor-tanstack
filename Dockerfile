@@ -36,8 +36,10 @@ ENV DEPLOY_TARGET=yandex-cloud
 
 # Build with secret mount (secure - doesn't persist in image)
 # The secret is mounted at /run/secrets/sentry_token during build only
+# NODE_OPTIONS increases heap for Nitro/Vite build (avoids "JavaScript heap out of memory")
 RUN --mount=type=secret,id=sentry_token \
     SENTRY_AUTH_TOKEN=$(cat /run/secrets/sentry_token) \
+    NODE_OPTIONS="--max-old-space-size=4096" \
     pnpm build
 
 # ============================================================================

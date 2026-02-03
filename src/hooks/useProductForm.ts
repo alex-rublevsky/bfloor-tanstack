@@ -98,6 +98,7 @@ export function useProductForm({
 			id: v.id.startsWith("temp-") ? undefined : parseInt(v.id, 10),
 			sku: v.sku,
 			price: v.price.toString(),
+			discount: v.discount ?? null,
 			sort: v.sort,
 			attributes: Object.entries(v.attributeValues).map(
 				([attributeId, value]) => ({

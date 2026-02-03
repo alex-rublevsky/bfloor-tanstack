@@ -548,6 +548,9 @@ export const updateProduct = createServerFn({ method: "POST" })
 						squareMetersPerPack: productData.squareMetersPerPack
 							? parseFloat(productData.squareMetersPerPack)
 							: null,
+						unitOfMeasurement:
+							productData.unitOfMeasurement ??
+							existingProductData.unitOfMeasurement,
 						categorySlug: preserveIfEmpty(
 							productData.categorySlug,
 							existingProductData.categorySlug,
