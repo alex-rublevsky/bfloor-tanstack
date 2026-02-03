@@ -732,7 +732,10 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
 									options={[
 										{ value: "Table of Contents", label: "Table of Contents" },
 										{ value: "Executive Summary", label: "Executive Summary" },
-										{ value: "Technical Approach", label: "Technical Approach" },
+										{
+											value: "Technical Approach",
+											label: "Technical Approach",
+										},
 										{ value: "Design", label: "Design" },
 										{ value: "Capabilities", label: "Capabilities" },
 										{ value: "Focus Documents", label: "Focus Documents" },

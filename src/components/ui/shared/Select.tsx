@@ -49,7 +49,9 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 	) => {
 		const generatedId = React.useId();
 		const id = idProp ?? generatedId;
-		const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue ?? "");
+		const [uncontrolledValue, setUncontrolledValue] = React.useState(
+			defaultValue ?? "",
+		);
 		const isControlled = controlledValue !== undefined;
 		const value = isControlled ? controlledValue : uncontrolledValue;
 
@@ -81,7 +83,11 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 					);
 				} else {
 					list.push(
-						<option key={item.value} value={item.value} disabled={item.disabled}>
+						<option
+							key={item.value}
+							value={item.value}
+							disabled={item.disabled}
+						>
 							{item.label}
 						</option>,
 					);

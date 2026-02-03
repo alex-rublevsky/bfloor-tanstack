@@ -71,15 +71,15 @@ input.field-sizing-content[type="number"] {
 	font-family: "Digital Mono", monospace;
 }
 
+/* Customize NumberFlow animation timing for calculator feel */
+number-flow {
+	--number-flow-char-height: 0.85em;
+}
+
 /* NumberFlow styling for calculator-style animations */
 .font-digital-mono number-flow {
 	font-family: "Digital Mono", monospace;
 	font-variant-numeric: tabular-nums;
-}
-
-/* Customize NumberFlow animation timing for calculator feel */
-number-flow {
-	--number-flow-char-height: 0.85em;
 }
 
 /* Product Description HTML Styles */
@@ -340,12 +340,6 @@ number-flow {
 	section.no-padding {
 		padding-left: 0;
 		padding-right: 0;
-	}
-
-	/* Add padding to titles and controls in sections with no-padding */
-	section.no-padding > h2 {
-		padding-left: var(--section-padding-x);
-		padding-right: var(--section-padding-x);
 	}
 
 	/* Add top padding to first H1 in first section of a page */
@@ -730,6 +724,12 @@ span {
 	}
 }
 
+/* Add padding to titles and controls in sections with no-padding (after typography for specificity) */
+section.no-padding > h2 {
+	padding-left: var(--section-padding-x);
+	padding-right: var(--section-padding-x);
+}
+
 .no-scrollbar {
 	scrollbar-width: none;
 	-ms-overflow-style: none;
@@ -748,23 +748,23 @@ span {
 	display: none;
 }
 
-/* Custom Scrollbar Styling - Cross-platform support */
+/* Custom scrollbar: styled thumb with transparent track so content shows through (thumb appears over content) */
 /* Firefox */
 * {
 	scrollbar-width: thin;
 	scrollbar-color: var(--muted) transparent;
 }
 
-/* WebKit browsers (Chrome, Edge, Safari, iOS Safari) */
+/* WebKit (Chrome, Edge, Safari) – track/corner transparent so thumb sits over content */
 *::-webkit-scrollbar {
 	width: 12px;
 	height: 12px;
-	background: transparent; /* Ensure scrollbar itself is transparent */
+	background: transparent;
 }
 
-*::-webkit-scrollbar-track {
-	background: transparent; /* This creates the overlay effect */
-	background-color: transparent; /* Explicit transparent background */
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+	background: transparent;
 }
 
 *::-webkit-scrollbar-thumb {
@@ -788,24 +788,20 @@ span {
 	cursor: grabbing;
 }
 
-/* iOS Safari specific - ensure scrollbars are styled when visible */
 @supports (-webkit-touch-callout: none) {
 	* {
 		-webkit-overflow-scrolling: touch;
 	}
-
 	*::-webkit-scrollbar {
 		-webkit-appearance: none;
 		width: 12px;
 		height: 12px;
 		background: transparent;
 	}
-
-	*::-webkit-scrollbar-track {
+	*::-webkit-scrollbar-track,
+	*::-webkit-scrollbar-corner {
 		background: transparent;
-		background-color: transparent;
 	}
-
 	*::-webkit-scrollbar-thumb {
 		background-color: var(--muted);
 		border-radius: 10px;
@@ -813,7 +809,6 @@ span {
 		background-clip: padding-box;
 		cursor: grab;
 	}
-
 	*::-webkit-scrollbar-thumb:active {
 		cursor: grabbing;
 	}

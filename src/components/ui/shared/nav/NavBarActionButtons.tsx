@@ -29,6 +29,7 @@ export function ActionButton({
 		<Button
 			variant={isPrimary ? "default" : "outline"}
 			size="sm"
+			className={className}
 			onClick={button.onClick}
 		>
 			{isPrimary && showIcon && <Plus className="h-4 w-4" />}

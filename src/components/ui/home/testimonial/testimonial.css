@@ -93,7 +93,15 @@ section.embla {
 	min-width: 0;
 }
 
-/* Ensure embla buttons stay in a row */
+/* Base embla buttons (less specific first) */
+.embla__buttons {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 0.6rem;
+	align-items: center;
+}
+
+/* Ensure embla buttons stay in a row in testimonial controls */
 .testimonial-slider__controls .embla__buttons {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
@@ -107,12 +115,6 @@ section.embla {
 	display: flex;
 	justify-content: flex-end;
 	padding: 0 var(--section-padding-x) 1rem var(--section-padding-x);
-}
-.embla__buttons {
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 0.6rem;
-	align-items: center;
 }
 .embla__button {
 	-webkit-tap-highlight-color: rgba(var(--text-high-contrast-rgb-value), 0.5);
@@ -192,7 +194,7 @@ section.embla {
 	/* Button sizes now handled by Tailwind classes in EmblaArrowButtons component */
 
 	/* Adjust spacing for mobile */
-	.embla__buttons {
+	.testimonial-slider__controls .embla__buttons {
 		gap: 0.4rem;
 	}
 

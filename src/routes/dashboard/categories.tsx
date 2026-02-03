@@ -53,7 +53,9 @@ const CategoryFormFields = ({
 					id={parentCategoryId}
 					className="w-full"
 					value={(formData as CategoryFormData).parentSlug || "none"}
-					onValueChange={(v) => onFieldChange("parentSlug", v === "none" ? null : v)}
+					onValueChange={(v) =>
+						onFieldChange("parentSlug", v === "none" ? null : v)
+					}
 					placeholder="Нет (корневая категория)"
 					options={[
 						{ value: "none", label: "Нет (корневая категория)" },

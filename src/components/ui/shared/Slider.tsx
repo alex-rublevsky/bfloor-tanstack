@@ -314,7 +314,10 @@ const Slider = React.forwardRef<
 								min={min}
 								max={max}
 								step={step}
-								className={cn("-ml-px h-8 rounded-l-none text-s", inputClassName)}
+								className={cn(
+									"-ml-px h-8 rounded-l-none text-s",
+									inputClassName,
+								)}
 								aria-label="Maximum value"
 							/>
 						</div>

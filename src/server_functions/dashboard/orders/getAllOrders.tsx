@@ -58,7 +58,7 @@ export const getAllOrders = createServerFn({ method: "GET" }).handler(
 					unitAmount: number;
 					discountPercentage: number | null;
 					finalAmount: number;
-					attributes: Record<string, any>;
+					attributes: Record<string, unknown>;
 					product: { name: string; images: string | null };
 					variation?: { id: number; sku: string };
 				}>
