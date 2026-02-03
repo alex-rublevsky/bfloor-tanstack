@@ -21,6 +21,8 @@ interface SliderProps
 	parseValue?: (value: string) => number;
 	/** Called when user commits the value (e.g. releases thumb or blurs number input). */
 	onValueCommit?: (value: number[]) => void;
+	/** Optional extra class for the number inputs (e.g. font-digital-mono text-base for price). */
+	inputClassName?: string;
 }
 
 const Slider = React.forwardRef<
@@ -38,6 +40,7 @@ const Slider = React.forwardRef<
 			formatValue: formatValueProp,
 			parseValue: parseValueProp,
 			onValueCommit,
+			inputClassName,
 			min = 0,
 			max = 100,
 			step = 1,
@@ -295,7 +298,10 @@ const Slider = React.forwardRef<
 								min={min}
 								max={max}
 								step={step}
-								className="h-8 rounded-r-none border-r-0 text-s"
+								className={cn(
+									"h-8 rounded-r-none border-r-0 text-s",
+									inputClassName,
+								)}
 								aria-label="Minimum value"
 							/>
 						</div>
@@ -308,7 +314,7 @@ const Slider = React.forwardRef<
 								min={min}
 								max={max}
 								step={step}
-								className="-ml-px h-8 rounded-l-none text-s"
+								className={cn("-ml-px h-8 rounded-l-none text-s", inputClassName)}
 								aria-label="Maximum value"
 							/>
 						</div>

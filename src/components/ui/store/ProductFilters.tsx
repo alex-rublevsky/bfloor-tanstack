@@ -207,8 +207,7 @@ const ProductFilters = memo(function ProductFilters({
 					step={1}
 					onValueChange={handlePriceRangeChange}
 					onValueCommit={handlePriceRangeCommit}
-					showTooltip
-					tooltipContent={(value) => `${value} р`}
+					inputClassName="h-9 font-digital-mono text-base"
 					label="Цена"
 				/>
 			</div>,
@@ -373,8 +372,7 @@ const ProductFilters = memo(function ProductFilters({
 					step={1}
 					onValueChange={handlePriceRangeChange}
 					onValueCommit={handlePriceRangeCommit}
-					showTooltip
-					tooltipContent={(value) => `${value} р`}
+					inputClassName="h-9 font-digital-mono text-base"
 					label="Цена"
 				/>
 			</div>,
@@ -472,21 +470,29 @@ const ProductFilters = memo(function ProductFilters({
 		return <div className="flex flex-col gap-5">{sections}</div>;
 	};
 
-	// Sidebar: only filter content + reset (no label, no drawer)
+	// Sidebar: reset button in a CSS Grid expander (0fr ↔ 1fr). Pure CSS transition, no JS animation.
 	if (variant === "sidebar") {
 		return (
 			<div className="flex flex-col gap-4">
-				{hasAnyActiveFilters && (
-					<Button
-						type="button"
-						variant="accent"
-						size="sm"
-						onClick={resetAll}
-						className="w-full"
-					>
-						Сбросить фильтры
-					</Button>
-				)}
+				<div
+					className="reset-filters-expander"
+					data-expanded={hasAnyActiveFilters}
+					aria-hidden={!hasAnyActiveFilters}
+				>
+					<div className="reset-filters-expander-inner">
+						<Button
+							type="button"
+							variant="accent"
+							size="sm"
+							onClick={resetAll}
+							className="w-full"
+							tabIndex={hasAnyActiveFilters ? 0 : -1}
+							aria-hidden={!hasAnyActiveFilters}
+						>
+							Сбросить фильтры
+						</Button>
+					</div>
+				</div>
 				{renderFilterContent()}
 			</div>
 		);
@@ -530,21 +536,33 @@ const ProductFilters = memo(function ProductFilters({
 
 					<DrawerFooter className="border-border border-t bg-background px-4 sm:px-6 lg:px-8">
 						<div className="flex w-full items-center justify-between">
-							<div>
-								{hasAnyActiveFilters ? (
+							<div
+								className="reset-filters-drawer-grid relative min-h-8"
+								data-expanded={hasAnyActiveFilters}
+							>
+								<div
+									className="reset-filters-drawer-row"
+									aria-hidden={!hasAnyActiveFilters}
+								>
 									<Button
 										type="button"
 										variant="accent"
 										size="sm"
 										onClick={resetAll}
+										tabIndex={hasAnyActiveFilters ? 0 : -1}
+										aria-hidden={!hasAnyActiveFilters}
 									>
 										Сбросить все фильтры
 									</Button>
-								) : (
-									<span className="font-semibold text-lg leading-none tracking-tight">
+								</div>
+								<div
+									className="reset-filters-drawer-row"
+									aria-hidden={hasAnyActiveFilters}
+								>
+									<span className="block font-semibold text-lg leading-none tracking-tight">
 										Фильтры
 									</span>
-								)}
+								</div>
 							</div>
 							<Button
 								variant="secondary"

@@ -9,7 +9,6 @@ import { useElementScrollRestoration } from "@tanstack/react-router";
 import { useVirtualizer, useWindowVirtualizer } from "@tanstack/react-virtual";
 import type { RefObject } from "react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActiveFiltersDisplay } from "~/components/ui/shared/ActiveFiltersDisplay";
 import { EmptyState } from "~/components/ui/shared/EmptyState";
 import { ProductGridSkeleton } from "~/components/ui/shared/ProductGridSkeleton";
 import ProductCard from "~/components/ui/store/ProductCard";
@@ -382,7 +381,7 @@ interface StoreProductGridProps {
 	 */
 	brandSlug?: string;
 	/**
-	 * Brand for display when it's a brand page (used in ActiveFiltersDisplay; { slug, name })
+	 * Brand for display when it's a brand page ({ slug, name })
 	 */
 	brand?: { slug: string; name: string };
 	/**
@@ -610,6 +609,8 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 					: undefined,
 			sort: sortBy,
 		}),
+		// Keep previous data during filter change so CSS can crossfade feed → skeleton
+		placeholderData: (previousData) => previousData,
 	});
 
 	// Sync price range from first page bounds (real min/max for current filter set)
@@ -680,11 +681,7 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 		columnsPerRow,
 	]);
 
-	// Determine if we should show the skeleton
-	// Show skeleton only when:
-	// 1. No data yet (!storeData)
-	// 2. Fetching initial data or filter changes (isFetching && !isFetchingNextPage)
-	// Don't show skeleton when just fetching next page for infinite scroll
+	// Show skeleton when: no data yet, or fetching (filter change) but not infinite-scroll load
 	const showSkeleton = !storeData || (isFetching && !isFetchingNextPage);
 
 	const filterProps = {
@@ -710,52 +707,46 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 		onFiltersOpen: () => setFiltersOpened(true),
 	};
 
-	const activeFiltersProps = {
-		categoryName,
-		brandName: brand?.name ?? null,
-		brands: brand ? [brand] : brands,
-		selectedBrand,
-		collections,
-		selectedCollection,
-		storeLocations,
-		selectedStoreLocation,
-		attributeFilters,
-		selectedAttributeFilters,
-		onRemoveBrand: brandSlug
-			? () => navigate({ to: "/store" })
-			: () => updateBrand(null),
-		onRemoveCollection: () => updateCollection(null),
-		onRemoveStoreLocation: () => updateStoreLocation(null),
-		onRemoveAttributeValue: (attributeId: number, valueId: string) => {
-			const currentValues = selectedAttributeFilters[attributeId] || [];
-			const newValues = currentValues.filter((id) => id !== valueId);
-			updateAttributeFilter(attributeId, newValues);
-		},
-	};
-
-	const productContent = showSkeleton ? (
-		<ProductGridSkeleton itemCount={18} />
-	) : displayProducts.length === 0 ? (
-		<EmptyState entityType="products" isSearchResult={!!normalizedSearch} />
-	) : (
-		<>
-			<VirtualizedProductList
-				key={categorySlug ?? brandSlug ?? "all"}
-				displayProducts={displayProducts}
-				columnsPerRow={columnsPerRow}
-				scrollEntry={scrollEntry}
-				cacheKey={cacheKey}
-				fetchNextPage={fetchNextPage}
-				hasNextPage={hasNextPage ?? false}
-				isFetchingNextPage={isFetchingNextPage}
-				scrollRef={isDesktop ? productScrollRef : undefined}
-			/>
-			{isFetchingNextPage && (
-				<div className="flex w-full items-center justify-center p-8">
-					<p className="text-muted-foreground">Загрузка...</p>
-				</div>
-			)}
-		</>
+	const productContent = (
+		<div className="product-feed-transition relative min-h-[200px]">
+			{/* Content layer: grid or empty — fades out when loading */}
+			<div
+				className={`product-feed-content transition-opacity duration-300 ease-out ${showSkeleton ? "pointer-events-none opacity-0" : "opacity-100"}`}
+			>
+				{displayProducts.length === 0 ? (
+					<EmptyState
+						entityType="products"
+						isSearchResult={!!normalizedSearch}
+					/>
+				) : (
+					<>
+						<VirtualizedProductList
+							key={categorySlug ?? brandSlug ?? "all"}
+							displayProducts={displayProducts}
+							columnsPerRow={columnsPerRow}
+							scrollEntry={scrollEntry}
+							cacheKey={cacheKey}
+							fetchNextPage={fetchNextPage}
+							hasNextPage={hasNextPage ?? false}
+							isFetchingNextPage={isFetchingNextPage}
+							scrollRef={isDesktop ? productScrollRef : undefined}
+						/>
+						{isFetchingNextPage && (
+							<div className="flex w-full items-center justify-center p-8">
+								<p className="text-muted-foreground">Загрузка...</p>
+							</div>
+						)}
+					</>
+				)}
+			</div>
+			{/* Skeleton layer: overlays and fades in when loading */}
+			<div
+				className={`product-feed-skeleton absolute inset-0 transition-opacity duration-300 ease-out ${showSkeleton ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"}`}
+				aria-hidden={!showSkeleton}
+			>
+				<ProductGridSkeleton itemCount={18} />
+			</div>
+		</div>
 	);
 
 	const pageTitle = categoryName ?? brand?.name ?? "Каталог";
@@ -771,7 +762,6 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 							{pageTitle}
 						</h1>
 						<ProductFilters {...filterProps} variant="sidebar" />
-						<ActiveFiltersDisplay {...activeFiltersProps} showTitle={false} />
 					</div>
 				</aside>
 				<main
@@ -791,7 +781,6 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 				{pageTitle}
 			</h1>
 			<ProductFilters {...filterProps} />
-			<ActiveFiltersDisplay {...activeFiltersProps} showTitle={false} />
 			<div className="py-4">{productContent}</div>
 		</div>
 	);

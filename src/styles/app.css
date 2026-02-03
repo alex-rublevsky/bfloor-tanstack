@@ -1081,3 +1081,31 @@ input[type="number"] {
 		backdrop-filter: blur(8px);
 	}
 }
+
+/* Reset-filters expander: smooth height 0 ↔ auto via CSS Grid (no JS animation) */
+.reset-filters-expander {
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.reset-filters-expander[data-expanded="true"] {
+	grid-template-rows: 1fr;
+}
+.reset-filters-expander-inner {
+	min-height: 0;
+	overflow: hidden;
+}
+
+/* Drawer footer: two rows (reset button | title), one visible at a time */
+.reset-filters-drawer-grid {
+	display: grid;
+	grid-template-rows: 0fr 1fr;
+	transition: grid-template-rows 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.reset-filters-drawer-grid[data-expanded="true"] {
+	grid-template-rows: 1fr 0fr;
+}
+.reset-filters-drawer-row {
+	min-height: 0;
+	overflow: hidden;
+}
