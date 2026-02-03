@@ -17,6 +17,7 @@ import { useScrollDirection } from "~/hooks/useScrollDirection";
 import { useSearchPlaceholderWithCount } from "~/hooks/useSearchPlaceholderWithCount";
 import { useCart } from "~/lib/cartContext";
 import { useClientSearch } from "~/lib/clientSearchContext";
+import { useDashboardFormStatus } from "~/lib/dashboardFormStatus";
 import {
 	categoriesQueryOptions,
 	productCategoryCountsQueryOptions,
@@ -971,6 +972,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 		() => (actionButtons.length === 1 ? actionButtons[0] : null),
 		[actionButtons],
 	);
+	const formStatus = useDashboardFormStatus();
 
 	// Dashboard navigation layout
 	if (isDashboard) {
@@ -1009,9 +1011,12 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 							{/* Action button(s) - fixed width */}
 							<div className="flex-shrink-0">
 								{actionButtons.length > 1 ? (
-									<ActionButtons buttons={actionButtons} />
+									<ActionButtons
+										buttons={actionButtons}
+										formStatus={formStatus}
+									/>
 								) : actionButton ? (
-									<ActionButton button={actionButton} />
+									<ActionButton button={actionButton} formStatus={formStatus} />
 								) : null}
 							</div>
 
@@ -1050,9 +1055,12 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 							{/* Action button(s) */}
 							<div className="flex-shrink-0">
 								{actionButtons.length > 1 ? (
-									<ActionButtons buttons={actionButtons} />
+									<ActionButtons
+										buttons={actionButtons}
+										formStatus={formStatus}
+									/>
 								) : actionButton ? (
-									<ActionButton button={actionButton} />
+									<ActionButton button={actionButton} formStatus={formStatus} />
 								) : null}
 							</div>
 

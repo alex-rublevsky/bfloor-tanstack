@@ -12,8 +12,12 @@ import {
 import type { ProductFormData } from "~/types";
 import { getAttributeMappings } from "~/utils/attributeMapping";
 import { getBatchValueIds } from "~/utils/attributeValueLookup";
+import { getStorageBucket } from "~/utils/storage";
 import { validateAttributeValues } from "~/utils/validateAttributeValues";
-import { moveStagingImages } from "./moveStagingImages";
+import {
+	type MoveStagingImagesResult,
+	moveStagingImagesWithBucket,
+} from "./moveStagingImages";
 
 export const updateProduct = createServerFn({ method: "POST" })
 	.inputValidator((data: { id: number; data: ProductFormData }) => data)
@@ -185,14 +189,14 @@ export const updateProduct = createServerFn({ method: "POST" })
 			}
 
 			// All validation passed - now process images
-			// Parse image paths once
+			// Parse image paths once (trim so pathMap lookups match)
 			const imagePaths =
 				productData.images
 					?.split(",")
 					.map((img) => img.trim())
 					.filter(Boolean) ?? [];
 
-			// Move staging images to final location if any exist
+			// Move staging images to final location in the same request (no server-fn round-trip)
 			if (imagePaths.length > 0) {
 				const hasStagingImages = imagePaths.some((path) =>
 					path.startsWith("staging/"),
@@ -200,24 +204,34 @@ export const updateProduct = createServerFn({ method: "POST" })
 
 				if (hasStagingImages) {
 					try {
-						const moveResult = await moveStagingImages({
-							data: {
+						const bucket = getStorageBucket();
+						const moveResult: MoveStagingImagesResult =
+							await moveStagingImagesWithBucket(bucket, {
 								imagePaths,
 								finalFolder: "products",
 								categorySlug: productData.categorySlug,
 								productName: productData.name,
 								slug: productData.slug,
-							},
-						});
+							});
 
 						if (moveResult?.pathMap) {
-							// Update paths in place with final locations
-							imagePaths.forEach((path, index) => {
-								imagePaths[index] = moveResult.pathMap?.[path] || path;
-							});
+							// Update paths: use pathMap (support trimmed key) and drop any that stayed staging
+							for (let i = 0; i < imagePaths.length; i++) {
+								const path = imagePaths[i];
+								const finalPath =
+									moveResult.pathMap[path] ??
+									moveResult.pathMap[path.trim()] ??
+									path;
+								if (finalPath.startsWith("staging/")) {
+									// Move failed for this path — don't persist staging path
+									imagePaths.splice(i, 1);
+									i--;
+								} else {
+									imagePaths[i] = finalPath;
+								}
+							}
 						}
 					} catch (imageError) {
-						// If image move fails, fail the entire operation to maintain consistency
 						setResponseStatus(500);
 						responseStatusSet = true;
 						throw new Error(

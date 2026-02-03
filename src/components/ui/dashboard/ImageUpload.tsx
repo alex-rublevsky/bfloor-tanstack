@@ -963,7 +963,7 @@ export function ImageUpload({
 					variant="outline"
 					size="sm"
 				>
-					{showTextarea ? "Скрыть" : "Редактировать"} Raw
+					{showTextarea ? "Скрыть" : "Редактировать"} картинки текстом
 				</Button>
 			</div>
 

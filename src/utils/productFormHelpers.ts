@@ -5,17 +5,34 @@ import type {
 	ProductFormData,
 	ProductVariationWithAttributes,
 	ProductWithVariations,
+	VariationAttribute,
 } from "~/types";
+
+/** Variation shape accepted by transformer (dashboard API uses id: string, no productId) */
+type TransformVariationInput = {
+	id: string | number;
+	sku: string;
+	price: number;
+	discount?: number | null;
+	sort?: number | null;
+	attributes?: VariationAttribute[];
+};
+
+/** Input type: ProductWithVariations with optional viewCount and flexible productAttributes/variations (dashboard API shape) */
+type TransformProductInput = Omit<
+	ProductWithVariations,
+	"viewCount" | "productAttributes" | "variations"
+> & {
+	viewCount?: number;
+	productAttributes?: ProductAttributeFormData[] | string | null;
+	storeLocationIds?: (number | null)[];
+	variations?: TransformVariationInput[] | ProductVariationWithAttributes[];
+};
 
 /**
  * Transform product data from API into form data format
  */
-export function transformProductToFormData(
-	product: ProductWithVariations & {
-		productAttributes?: ProductAttributeFormData[] | string;
-		storeLocationIds?: (number | null)[];
-	},
-): {
+export function transformProductToFormData(product: TransformProductInput): {
 	formData: ProductFormData;
 	variations: Variation[];
 	selectedVariationAttributes: string[];

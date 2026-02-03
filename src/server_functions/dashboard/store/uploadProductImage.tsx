@@ -217,7 +217,7 @@ export const uploadProductImage = createServerFn({ method: "POST" })
 				filename = `${directoryPath}/${finalName}.${extension}`;
 			}
 
-			// Convert base64 to ArrayBuffer
+			// Convert base64 to Uint8Array (exact length to avoid S3/R2 signature mismatch)
 			const base64Data = fileData.split(",")[1] || fileData;
 			const binaryString = atob(base64Data);
 			const bytes = new Uint8Array(binaryString.length);
@@ -225,10 +225,8 @@ export const uploadProductImage = createServerFn({ method: "POST" })
 				bytes[i] = binaryString.charCodeAt(i);
 			}
 
-			// Proceed to upload to R2
-
-			// Upload to R2
-			await bucket.put(filename, bytes.buffer, {
+			// Upload (pass Uint8Array so body length matches exactly; bytes.buffer can be larger)
+			await bucket.put(filename, bytes, {
 				httpMetadata: {
 					// Ensure SVG files get the correct content type
 					contentType: isSvg ? "image/svg+xml" : fileType,

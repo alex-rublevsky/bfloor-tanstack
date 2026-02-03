@@ -3,6 +3,7 @@
  * Provides consistent styling and behavior across desktop and mobile
  */
 
+import type { ButtonStatus } from "~/components/ui/shared/Button";
 import type { ActionButtonConfig } from "~/config/dashboardActionButtons";
 import { cn } from "~/utils/utils";
 import { Button } from "../Button";
@@ -12,18 +13,37 @@ interface ActionButtonProps {
 	button: ActionButtonConfig;
 	className?: string;
 	showIcon?: boolean;
+	/** Status for the "Update product" button; from useDashboardFormStatus() in NavBar */
+	formStatus?: ButtonStatus;
 }
 
 /**
  * Single action button component
- * Uses the shared Button component with custom rounded-full styling
+ * Uses the shared Button component with custom rounded-full styling.
+ * When useStatusButton is true, renders animated status variant (idle/analyzing/success/warning).
  */
 export function ActionButton({
 	button,
 	className = "",
 	showIcon = true,
+	formStatus = "idle",
 }: ActionButtonProps) {
 	const isPrimary = button.variant === "default";
+
+	if (isPrimary && button.useStatusButton) {
+		return (
+			<Button
+				variant="status"
+				size="sm"
+				className={className}
+				onClick={button.onClick}
+				status={formStatus}
+				statusLabels={button.statusLabels}
+			>
+				{button.label}
+			</Button>
+		);
+	}
 
 	return (
 		<Button
@@ -42,6 +62,7 @@ interface ActionButtonsProps {
 	buttons: ActionButtonConfig[];
 	className?: string;
 	showIcon?: boolean;
+	formStatus?: ButtonStatus;
 }
 
 /**
@@ -52,6 +73,7 @@ export function ActionButtons({
 	buttons,
 	className = "",
 	showIcon = true,
+	formStatus = "idle",
 }: ActionButtonsProps) {
 	if (buttons.length === 0) return null;
 
@@ -62,6 +84,7 @@ export function ActionButtons({
 					key={`nav-action-${index}-${button.label}`}
 					button={button}
 					showIcon={showIcon}
+					formStatus={formStatus}
 				/>
 			))}
 		</div>

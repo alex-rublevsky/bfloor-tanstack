@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { getStorageBucket } from "~/utils/storage";
+import { getProductImageStorageKey } from "./moveStagingImages";
 
 interface DeleteImageInput {
 	filename: string; // Full path in R2 (e.g., "products/image.jpg")
@@ -52,13 +53,14 @@ export const deleteProductImage = createServerFn({ method: "POST" })
 			}
 
 			const bucket = getStorageBucket();
+			const storageKey = getProductImageStorageKey(filename);
 
 			// Check if file exists
-			const fileExists = await bucket.head(filename);
+			const fileExists = await bucket.head(storageKey);
 
 			if (!fileExists) {
 				// File doesn't exist, but that's okay - maybe already deleted
-				console.warn(`File not found in R2: ${filename}`);
+				console.warn(`File not found in R2: ${storageKey}`);
 				return {
 					success: true,
 					message: "File not found (may have been already deleted)",
@@ -66,7 +68,7 @@ export const deleteProductImage = createServerFn({ method: "POST" })
 			}
 
 			// Delete from R2
-			await bucket.delete(filename);
+			await bucket.delete(storageKey);
 
 			return {
 				success: true,

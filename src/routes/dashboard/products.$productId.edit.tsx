@@ -8,6 +8,7 @@ import { DrawerSection } from "~/components/ui/dashboard/ProductFormSection";
 import { Button } from "~/components/ui/shared/Button";
 import { Eye, Trash } from "~/components/ui/shared/Icon";
 import { useProductForm } from "~/hooks/useProductForm";
+import { dispatchDashboardFormStatus } from "~/lib/dashboardFormStatus";
 import { dashboardProductQueryOptions } from "~/lib/queryOptions";
 import { deleteProduct } from "~/server_functions/dashboard/store/deleteProduct";
 import { deleteProductImage } from "~/server_functions/dashboard/store/deleteProductImage";
@@ -31,10 +32,7 @@ export const Route = createFileRoute("/dashboard/products/$productId/edit")({
 		);
 
 		// Transform product data to form format
-		// Cast to expected type - productAttributes is already an array from the API
-		const transformed = transformProductToFormData(
-			product as Parameters<typeof transformProductToFormData>[0],
-		);
+		const transformed = transformProductToFormData(product);
 
 		// Return transformed data - component will use useLoaderData() to access it
 		return {
@@ -95,7 +93,9 @@ function EditProductPage() {
 			});
 		},
 		onSuccess: () => {
+			dispatchDashboardFormStatus("success");
 			toast.success("Product updated successfully!");
+			setTimeout(() => dispatchDashboardFormStatus("idle"), 1500);
 			navigate({ to: "/dashboard" });
 			queryClient.invalidateQueries({
 				queryKey: ["bfloorDashboardProductsInfinite"],
@@ -117,14 +117,23 @@ function EditProductPage() {
 		},
 	});
 
-	// Handle submit errors with toast
+	// Reset nav status when entering edit page
+	useEffect(() => {
+		dispatchDashboardFormStatus("idle");
+	}, []);
+
+	// Handle submit errors with toast; drive status button (analyzing → success/warning)
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+		dispatchDashboardFormStatus("analyzing");
 		try {
 			await productForm.handleSubmit(e);
+			// onSuccess (below) will set "success"
 		} catch (err) {
+			dispatchDashboardFormStatus("warning");
 			const errorMessage =
 				err instanceof Error ? err.message : "An error occurred";
 			toast.error(errorMessage);
+			setTimeout(() => dispatchDashboardFormStatus("idle"), 2500);
 		}
 	};
 

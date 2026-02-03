@@ -7,6 +7,14 @@ export type ActionButtonConfig = {
 	label: string;
 	onClick: () => void;
 	variant: "default" | "outline";
+	/** Use animated status button (idle/analyzing/success/warning); status from DashboardFormStatusContext */
+	useStatusButton?: boolean;
+	/** Labels for status suffix when useStatusButton is true */
+	statusLabels?: {
+		analyzing?: string;
+		success?: string;
+		warning?: string;
+	};
 };
 
 type RouteMatcher = (pathname: string) => boolean;
@@ -52,7 +60,7 @@ const ACTION_BUTTON_CONFIGS: ActionButtonRouteConfig[] = [
 			},
 		],
 	},
-	// Product edit page - Cancel + Update buttons
+	// Product edit page - Cancel + Update buttons (primary uses status variant)
 	{
 		matcher: PRODUCT_EDIT_PATTERN,
 		buttons: () => [
@@ -75,6 +83,12 @@ const ACTION_BUTTON_CONFIGS: ActionButtonRouteConfig[] = [
 						}),
 					),
 				variant: "default",
+				useStatusButton: true,
+				statusLabels: {
+					analyzing: "Сохранение",
+					success: "Готово",
+					warning: "Ошибка",
+				},
 			},
 		],
 	},

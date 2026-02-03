@@ -752,7 +752,8 @@ section.no-padding > h2 {
 /* Firefox */
 * {
 	scrollbar-width: thin;
-	scrollbar-color: var(--muted) transparent;
+	scrollbar-color: color-mix(in oklch, var(--muted-foreground) 50%, transparent)
+		transparent;
 }
 
 /* WebKit (Chrome, Edge, Safari) – track/corner transparent so thumb sits over content */
@@ -768,7 +769,11 @@ section.no-padding > h2 {
 }
 
 *::-webkit-scrollbar-thumb {
-	background-color: var(--muted);
+	background-color: color-mix(
+		in oklch,
+		var(--muted-foreground) 50%,
+		transparent
+	);
 	border-radius: 10px;
 	border: 2px solid transparent;
 	background-clip: padding-box;
@@ -778,8 +783,8 @@ section.no-padding > h2 {
 *::-webkit-scrollbar-thumb:hover {
 	background-color: color-mix(
 		in oklch,
-		var(--muted) 85%,
-		var(--muted-foreground)
+		var(--muted-foreground) 100%,
+		transparent
 	);
 	cursor: grab;
 }
@@ -803,7 +808,11 @@ section.no-padding > h2 {
 		background: transparent;
 	}
 	*::-webkit-scrollbar-thumb {
-		background-color: var(--muted);
+		background-color: color-mix(
+			in oklch,
+			var(--muted-foreground) 50%,
+			transparent
+		);
 		border-radius: 10px;
 		border: 2px solid transparent;
 		background-clip: padding-box;
@@ -1103,4 +1112,31 @@ input[type="number"] {
 .reset-filters-drawer-row {
 	min-height: 0;
 	overflow: hidden;
+}
+
+/* Status button variant (Button.tsx variant="status") – layout and spin */
+@keyframes spin {
+	to {
+		transform: rotate(1turn);
+	}
+}
+.animate-spin {
+	animation: spin infinite 0.3s linear;
+}
+.will-transform {
+	will-change: transform;
+}
+.button-status-inner {
+	pointer-events: none;
+}
+/* Force primary-foreground text in idle state so it overrides inherited (e.g. text-foreground / black) */
+button:has(.button-status-inner[data-status="idle"]) {
+	color: var(--primary-foreground);
+}
+button:has(.button-status-inner[data-status="idle"]) .button-status-inner,
+button:has(.button-status-inner[data-status="idle"]) .button-status-inner * {
+	color: var(--primary-foreground);
+}
+button:has(.button-status-inner) {
+	transition: none;
 }

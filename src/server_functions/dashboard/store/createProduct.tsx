@@ -14,7 +14,10 @@ import { getAttributeMappings } from "~/utils/attributeMapping";
 import { getBatchValueIds } from "~/utils/attributeValueLookup";
 import { getStorageBucket } from "~/utils/storage";
 import { validateAttributeValues } from "~/utils/validateAttributeValues";
-import { moveStagingImages } from "./moveStagingImages";
+import {
+	getProductImageStorageKey,
+	moveStagingImagesWithBucket,
+} from "./moveStagingImages";
 
 export const createProduct = createServerFn({ method: "POST" })
 	.inputValidator((data: ProductFormData) => data)
@@ -100,24 +103,22 @@ export const createProduct = createServerFn({ method: "POST" })
 				);
 
 				if (hasStagingImages) {
-					// Move staging images to final location
-					const moveResult = await moveStagingImages({
-						data: {
-							imagePaths,
-							finalFolder: "products",
-							categorySlug: productData.categorySlug,
-							productName: productData.name,
-							slug: productData.slug,
-						},
+					const bucket = getStorageBucket();
+					const moveResult = await moveStagingImagesWithBucket(bucket, {
+						imagePaths,
+						finalFolder: "products",
+						categorySlug: productData.categorySlug,
+						productName: productData.name,
+						slug: productData.slug,
 					});
 
 					if (moveResult?.pathMap) {
-						// Update image string with final paths
 						const updatedPaths = imagePaths.map(
-							(path) => moveResult.pathMap?.[path] || path,
+							(path) => moveResult.pathMap?.[path] ?? path,
 						);
-						imageString = updatedPaths.join(", ");
-						// Track moved images for potential cleanup
+						imageString = updatedPaths
+							.filter((p) => !p.startsWith("staging/"))
+							.join(", ");
 						movedImagePaths = Object.values(moveResult.pathMap);
 					}
 				}
@@ -303,8 +304,9 @@ export const createProduct = createServerFn({ method: "POST" })
 					await Promise.allSettled(
 						movedImagePaths.map(async (imagePath) => {
 							try {
-								await bucket.delete(imagePath);
-								console.log(`Cleaned up orphaned image: ${imagePath}`);
+								const storageKey = getProductImageStorageKey(imagePath);
+								await bucket.delete(storageKey);
+								console.log(`Cleaned up orphaned image: ${storageKey}`);
 							} catch (deleteError) {
 								console.warn(
 									`Failed to cleanup orphaned image ${imagePath}:`,

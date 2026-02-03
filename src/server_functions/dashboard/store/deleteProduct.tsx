@@ -4,6 +4,7 @@ import { eq, inArray } from "drizzle-orm";
 import { DB } from "~/db";
 import { products, productVariations, variationAttributes } from "~/schema";
 import { getStorageBucket } from "~/utils/storage";
+import { getProductImageStorageKey } from "./moveStagingImages";
 
 export const deleteProduct = createServerFn({ method: "POST" })
 	.inputValidator((data: { id: number }) => data)
@@ -46,11 +47,12 @@ export const deleteProduct = createServerFn({ method: "POST" })
 
 					if (imageArray.length > 0) {
 						const bucket = getStorageBucket();
-						// Delete all images associated with this product
+						// Delete all images associated with this product (storage key is under images/)
 						await Promise.all(
 							imageArray.map(async (imagePath) => {
 								try {
-									await bucket.delete(imagePath);
+									const storageKey = getProductImageStorageKey(imagePath);
+									await bucket.delete(storageKey);
 								} catch (error) {
 									// Log but don't fail if image deletion fails
 									console.warn(`Failed to delete image ${imagePath}:`, error);
