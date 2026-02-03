@@ -25,6 +25,7 @@ import {
 } from "~/lib/queryOptions";
 import type { Category } from "~/types";
 import { signOut } from "~/utils/auth-client";
+import { sortCategoriesByDisplayOrder } from "~/utils/categorySort";
 import { cn } from "~/utils/utils";
 import { CartDrawerContent } from "../store/CartDrawerContent";
 import { BottomNavBar } from "./BottomNavBar";
@@ -71,6 +72,10 @@ const dashboardNavItems: NavItem[] = [
 const dashboardSecondaryItems: NavItem[] = [
 	{ name: "bfloor.ru", url: "/", icon: ArrowLeftFromLine },
 ];
+
+// Shared styles for dropdown menu action items (Sign Out + secondary links) so icon/text spacing and alignment match
+const dropdownItemClasses =
+	"flex w-full cursor-pointer items-center gap-2 border-border border-b px-4 py-2 text-foreground text-sm transition-standard hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0 [&_svg]:hover:text-primary-foreground [&_svg]:active:text-primary-foreground";
 
 // Reusable dashboard navigation component - memoized to prevent re-renders
 const DashboardNavLinks = memo(
@@ -269,9 +274,9 @@ const DropdownNavMenu = ({
 									navigate({ to: "/" });
 								}
 							}}
-							className="flex w-full cursor-pointer items-center gap-2 border-border border-b px-4 py-2 text-foreground text-sm transition-standard hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground [&_svg]:hover:text-primary-foreground [&_svg]:active:text-primary-foreground"
+							className={dropdownItemClasses}
 						>
-							<LogOutIcon className="h-4 w-4" />
+							<LogOutIcon className="h-4 w-4 shrink-0" />
 							Выйти из аккаунта
 						</button>
 					</>
@@ -283,21 +288,25 @@ const DropdownNavMenu = ({
 							href={item.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							variant="category"
+							className={dropdownItemClasses}
 							disableAnimation={true}
 						>
-							{item.icon && <item.icon />}
-							{item.name}
+							<span className="flex items-center gap-2">
+								{item.icon && <item.icon />}
+								{item.name}
+							</span>
 						</Link>
 					) : (
 						<Link
 							key={item.url}
 							href={item.url}
-							variant="category"
+							className={dropdownItemClasses}
 							disableAnimation={true}
 						>
-							{item.icon && <item.icon />}
-							{item.name}
+							<span className="flex items-center gap-2">
+								{item.icon && <item.icon />}
+								{item.name}
+							</span>
 						</Link>
 					),
 				)}
@@ -734,7 +743,7 @@ const CatalogDropdown = memo(() => {
 	// This ensures consistent SSR/client rendering
 	const countsLoaded = counts && Object.keys(counts).length > 0;
 
-	// Filter active categories and sort by order
+	// Filter active categories and sort by hardcoded display order
 	// Only show categories with products (count > 0)
 	// If counts not loaded, return empty array to show skeleton
 	const activeCategories = useMemo(() => {
@@ -744,7 +753,7 @@ const CatalogDropdown = memo(() => {
 			return [];
 		}
 
-		return categories
+		const filtered = categories
 			.filter((cat: Category) => cat.isActive)
 			.map((category: Category) => ({
 				...category,
@@ -753,13 +762,9 @@ const CatalogDropdown = memo(() => {
 			.filter((category: Category & { productCount: number }) => {
 				// Only show categories with products
 				return category.productCount > 0;
-			})
-			.sort(
-				(
-					a: Category & { productCount: number },
-					b: Category & { productCount: number },
-				) => a.order - b.order,
-			);
+			});
+
+		return sortCategoriesByDisplayOrder(filtered);
 	}, [categories, counts, countsLoaded]);
 
 	// Handle mouse enter - open dropdown and prefetch catalog (categories)

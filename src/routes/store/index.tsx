@@ -10,6 +10,7 @@ import {
 	categoriesQueryOptions,
 	productCategoryCountsQueryOptions,
 } from "~/lib/queryOptions";
+import { sortCategoriesByDisplayOrder } from "~/utils/categorySort";
 import { seo } from "~/utils/seo";
 
 export const Route = createFileRoute("/store/")({
@@ -62,10 +63,10 @@ function StoreCatalogPage() {
 		productCategoryCountsQueryOptions(),
 	);
 
-	// Filter active categories and sort by order
+	// Filter active categories and sort by hardcoded display order
 	// Exclude categories with count 0 or errors (missing from counts when counts is loaded)
 	const activeCategories = useMemo(() => {
-		return categories
+		const filtered = categories
 			.filter((cat) => cat.isActive)
 			.map((category) => ({
 				...category,
@@ -78,8 +79,9 @@ function StoreCatalogPage() {
 				// Missing from counts object means 0 products or error
 				const count = counts[category.slug];
 				return count !== undefined && count > 0;
-			})
-			.sort((a, b) => a.order - b.order);
+			});
+
+		return sortCategoriesByDisplayOrder(filtered);
 	}, [categories, counts]);
 
 	return (

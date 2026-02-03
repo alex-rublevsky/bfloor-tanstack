@@ -22,7 +22,7 @@ import { zodValidator } from "@tanstack/zod-adapter";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import DashboardFilters from "~/components/ui/dashboard/DashboardFilters";
-import { ProductsPageSkeleton } from "~/components/ui/dashboard/skeletons/ProductsPageSkeleton";
+import { DashboardIndexSkeleton } from "~/components/ui/dashboard/skeletons/DashboardIndexSkeleton";
 import { Button } from "~/components/ui/shared/Button";
 import { Checkbox } from "~/components/ui/shared/Checkbox";
 import { EmptyState } from "~/components/ui/shared/EmptyState";
@@ -54,7 +54,19 @@ const searchParamsSchema = z.object({
 	storeLocation: z.number().optional(),
 	attributeFilters: z.string().optional(), // JSON string of Record<number, string[]>
 	sort: z
-		.enum(["name", "price-asc", "price-desc", "newest", "oldest"])
+		.enum([
+			"name",
+			"price-asc",
+			"price-desc",
+			"newest",
+			"oldest",
+			"best-selling",
+			"views-asc",
+			"category-asc",
+			"category-desc",
+			"brand-asc",
+			"brand-desc",
+		])
 		.optional(),
 });
 
@@ -65,7 +77,7 @@ const defaultSearchValues = {
 
 export const Route = createFileRoute("/dashboard/")({
 	component: RouteComponent,
-	pendingComponent: ProductsPageSkeleton,
+	pendingComponent: DashboardIndexSkeleton,
 	validateSearch: zodValidator(searchParamsSchema),
 	// Strip default values from URL to keep it clean
 	search: {
@@ -134,9 +146,21 @@ function RouteComponent() {
 	const [selectedAttributeFilters, setSelectedAttributeFilters] = useState<
 		Record<number, string[]>
 	>(parseAttributeFilters(searchParams.attributeFilters));
-	const [sortBy, setSortBy] = useState<
-		"name" | "price-asc" | "price-desc" | "newest" | "oldest"
-	>(searchParams.sort ?? "name");
+	type SortByValue =
+		| "name"
+		| "price-asc"
+		| "price-desc"
+		| "newest"
+		| "oldest"
+		| "best-selling"
+		| "views-asc"
+		| "category-asc"
+		| "category-desc"
+		| "brand-asc"
+		| "brand-desc";
+	const [sortBy, setSortBy] = useState<SortByValue>(
+		searchParams.sort ?? "name",
+	);
 
 	// Table sorting state
 	const [sorting, setSorting] = useState<SortingState>([]);
@@ -166,6 +190,18 @@ function RouteComponent() {
 			newSorting.push({ id: "id", desc: false });
 		} else if (newSortBy === "oldest") {
 			newSorting.push({ id: "id", desc: true });
+		} else if (newSortBy === "best-selling") {
+			newSorting.push({ id: "viewCount", desc: true });
+		} else if (newSortBy === "views-asc") {
+			newSorting.push({ id: "viewCount", desc: false });
+		} else if (newSortBy === "category-asc") {
+			newSorting.push({ id: "categorySlug", desc: false });
+		} else if (newSortBy === "category-desc") {
+			newSorting.push({ id: "categorySlug", desc: true });
+		} else if (newSortBy === "brand-asc") {
+			newSorting.push({ id: "brandSlug", desc: false });
+		} else if (newSortBy === "brand-desc") {
+			newSorting.push({ id: "brandSlug", desc: true });
 		}
 		setSorting(newSorting);
 	}, [
@@ -346,6 +382,7 @@ function RouteComponent() {
 		() => [
 			{
 				id: "select",
+				enableSorting: false,
 				header: ({ table }) => {
 					const isAllSelected = table.getIsAllRowsSelected();
 					const isSomeSelected = table.getIsSomeRowsSelected();
@@ -383,6 +420,7 @@ function RouteComponent() {
 			{
 				accessorKey: "images",
 				header: "Фото",
+				enableSorting: false,
 				cell: ({ row }) => {
 					const product = row.original;
 					const imageArray = (() => {
@@ -517,9 +555,9 @@ function RouteComponent() {
 		[categoryMap, brandMap],
 	);
 
-	// Scroll restoration - window scroll
+	// Scroll restoration - window scroll (guard for SSR where window is undefined)
 	const scrollEntry = useElementScrollRestoration({
-		getElement: () => window,
+		getElement: () => (typeof window !== "undefined" ? window : null),
 	});
 
 	// Handle table sorting changes - convert to server-side sort
@@ -529,8 +567,7 @@ function RouteComponent() {
 		setSorting(newSorting);
 
 		// Convert TanStack Table sorting to our sort format
-		let newSortBy: "name" | "price-asc" | "price-desc" | "newest" | "oldest" =
-			"name";
+		let newSortBy: SortByValue = "name";
 
 		if (newSorting.length > 0) {
 			const sort = newSorting[0];
@@ -543,6 +580,12 @@ function RouteComponent() {
 				newSortBy = desc ? "price-desc" : "price-asc";
 			} else if (id === "id") {
 				newSortBy = desc ? "oldest" : "newest";
+			} else if (id === "viewCount") {
+				newSortBy = desc ? "best-selling" : "views-asc";
+			} else if (id === "categorySlug") {
+				newSortBy = desc ? "category-desc" : "category-asc";
+			} else if (id === "brandSlug") {
+				newSortBy = desc ? "brand-desc" : "brand-asc";
 			}
 		}
 
@@ -770,9 +813,7 @@ function RouteComponent() {
 
 			{/* Table Content */}
 			{showSkeleton ? (
-				<div className="flex min-h-screen items-center justify-center">
-					<p className="text-muted-foreground">Loading products...</p>
-				</div>
+				<DashboardIndexSkeleton tableOnly />
 			) : flatData.length === 0 ? (
 				<div className="px-4 py-8">
 					<EmptyState

@@ -1,14 +1,21 @@
 /**
  * Dashboard filters component
  * Desktop: Horizontal row of Select dropdowns (sticky above table)
- * Mobile: Drawer with checkboxes (same as storefront)
+ * Mobile: Drawer with horizontal pill buttons (same style as storefront)
  */
 
 import { memo, useState } from "react";
 import { useDeviceType } from "~/hooks/use-mobile";
 import type { AttributeFilter } from "~/server_functions/store/getAttributeValuesForFiltering";
 import { Button } from "../shared/Button";
-import { Drawer, DrawerContent, DrawerTrigger } from "../shared/Drawer";
+import {
+	Drawer,
+	DrawerBody,
+	DrawerContent,
+	DrawerFooter,
+	DrawerTrigger,
+} from "../shared/Drawer";
+import { FilterGroup } from "../shared/FilterGroup";
 import { Icon } from "../shared/Icon";
 import { Select } from "../shared/Select";
 
@@ -64,6 +71,7 @@ const DashboardFilters = memo(function DashboardFilters({
 	if (!isMobileOrTablet) {
 		return (
 			<div className="flex flex-wrap items-center gap-3 overflow-visible bg-background px-4 py-3">
+				{/* Order: Category, Brand, Collection, attribute filters, Store location */}
 				{/* Category Select */}
 				{categories.length > 0 && (
 					<Select
@@ -109,26 +117,7 @@ const DashboardFilters = memo(function DashboardFilters({
 					/>
 				)}
 
-				{/* Store Location Select */}
-				{storeLocations.length > 0 && (
-					<Select
-						size="sm"
-						value={selectedStoreLocation?.toString() ?? ""}
-						onValueChange={(value) =>
-							onStoreLocationChange?.(value ? Number(value) : null)
-						}
-						options={[
-							{ value: "", label: "Магазины" },
-							...storeLocations.map((loc) => ({
-								value: loc.id.toString(),
-								label: loc.address,
-							})),
-						]}
-						className="field-sizing-content"
-					/>
-				)}
-
-				{/* Attribute Filters */}
+				{/* Attribute Filters (order from API = ATTRIBUTE_FILTER_DISPLAY_ORDER) */}
 				{attributeFilters.map((attr) => {
 					const selectedValues =
 						selectedAttributeFilters?.[attr.attributeId] ?? [];
@@ -155,199 +144,223 @@ const DashboardFilters = memo(function DashboardFilters({
 						/>
 					);
 				})}
+
+				{/* Store Location Select – last in default order */}
+				{storeLocations.length > 0 && (
+					<Select
+						size="sm"
+						value={selectedStoreLocation?.toString() ?? ""}
+						onValueChange={(value) =>
+							onStoreLocationChange?.(value ? Number(value) : null)
+						}
+						options={[
+							{ value: "", label: "Магазины" },
+							...storeLocations.map((loc) => ({
+								value: loc.id.toString(),
+								label: loc.address,
+							})),
+						]}
+						className="field-sizing-content"
+					/>
+				)}
 			</div>
 		);
 	}
 
-	// Mobile: Drawer with checkboxes (same as storefront)
+	// Check if any filters are active
+	const hasAnyActiveFilters =
+		selectedCategory !== null ||
+		selectedBrand !== null ||
+		selectedCollection !== null ||
+		selectedStoreLocation !== null ||
+		Object.keys(selectedAttributeFilters ?? {}).some(
+			(key) => (selectedAttributeFilters?.[Number(key)] ?? []).length > 0,
+		);
+
+	// Reset all filters
+	const resetAllFilters = () => {
+		onCategoryChange?.(null);
+		onBrandChange?.(null);
+		onCollectionChange?.(null);
+		onStoreLocationChange?.(null);
+		// Reset all attribute filters
+		if (onAttributeFilterChange) {
+			for (const attr of attributeFilters) {
+				onAttributeFilterChange(attr.attributeId, []);
+			}
+		}
+	};
+
+	// Render mobile filter content with horizontal pill buttons
+	const renderMobileFilterContent = () => {
+		const pillSectionClass =
+			"min-w-0 overflow-x-auto overflow-y-hidden pb-1 -mx-1 px-1";
+		const sections = [];
+
+		// Categories – horizontal pills
+		if (categories.length > 0) {
+			sections.push(
+				<div key="categories" className="min-w-0">
+					<FilterGroup
+						title="Категория"
+						options={categories.map((c) => ({
+							slug: c.slug,
+							name: c.count !== undefined ? `${c.name} (${c.count})` : c.name,
+						}))}
+						selectedOptions={selectedCategory}
+						onOptionChange={(slug: string | null) => onCategoryChange?.(slug)}
+						variant="filterMobile"
+						noWrap
+						className={pillSectionClass}
+					/>
+				</div>,
+			);
+		}
+
+		// Brands – horizontal pills
+		if (brands.length > 0) {
+			sections.push(
+				<div key="brands" className="min-w-0">
+					<FilterGroup
+						title="Бренд"
+						options={brands.map((b) => ({ slug: b.slug, name: b.name }))}
+						selectedOptions={selectedBrand}
+						onOptionChange={(slug: string | null) => onBrandChange?.(slug)}
+						variant="filterMobile"
+						noWrap
+						className={pillSectionClass}
+					/>
+				</div>,
+			);
+		}
+
+		// Collections – horizontal pills
+		if (collections.length > 0) {
+			sections.push(
+				<div key="collections" className="min-w-0">
+					<FilterGroup
+						title="Коллекция"
+						options={collections.map((c) => ({ slug: c.slug, name: c.name }))}
+						selectedOptions={selectedCollection}
+						onOptionChange={(slug: string | null) => onCollectionChange?.(slug)}
+						variant="filterMobile"
+						noWrap
+						className={pillSectionClass}
+					/>
+				</div>,
+			);
+		}
+
+		// Attribute filters – horizontal pills, multi-select
+		attributeFilters.forEach((attr) => {
+			if (attr.values.length === 0) return;
+			const selectedValueIds =
+				selectedAttributeFilters?.[attr.attributeId] ?? [];
+			sections.push(
+				<div key={`attr-${attr.attributeId}`} className="min-w-0">
+					<FilterGroup
+						title={attr.attributeName}
+						options={attr.values.map((v) => ({
+							slug: v.id.toString(),
+							name: v.value,
+						}))}
+						selectedOptions={selectedValueIds}
+						onOptionChange={(valueIds: string[]) =>
+							onAttributeFilterChange?.(attr.attributeId, valueIds)
+						}
+						variant="filterMobile"
+						noWrap
+						multiSelect
+						showAllOption={false}
+						className={pillSectionClass}
+					/>
+				</div>,
+			);
+		});
+
+		// Store locations – horizontal pills (last in default order)
+		if (storeLocations.length > 0) {
+			sections.push(
+				<div key="store-locations" className="min-w-0">
+					<FilterGroup
+						title="Магазин"
+						options={storeLocations.map((loc) => ({
+							slug: String(loc.id),
+							name: loc.address,
+						}))}
+						selectedOptions={
+							selectedStoreLocation !== null
+								? String(selectedStoreLocation)
+								: null
+						}
+						onOptionChange={(slug: string | null) =>
+							onStoreLocationChange?.(slug ? Number(slug) : null)
+						}
+						variant="filterMobile"
+						noWrap
+						className={pillSectionClass}
+					/>
+				</div>,
+			);
+		}
+
+		return <div className="flex flex-col gap-5">{sections}</div>;
+	};
+
+	// Mobile: Drawer with horizontal pill buttons (same style as storefront)
 	return (
 		<div className="bg-background px-4 py-3">
 			<Drawer open={isDrawerOpen} onOpenChange={handleDrawerOpen}>
 				<DrawerTrigger asChild>
 					<Button variant="outline" className="w-full">
 						<Icon name="menu" className="mr-2 h-4 w-4" />
-						Filters
+						Фильтры
 					</Button>
 				</DrawerTrigger>
-				<DrawerContent>
-					<div className="max-h-[80vh] overflow-y-auto p-4">
-						<h2 className="mb-4 font-semibold text-lg">Filters</h2>
+				<DrawerContent width="full" className="border-primary">
+					<DrawerBody className="w-full">
+						<div className="space-y-4">{renderMobileFilterContent()}</div>
+					</DrawerBody>
 
-						{/* Category Filter */}
-						{categories.length > 0 && (
-							<div className="mb-6">
-								<h3 className="mb-2 font-medium text-sm">Категория</h3>
-								<div className="space-y-2">
-									<label className="flex items-center gap-2">
-										<input
-											type="radio"
-											name="category"
-											checked={!selectedCategory}
-											onChange={() => onCategoryChange?.(null)}
-											className="h-4 w-4"
-										/>
-										<span className="text-sm">Категории</span>
-									</label>
-									{categories.map((c) => (
-										<label
-											key={c.slug}
-											className="flex items-center justify-between gap-2"
-										>
-											<div className="flex items-center gap-2">
-												<input
-													type="radio"
-													name="category"
-													checked={selectedCategory === c.slug}
-													onChange={() => onCategoryChange?.(c.slug)}
-													className="h-4 w-4"
-												/>
-												<span className="text-sm">{c.name}</span>
-											</div>
-											{c.count !== undefined && (
-												<span className="text-muted-foreground text-xs">
-													{c.count}
-												</span>
-											)}
-										</label>
-									))}
+					<DrawerFooter className="border-border border-t bg-background px-4 sm:px-6 lg:px-8">
+						<div className="flex w-full items-center justify-between">
+							<div
+								className="reset-filters-drawer-grid relative min-h-8"
+								data-expanded={hasAnyActiveFilters}
+							>
+								<div
+									className="reset-filters-drawer-row"
+									aria-hidden={!hasAnyActiveFilters}
+								>
+									<Button
+										type="button"
+										variant="accent"
+										size="sm"
+										onClick={resetAllFilters}
+										tabIndex={hasAnyActiveFilters ? 0 : -1}
+										aria-hidden={!hasAnyActiveFilters}
+									>
+										Сбросить все фильтры
+									</Button>
+								</div>
+								<div
+									className="reset-filters-drawer-row"
+									aria-hidden={hasAnyActiveFilters}
+								>
+									<span className="block font-semibold text-lg leading-none tracking-tight">
+										Фильтры
+									</span>
 								</div>
 							</div>
-						)}
-
-						{/* Brand Filter */}
-						{brands.length > 0 && (
-							<div className="mb-6">
-								<h3 className="mb-2 font-medium text-sm">Бренд</h3>
-								<div className="space-y-2">
-									<label className="flex items-center gap-2">
-										<input
-											type="radio"
-											name="brand"
-											checked={!selectedBrand}
-											onChange={() => onBrandChange?.(null)}
-											className="h-4 w-4"
-										/>
-										<span className="text-sm">Бренды</span>
-									</label>
-									{brands.map((b) => (
-										<label key={b.slug} className="flex items-center gap-2">
-											<input
-												type="radio"
-												name="brand"
-												checked={selectedBrand === b.slug}
-												onChange={() => onBrandChange?.(b.slug)}
-												className="h-4 w-4"
-											/>
-											<span className="text-sm">{b.name}</span>
-										</label>
-									))}
-								</div>
-							</div>
-						)}
-
-						{/* Collection Filter */}
-						{collections.length > 0 && (
-							<div className="mb-6">
-								<h3 className="mb-2 font-medium text-sm">Коллекция</h3>
-								<div className="space-y-2">
-									<label className="flex items-center gap-2">
-										<input
-											type="radio"
-											name="collection"
-											checked={!selectedCollection}
-											onChange={() => onCollectionChange?.(null)}
-											className="h-4 w-4"
-										/>
-										<span className="text-sm">Коллекции</span>
-									</label>
-									{collections.map((c) => (
-										<label key={c.slug} className="flex items-center gap-2">
-											<input
-												type="radio"
-												name="collection"
-												checked={selectedCollection === c.slug}
-												onChange={() => onCollectionChange?.(c.slug)}
-												className="h-4 w-4"
-											/>
-											<span className="text-sm">{c.name}</span>
-										</label>
-									))}
-								</div>
-							</div>
-						)}
-
-						{/* Store Location Filter */}
-						{storeLocations.length > 0 && (
-							<div className="mb-6">
-								<h3 className="mb-2 font-medium text-sm">Магазин</h3>
-								<div className="space-y-2">
-									<label className="flex items-center gap-2">
-										<input
-											type="radio"
-											name="location"
-											checked={!selectedStoreLocation}
-											onChange={() => onStoreLocationChange?.(null)}
-											className="h-4 w-4"
-										/>
-										<span className="text-sm">Магазины</span>
-									</label>
-									{storeLocations.map((loc) => (
-										<label key={loc.id} className="flex items-center gap-2">
-											<input
-												type="radio"
-												name="location"
-												checked={selectedStoreLocation === loc.id}
-												onChange={() => onStoreLocationChange?.(loc.id)}
-												className="h-4 w-4"
-											/>
-											<span className="text-sm">{loc.address}</span>
-										</label>
-									))}
-								</div>
-							</div>
-						)}
-
-						{/* Attribute Filters */}
-						{attributeFilters.map((attr) => {
-							const selectedValues =
-								selectedAttributeFilters?.[attr.attributeId] ?? [];
-							return (
-								<div key={attr.attributeId} className="mb-6">
-									<h3 className="mb-2 font-medium text-sm">
-										{attr.attributeName}
-									</h3>
-									<div className="space-y-2">
-										{attr.values.map((v: { id: number; value: string }) => {
-											const isSelected = selectedValues.includes(
-												v.id.toString(),
-											);
-											return (
-												<label key={v.id} className="flex items-center gap-2">
-													<input
-														type="checkbox"
-														checked={isSelected}
-														onChange={(e) => {
-															const newValues = e.target.checked
-																? [...selectedValues, v.id.toString()]
-																: selectedValues.filter(
-																		(id) => id !== v.id.toString(),
-																	);
-															onAttributeFilterChange?.(
-																attr.attributeId,
-																newValues,
-															);
-														}}
-														className="h-4 w-4"
-													/>
-													<span className="text-sm">{v.value}</span>
-												</label>
-											);
-										})}
-									</div>
-								</div>
-							);
-						})}
-					</div>
+							<Button
+								variant="secondary"
+								type="button"
+								onClick={() => setIsDrawerOpen(false)}
+							>
+								Закрыть
+							</Button>
+						</div>
+					</DrawerFooter>
 				</DrawerContent>
 			</Drawer>
 		</div>

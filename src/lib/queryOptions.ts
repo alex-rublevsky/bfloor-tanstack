@@ -526,7 +526,12 @@ export const productsInfiniteQueryOptions = (
 			| "price-desc"
 			| "newest"
 			| "oldest"
-			| "best-selling";
+			| "best-selling"
+			| "views-asc"
+			| "category-asc"
+			| "category-desc"
+			| "brand-asc"
+			| "brand-desc";
 	},
 ) =>
 	infiniteQueryOptions({
@@ -541,7 +546,7 @@ export const productsInfiniteQueryOptions = (
 				attributeFilters: JSON.stringify(filters?.attributeFilters ?? {}),
 				minPrice: filters?.minPrice ?? null,
 				maxPrice: filters?.maxPrice ?? null,
-				sort: filters?.sort ?? "best-selling",
+				sort: filters?.sort ?? "name",
 			},
 		],
 		queryFn: ({ pageParam = 1 }) =>

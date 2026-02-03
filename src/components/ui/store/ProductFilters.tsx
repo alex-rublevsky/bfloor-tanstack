@@ -178,6 +178,7 @@ const ProductFilters = memo(function ProductFilters({
 		// Collect all filter sections to display in flex layout
 		const filterSections = [];
 
+		// Order: Сортировка, Бренд, Коллекция, Цена, attribute filters (API order), Адрес магазина
 		// Sort filter
 		filterSections.push(
 			<div key="sort" className="min-w-fit">
@@ -193,22 +194,6 @@ const ProductFilters = memo(function ProductFilters({
 						{ value: "price-desc", label: "Сначала дорогие" },
 						{ value: "newest", label: "Сначала новые" },
 					]}
-				/>
-			</div>,
-		);
-
-		// Price range filter (always show; bounds come from current filter set)
-		filterSections.push(
-			<div key="price" className="min-w-fit">
-				<Slider
-					value={sliderPriceRange}
-					min={priceRange.min}
-					max={priceRange.max}
-					step={1}
-					onValueChange={handlePriceRangeChange}
-					onValueCommit={handlePriceRangeCommit}
-					inputClassName="h-9 font-digital-mono text-base"
-					label="Цена"
 				/>
 			</div>,
 		);
@@ -265,35 +250,23 @@ const ProductFilters = memo(function ProductFilters({
 			);
 		}
 
-		// Store Locations filter - only show if more than 1 option
-		if (storeLocations.length > 1) {
-			filterSections.push(
-				<div key="store-locations" className="min-w-fit">
-					<div className="mb-1 flex items-center justify-between">
-						<div className="font-medium text-sm">Адрес магазина</div>
-					</div>
-					<CheckboxList
-						items={storeLocations.map((location) => ({
-							id: location.id,
-							label: location.address,
-						}))}
-						selectedIds={
-							selectedStoreLocation !== null ? [selectedStoreLocation] : []
-						}
-						onItemChange={(itemId, checked) => {
-							// Single-select behavior: if checked, select this one; if unchecked, clear selection
-							const locationId = checked ? Number(itemId) : null;
-							handleStoreLocationChange(locationId);
-						}}
-						idPrefix="filter-store-location"
-						scrollable={true}
-						maxHeight="200px"
-					/>
-				</div>,
-			);
-		}
+		// Price range filter (always show; bounds come from current filter set)
+		filterSections.push(
+			<div key="price" className="min-w-fit">
+				<Slider
+					value={sliderPriceRange}
+					min={priceRange.min}
+					max={priceRange.max}
+					step={1}
+					onValueChange={handlePriceRangeChange}
+					onValueCommit={handlePriceRangeCommit}
+					inputClassName="h-9 font-digital-mono text-base"
+					label="Цена"
+				/>
+			</div>,
+		);
 
-		// Attribute filters - only show if more than 1 value option
+		// Attribute filters (order from API = ATTRIBUTE_FILTER_DISPLAY_ORDER)
 		attributeFilters.forEach((attrFilter) => {
 			// Skip if only 1 value available (no choice to make)
 			if (attrFilter.values.length <= 1) return;
@@ -334,6 +307,34 @@ const ProductFilters = memo(function ProductFilters({
 			);
 		});
 
+		// Store Locations (Адрес магазина) - last in default order
+		if (storeLocations.length > 1) {
+			filterSections.push(
+				<div key="store-locations" className="min-w-fit">
+					<div className="mb-1 flex items-center justify-between">
+						<div className="font-medium text-sm">Адрес магазина</div>
+					</div>
+					<CheckboxList
+						items={storeLocations.map((location) => ({
+							id: location.id,
+							label: location.address,
+						}))}
+						selectedIds={
+							selectedStoreLocation !== null ? [selectedStoreLocation] : []
+						}
+						onItemChange={(itemId, checked) => {
+							// Single-select behavior: if checked, select this one; if unchecked, clear selection
+							const locationId = checked ? Number(itemId) : null;
+							handleStoreLocationChange(locationId);
+						}}
+						idPrefix="filter-store-location"
+						scrollable={true}
+						maxHeight="200px"
+					/>
+				</div>,
+			);
+		}
+
 		return <div className="flex flex-col gap-4">{filterSections}</div>;
 	};
 
@@ -358,22 +359,6 @@ const ProductFilters = memo(function ProductFilters({
 						{ value: "price-desc", label: "Сначала дорогие" },
 						{ value: "newest", label: "Сначала новые" },
 					]}
-				/>
-			</div>,
-		);
-
-		// Price (always show; bounds from current filter set)
-		sections.push(
-			<div key="price" className="min-w-fit">
-				<Slider
-					value={sliderPriceRange}
-					min={priceRange.min}
-					max={priceRange.max}
-					step={1}
-					onValueChange={handlePriceRangeChange}
-					onValueCommit={handlePriceRangeCommit}
-					inputClassName="h-9 font-digital-mono text-base"
-					label="Цена"
 				/>
 			</div>,
 		);
@@ -414,31 +399,21 @@ const ProductFilters = memo(function ProductFilters({
 			);
 		}
 
-		// Store locations – horizontal pills (slug = id as string)
-		if (storeLocations.length > 1) {
-			sections.push(
-				<div key="store-locations" className="min-w-0">
-					<FilterGroup
-						title="Адрес магазина"
-						options={storeLocations.map((loc) => ({
-							slug: String(loc.id),
-							name: loc.address,
-						}))}
-						selectedOptions={
-							selectedStoreLocation !== null
-								? String(selectedStoreLocation)
-								: null
-						}
-						onOptionChange={(slug: string | null) =>
-							handleStoreLocationChange(slug ? Number(slug) : null)
-						}
-						variant="filterMobile"
-						noWrap
-						className={pillSectionClass}
-					/>
-				</div>,
-			);
-		}
+		// Price (always show; bounds from current filter set)
+		sections.push(
+			<div key="price" className="min-w-fit">
+				<Slider
+					value={sliderPriceRange}
+					min={priceRange.min}
+					max={priceRange.max}
+					step={1}
+					onValueChange={handlePriceRangeChange}
+					onValueCommit={handlePriceRangeCommit}
+					inputClassName="h-9 font-digital-mono text-base"
+					label="Цена"
+				/>
+			</div>,
+		);
 
 		// Attribute filters – horizontal pills, multi-select
 		attributeFilters.forEach((attrFilter) => {
@@ -466,6 +441,32 @@ const ProductFilters = memo(function ProductFilters({
 				</div>,
 			);
 		});
+
+		// Store locations (Адрес магазина) – last in default order
+		if (storeLocations.length > 1) {
+			sections.push(
+				<div key="store-locations" className="min-w-0">
+					<FilterGroup
+						title="Адрес магазина"
+						options={storeLocations.map((loc) => ({
+							slug: String(loc.id),
+							name: loc.address,
+						}))}
+						selectedOptions={
+							selectedStoreLocation !== null
+								? String(selectedStoreLocation)
+								: null
+						}
+						onOptionChange={(slug: string | null) =>
+							handleStoreLocationChange(slug ? Number(slug) : null)
+						}
+						variant="filterMobile"
+						noWrap
+						className={pillSectionClass}
+					/>
+				</div>,
+			);
+		}
 
 		return <div className="flex flex-col gap-5">{sections}</div>;
 	};

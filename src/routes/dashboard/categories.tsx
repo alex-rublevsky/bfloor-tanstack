@@ -1,7 +1,8 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { CategoryReorder } from "~/components/ui/dashboard/CategoryReorder";
 import {
 	DashboardEntityManager,
 	type EntityFormFieldsProps,
@@ -12,6 +13,8 @@ import { EntityCardContent } from "~/components/ui/dashboard/EntityCardContent";
 import { EntityCardGrid } from "~/components/ui/dashboard/EntityCardGrid";
 import { ImageUpload } from "~/components/ui/dashboard/ImageUpload";
 import { CategoriesPageSkeleton } from "~/components/ui/dashboard/skeletons/CategoriesPageSkeleton";
+import { Button } from "~/components/ui/shared/Button";
+import { GripVertical } from "~/components/ui/shared/Icon";
 import { Select } from "~/components/ui/shared/Select";
 import {
 	categoriesQueryOptions,
@@ -143,6 +146,9 @@ function RouteComponent() {
 	const searchParams = Route.useSearch();
 	const searchTerm = searchParams.search ?? "";
 
+	// Reorder mode state
+	const [isReordering, setIsReordering] = useState(false);
+
 	// Load categories with Suspense (fast - guaranteed to be loaded by loader)
 	const { data: categories } = useSuspenseQuery(categoriesQueryOptions());
 
@@ -199,11 +205,35 @@ function RouteComponent() {
 
 	return (
 		<div className="px-6 py-6">
-			<DashboardEntityManager
-				config={entityManagerConfig}
-				data={categoriesWithCounts}
-				searchTerm={searchTerm}
-			/>
+			{/* Reorder button - toggles reorder mode */}
+			<div className="mb-4 flex justify-end">
+				{!isReordering && (
+					<Button
+						type="button"
+						variant="secondary"
+						size="sm"
+						onClick={() => setIsReordering(true)}
+					>
+						<GripVertical className="mr-1.5 h-4 w-4" />
+						Изменить порядок
+					</Button>
+				)}
+			</div>
+
+			{/* Show reorder interface OR entity manager */}
+			{isReordering ? (
+				<CategoryReorder
+					categories={categoriesWithCounts}
+					isReorderMode={isReordering}
+					onExitReorderMode={() => setIsReordering(false)}
+				/>
+			) : (
+				<DashboardEntityManager
+					config={entityManagerConfig}
+					data={categoriesWithCounts}
+					searchTerm={searchTerm}
+				/>
+			)}
 		</div>
 	);
 }

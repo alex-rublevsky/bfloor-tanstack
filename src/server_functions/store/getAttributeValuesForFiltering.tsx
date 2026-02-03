@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { eq, type SQL, sql } from "drizzle-orm";
+import { getAttributeFilterSortIndex } from "~/constants/filters";
 import { DB } from "~/db";
 import {
 	attributeValues,
@@ -221,8 +222,13 @@ export const getAttributeValuesForFiltering = createServerFn({ method: "GET" })
 			});
 		}
 
-		// Sort attributes by name
-		result.sort((a, b) => a.attributeName.localeCompare(b.attributeName));
+		// Sort attributes by default display order (same across storefront and dashboard)
+		result.sort((a, b) => {
+			const orderA = getAttributeFilterSortIndex(a.attributeSlug);
+			const orderB = getAttributeFilterSortIndex(b.attributeSlug);
+			if (orderA !== orderB) return orderA - orderB;
+			return a.attributeSlug.localeCompare(b.attributeSlug);
+		});
 
 		return result;
 	});
