@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { DB } from "~/db";
 import { productStoreLocations, products, productVariations } from "~/schema";
 import {
@@ -20,16 +20,9 @@ export const getProductBySlug = createServerFn({ method: "GET" })
 				throw new Error("Invalid product ID");
 			}
 
-			// Fetch product with store locations in main query (all products have store locations)
+			// Fetch product
 			const productResult = await db
-				.select({
-					products: products,
-					storeLocationIds: sql<string | null>`(
-						SELECT GROUP_CONCAT(${productStoreLocations.storeLocationId})
-						FROM ${productStoreLocations}
-						WHERE ${productStoreLocations.productId} = ${products.id}
-					)`,
-				})
+				.select()
 				.from(products)
 				.where(eq(products.id, productId))
 				.limit(1);
@@ -39,7 +32,15 @@ export const getProductBySlug = createServerFn({ method: "GET" })
 				throw new Error("Product not found");
 			}
 
-			const product = productResult[0].products;
+			const product = productResult[0];
+
+			// Fetch store locations separately (more reliable than subquery)
+			const storeLocationResults = await db
+				.select({
+					storeLocationId: productStoreLocations.storeLocationId,
+				})
+				.from(productStoreLocations)
+				.where(eq(productStoreLocations.productId, productId));
 
 			// Fetch variations only if hasVariations = true
 			const variationsResult = product.hasVariations
@@ -49,13 +50,10 @@ export const getProductBySlug = createServerFn({ method: "GET" })
 						.where(eq(productVariations.productId, productId))
 				: [];
 
-			// Parse store location IDs from comma-separated string (all products have store locations)
-			const storeLocationIds: number[] = productResult[0].storeLocationIds
-				? productResult[0].storeLocationIds
-						.split(",")
-						.map((id) => parseInt(id, 10))
-						.filter((id): id is number => !Number.isNaN(id))
-				: [];
+			// Parse store location IDs from separate query
+			const storeLocationIds: number[] = storeLocationResults
+				.map((row) => row.storeLocationId)
+				.filter((id): id is number => id !== null && !Number.isNaN(id));
 
 			// Parse variations with their attributes from JSON (dual storage pattern)
 			const variations = variationsResult.map((row) => {
@@ -97,7 +95,6 @@ export const getProductBySlug = createServerFn({ method: "GET" })
 				categorySlug: product.categorySlug,
 				brandSlug: product.brandSlug,
 				collectionSlug: product.collectionSlug,
-				storeLocationId: product.storeLocationId,
 				createdAt: product.createdAt,
 				dimensions: product.dimensions,
 				productAttributes: productAttributesArray,

@@ -13,16 +13,13 @@ import { EmptyState } from "~/components/ui/shared/EmptyState";
 import { ProductGridSkeleton } from "~/components/ui/shared/ProductGridSkeleton";
 import ProductCard from "~/components/ui/store/ProductCard";
 import ProductFilters from "~/components/ui/store/ProductFilters";
-import { getAllStoreLocations } from "~/data/storeLocations";
 import { useDeviceType } from "~/hooks/use-mobile";
 import { useClientSearch } from "~/lib/clientSearchContext";
 import {
-	attributeValuesForFilteringQueryOptions,
-	filteredBrandsQueryOptions,
-	filteredCollectionsQueryOptions,
+	allFilterOptionsQueryOptions,
 	storeDataInfiniteQueryOptions,
 } from "~/lib/queryOptions";
-import type { Brand, Collection, ProductWithVariations } from "~/types";
+import type { Brand, ProductWithVariations } from "~/types";
 import {
 	defaultStoreSearchValues,
 	isValidSort,
@@ -388,8 +385,8 @@ interface StoreProductGridProps {
 	 * Search params from route
 	 */
 	searchParams: {
-		brand?: string;
-		collection?: string;
+		brands?: string; // Multi-select: comma-separated brand slugs
+		collections?: string; // Multi-select: comma-separated collection slugs
 		storeLocation?: number;
 		attributeFilters?: string;
 		sort?:
@@ -436,11 +433,18 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 	}, [clientSearch.searchTerm]);
 
 	// Initialize filter state: route brand (brand page) takes precedence over search param
-	const [selectedBrand, setSelectedBrand] = useState<string | null>(
-		brandSlug ?? searchParams.brand ?? null,
-	);
-	const [selectedCollection, setSelectedCollection] = useState<string | null>(
-		searchParams.collection ?? null,
+	const [selectedBrands, setSelectedBrands] = useState<string[]>(() => {
+		if (brandSlug) return [brandSlug]; // Brand page: single brand from route
+		if (searchParams.brands)
+			return searchParams.brands.split(",").filter(Boolean);
+		return [];
+	});
+	const [selectedCollections, setSelectedCollections] = useState<string[]>(
+		() => {
+			if (searchParams.collections)
+				return searchParams.collections.split(",").filter(Boolean);
+			return [];
+		},
 	);
 	const [selectedStoreLocation, setSelectedStoreLocation] = useState<
 		number | null
@@ -459,8 +463,20 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 
 	// Sync state with URL when search params change (e.g., from browser back/forward); brand page keeps route brand
 	useEffect(() => {
-		setSelectedBrand(brandSlug ?? searchParams.brand ?? null);
-		setSelectedCollection(searchParams.collection ?? null);
+		// Parse brands from URL (comma-separated)
+		const brandsFromUrl = brandSlug
+			? [brandSlug] // Brand page: single brand from route
+			: searchParams.brands
+				? searchParams.brands.split(",").filter(Boolean)
+				: [];
+		setSelectedBrands(brandsFromUrl);
+
+		// Parse collections from URL (comma-separated)
+		const collectionsFromUrl = searchParams.collections
+			? searchParams.collections.split(",").filter(Boolean)
+			: [];
+		setSelectedCollections(collectionsFromUrl);
+
 		setSelectedStoreLocation(searchParams.storeLocation ?? null);
 		setSelectedAttributeFilters(
 			parseAttributeFilters(searchParams.attributeFilters),
@@ -468,31 +484,31 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 		setSortBy(searchParams.sort ?? defaultStoreSearchValues.sort);
 	}, [
 		brandSlug,
-		searchParams.brand,
-		searchParams.collection,
+		searchParams.brands,
+		searchParams.collections,
 		searchParams.storeLocation,
 		searchParams.attributeFilters,
 		searchParams.sort,
 	]);
 
 	// Update URL when filters change - using functional form as recommended by TanStack Router
-	const updateBrand = (brand: string | null) => {
-		setSelectedBrand(brand);
+	const updateBrands = (brands: string[]) => {
+		setSelectedBrands(brands);
 		navigate({
 			search: (prev) => ({
 				...prev,
-				brand: brand ?? undefined,
+				brands: brands.length > 0 ? brands.join(",") : undefined,
 			}),
 			replace: true,
 		});
 	};
 
-	const updateCollection = (collection: string | null) => {
-		setSelectedCollection(collection);
+	const updateCollections = (collections: string[]) => {
+		setSelectedCollections(collections);
 		navigate({
 			search: (prev) => ({
 				...prev,
-				collection: collection ?? undefined,
+				collections: collections.length > 0 ? collections.join(",") : undefined,
 			}),
 			replace: true,
 		});
@@ -543,35 +559,27 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 		});
 	};
 
-	// Fetch attribute filters: on desktop always (sidebar visible); on mobile when drawer opened
+	// Fetch all filter options in a single unified query
+	// This replaces the separate queries for brands, collections, store locations, and attributes
 	const filtersVisible = filtersOpened || isDesktop;
-	const { data: attributeFilters = [] } = useQuery({
-		...attributeValuesForFilteringQueryOptions(
+	const { data: filterOptions, isFetching: isFiltersFetching } = useQuery({
+		...allFilterOptionsQueryOptions(
 			categorySlug ?? undefined,
-			selectedBrand ?? undefined,
-			selectedCollection ?? undefined,
+			selectedBrands.length > 0 ? selectedBrands : undefined,
+			selectedCollections.length > 0 ? selectedCollections : undefined,
+			selectedStoreLocation ?? undefined,
 			selectedAttributeFilters,
 		),
 		enabled: filtersVisible,
+		// Keep previous data while fetching new data (prevents filters from disappearing)
+		placeholderData: (previousData) => previousData,
 	});
 
-	const { data: brands = [] } = useQuery({
-		...filteredBrandsQueryOptions(
-			categorySlug ?? undefined,
-			selectedCollection ?? undefined,
-			selectedStoreLocation ?? undefined,
-		),
-		enabled: filtersVisible && !brandSlug,
-	});
-
-	const { data: collections = [] } = useQuery({
-		...filteredCollectionsQueryOptions(
-			categorySlug ?? undefined,
-			selectedBrand ?? undefined,
-			selectedStoreLocation ?? undefined,
-		),
-		enabled: filtersVisible,
-	});
+	// Extract individual filter arrays from unified response
+	const brands = filterOptions?.brands ?? [];
+	const collections = filterOptions?.collections ?? [];
+	const storeLocations = filterOptions?.storeLocations ?? [];
+	const attributeFilters = filterOptions?.attributes ?? [];
 
 	// Price range for filter UI: starts as default, updated from first page's priceBounds (same request, no extra API call)
 	const [priceRange, setPriceRange] = useState({
@@ -589,8 +597,13 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 	} = useInfiniteQuery({
 		...storeDataInfiniteQueryOptions(normalizedSearch, {
 			categorySlug: categorySlug ?? undefined,
-			brandSlug: brandSlug ?? selectedBrand ?? undefined,
-			collectionSlug: selectedCollection ?? undefined,
+			brandSlugs: brandSlug
+				? [brandSlug]
+				: selectedBrands.length > 0
+					? selectedBrands
+					: undefined,
+			collectionSlugs:
+				selectedCollections.length > 0 ? selectedCollections : undefined,
 			storeLocationId: selectedStoreLocation ?? undefined,
 			attributeFilters: selectedAttributeFilters,
 			minPrice:
@@ -603,29 +616,24 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 					: undefined,
 			sort: sortBy,
 		}),
+		// Keep previous data during filter change so CSS can crossfade feed → skeleton
+		placeholderData: (previousData) => previousData,
 	});
 
 	// Sync price range from first page bounds (real min/max for current filter set)
 	const firstPageBounds = storeData?.pages?.[0]?.priceBounds;
 	useEffect(() => {
 		if (firstPageBounds && firstPageBounds.max >= firstPageBounds.min) {
-			const newMin = firstPageBounds.min;
-			const newMax = firstPageBounds.max;
-			setPriceRange({ min: newMin, max: newMax });
-			// Also update currentPriceRange to match the real bounds (not the hardcoded defaults)
-			// This prevents the query from thinking a price filter is applied when it's not
-			setCurrentPriceRange([newMin, newMax]);
+			setPriceRange({ min: firstPageBounds.min, max: firstPageBounds.max });
 		}
 	}, [firstPageBounds]);
 
-	// Reset price filter to full range when category changes
+	// Reset price filter to full range only when category (page) changes or when bounds change (new data loaded).
+	// Other filters (brand, collection, etc.) do not reset the price.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: categorySlug triggers reset on category navigation only
 	useEffect(() => {
 		setCurrentPriceRange([priceRange.min, priceRange.max]);
-	}, [categorySlug]);
-
-	// Get store locations (hardcoded data)
-	const storeLocations = getAllStoreLocations();
+	}, [categorySlug, priceRange.min, priceRange.max]);
 
 	const brandsForFilters = useMemo(
 		() =>
@@ -636,8 +644,7 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 	);
 
 	const collectionsForFilters = useMemo(
-		() =>
-			collections.map((co: Collection) => ({ slug: co.slug, name: co.name })),
+		() => collections.map((co) => ({ slug: co.slug, name: co.name })),
 		[collections],
 	);
 
@@ -661,8 +668,8 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 		return JSON.stringify({
 			search: normalizedSearch,
 			category: categorySlug,
-			brand: selectedBrand,
-			collection: selectedCollection,
+			brands: selectedBrands,
+			collections: selectedCollections,
 			attributeFilters: selectedAttributeFilters,
 			sort: sortBy,
 			columnsPerRow,
@@ -670,8 +677,8 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 	}, [
 		normalizedSearch,
 		categorySlug,
-		selectedBrand,
-		selectedCollection,
+		selectedBrands,
+		selectedCollections,
 		selectedAttributeFilters,
 		sortBy,
 		columnsPerRow,
@@ -682,11 +689,11 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 
 	const filterProps = {
 		brands: brandsForFilters,
-		selectedBrand: selectedBrand,
-		onBrandChange: updateBrand,
+		selectedBrands: selectedBrands,
+		onBrandsChange: updateBrands,
 		collections: collectionsForFilters,
-		selectedCollection: selectedCollection,
-		onCollectionChange: updateCollection,
+		selectedCollections: selectedCollections,
+		onCollectionsChange: updateCollections,
 		storeLocations,
 		selectedStoreLocation,
 		onStoreLocationChange: updateStoreLocation,

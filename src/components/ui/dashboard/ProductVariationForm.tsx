@@ -282,11 +282,6 @@ function SortableVariationItem({
 												className="block font-medium text-foreground text-sm"
 											>
 												{attribute.name}
-												{allowMultiple && (
-													<span className="ml-2 text-muted-foreground text-xs">
-														(можно выбрать несколько)
-													</span>
-												)}
 											</label>
 											<CheckboxList
 												items={standardizedValues.map(
@@ -308,6 +303,8 @@ function SortableVariationItem({
 												}}
 												idPrefix={`attr-${variation.id}-${attributeId}-value`}
 												showOnlyActive={true}
+												scrollable={true}
+												maxHeight="200px"
 											/>
 										</div>
 									) : (

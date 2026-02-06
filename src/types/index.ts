@@ -153,8 +153,7 @@ export interface ProductFormData {
 	categorySlug: string;
 	brandSlug: string | null;
 	collectionSlug?: string | null;
-	storeLocationId?: number | null; // Primary store location
-	storeLocationIds?: number[]; // Multiple store location connections - updated
+	storeLocationIds?: number[]; // Multiple store location connections
 	isActive: boolean;
 	isFeatured: boolean;
 	discount: number | null;

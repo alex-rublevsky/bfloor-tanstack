@@ -375,11 +375,6 @@ export default function ProductAttributesForm({
 									className="block whitespace-nowrap font-medium text-foreground text-sm"
 								>
 									{attributeInfo.name}
-									{allowMultiple && (
-										<span className="ml-2 text-muted-foreground text-xs">
-											(можно выбрать несколько)
-										</span>
-									)}
 								</label>
 								<CheckboxList
 									items={standardizedValues.map((stdValue) => ({
@@ -398,6 +393,8 @@ export default function ProductAttributesForm({
 									}}
 									idPrefix={`attr-${attributeInfo.id}-value`}
 									showOnlyActive={true}
+									scrollable={true}
+									maxHeight="200px"
 								/>
 							</div>
 						);

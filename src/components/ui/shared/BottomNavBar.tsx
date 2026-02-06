@@ -7,6 +7,7 @@ import {
 } from "~/components/ui/shared/Drawer";
 import type { ActionButtonConfig } from "~/config/dashboardActionButtons";
 import { useCart } from "~/lib/cartContext";
+import { useDashboardFormStatus } from "~/lib/dashboardFormStatus";
 import { signOut } from "~/utils/auth-client";
 import { cn } from "~/utils/utils";
 import { CartDrawerContent } from "../store/CartDrawerContent";
@@ -138,6 +139,7 @@ export function BottomNavBar({
 	const navigate = useNavigate();
 	const pathname = router.state.location.pathname;
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
+	const formStatus = useDashboardFormStatus();
 
 	// Use actionButtons if provided, otherwise fall back to single actionButton
 	const buttons: ActionButtonConfig[] =
@@ -329,7 +331,7 @@ export function BottomNavBar({
 
 			{/* Floating Action Button(s) - Dashboard only, Mobile only */}
 			{isDashboard && buttons.length > 0 && (
-				<MobileActionButtons buttons={buttons} />
+				<MobileActionButtons buttons={buttons} formStatus={formStatus} />
 			)}
 		</>
 	);

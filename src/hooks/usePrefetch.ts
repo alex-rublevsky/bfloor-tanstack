@@ -8,11 +8,9 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import {
-	attributeValuesForFilteringQueryOptions,
+	allFilterOptionsQueryOptions,
 	categoriesQueryOptions,
 	dashboardOrdersQueryOptions,
-	filteredBrandsQueryOptions,
-	filteredCollectionsQueryOptions,
 	productCategoryCountsQueryOptions,
 	productQueryOptions,
 	storeDataInfiniteQueryOptions,
@@ -56,8 +54,8 @@ export function usePrefetch() {
 		queryClient.prefetchInfiniteQuery(
 			storeDataInfiniteQueryOptions("", {
 				categorySlug: null,
-				brandSlug: null,
-				collectionSlug: null,
+				brandSlugs: null,
+				collectionSlugs: null,
 				storeLocationId: null,
 				attributeFilters: {},
 				sort: "best-selling",
@@ -80,8 +78,8 @@ export function usePrefetch() {
 			queryClient.prefetchInfiniteQuery(
 				storeDataInfiniteQueryOptions("", {
 					categorySlug,
-					brandSlug: undefined,
-					collectionSlug: undefined,
+					brandSlugs: undefined,
+					collectionSlugs: undefined,
 					storeLocationId: undefined,
 					attributeFilters: {},
 					minPrice: undefined,
@@ -96,27 +94,23 @@ export function usePrefetch() {
 	/**
 	 * Prefetch filter options for the current category
 	 * Use on filters button hover on store page
-	 * Only fetches what's needed for the active filters
+	 * Fetches ALL filter options (brands, collections, store locations, attributes) in a single request
 	 */
 	const prefetchFilterOptions = useCallback(
 		(
 			categorySlug?: string,
-			brandSlug?: string,
-			collectionSlug?: string,
+			brandSlugs?: string[], // Multi-select: array of brand slugs
+			collectionSlugs?: string[], // Multi-select: array of collection slugs
+			storeLocationId?: number,
 			attributeFilters?: Record<number, string[]>,
 		) => {
-			// Prefetch filter options based on current context
+			// Prefetch unified filter options based on current context
 			queryClient.prefetchQuery(
-				filteredBrandsQueryOptions(categorySlug, collectionSlug, undefined),
-			);
-			queryClient.prefetchQuery(
-				filteredCollectionsQueryOptions(categorySlug, brandSlug, undefined),
-			);
-			queryClient.prefetchQuery(
-				attributeValuesForFilteringQueryOptions(
+				allFilterOptionsQueryOptions(
 					categorySlug,
-					brandSlug,
-					collectionSlug,
+					brandSlugs,
+					collectionSlugs,
+					storeLocationId,
 					attributeFilters,
 				),
 			);

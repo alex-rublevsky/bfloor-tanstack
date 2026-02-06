@@ -49,4 +49,8 @@ export const CATEGORY_CATALOG_IMAGES: Record<
 		image: "2026/02/untitled-3.webp",
 		productSlug: "6-mm-20-cherno-sinyaya",
 	},
+	"pvc-tile": {
+		image: "2026/02/cherveolle.webp",
+		productSlug: "3837",
+	},
 };

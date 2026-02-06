@@ -3,7 +3,7 @@
 
 /**
  * Default order of attribute filters (by attribute slug).
- * Used by getAttributeValuesForFiltering and any UI that displays attribute filters.
+ * Used by getAllFilterOptions and any UI that displays attribute filters.
  * Attributes not listed appear after these, sorted by slug.
  * Mapping: Дизайн, Толщина, Фаска, Класс (пожар./износ.), Теплый пол
  */

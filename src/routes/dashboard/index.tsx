@@ -28,18 +28,15 @@ import { Checkbox } from "~/components/ui/shared/Checkbox";
 import { EmptyState } from "~/components/ui/shared/EmptyState";
 import { Icon } from "~/components/ui/shared/Icon";
 import { ASSETS_BASE_URL } from "~/constants/urls";
-import { getAllStoreLocations } from "~/data/storeLocations";
 import { usePrefetch } from "~/hooks/usePrefetch";
 import {
-	attributeValuesForFilteringDashboardQueryOptions,
+	allFilterOptionsDashboardQueryOptions,
 	categoriesQueryOptions,
-	filteredBrandsDashboardQueryOptions,
-	filteredCollectionsDashboardQueryOptions,
 	productCategoryCountsQueryOptions,
 	productsInfiniteQueryOptions,
 } from "~/lib/queryOptions";
 import { bulkDeleteProducts } from "~/server_functions/dashboard/store/bulkDeleteProducts";
-import type { Brand, Collection, ProductWithVariations } from "~/types";
+import type { ProductWithVariations } from "~/types";
 import { seedDashboardProductCache } from "~/utils/dashboardCache";
 
 // Zod schema for search params validation
@@ -292,42 +289,34 @@ function RouteComponent() {
 	} = useInfiniteQuery({
 		...productsInfiniteQueryOptions(normalizedSearch, {
 			categorySlug: selectedCategory ?? undefined,
-			brandSlug: selectedBrand ?? undefined,
-			collectionSlug: selectedCollection ?? undefined,
+			brandSlugs: selectedBrand ? [selectedBrand] : undefined,
+			collectionSlugs: selectedCollection ? [selectedCollection] : undefined,
 			storeLocationId: selectedStoreLocation ?? undefined,
 			attributeFilters: selectedAttributeFilters,
 			sort: sortBy,
 		}),
 	});
 
-	// Fetch attribute filters: always fetch on desktop, on mobile only after drawer opened
-	const { data: attributeFilters = [] } = useQuery({
-		...attributeValuesForFilteringDashboardQueryOptions(
+	// Fetch all filter options in a single unified query
+	// This replaces the separate queries for brands, collections, store locations, and attributes
+	const { data: filterOptions, isFetching: isFiltersFetching } = useQuery({
+		...allFilterOptionsDashboardQueryOptions(
 			selectedCategory ?? undefined,
-			selectedBrand ?? undefined,
-			selectedCollection ?? undefined,
-			selectedAttributeFilters,
+			selectedBrand ? [selectedBrand] : undefined,
+			selectedCollection ? [selectedCollection] : undefined,
 			selectedStoreLocation ?? undefined,
+			selectedAttributeFilters,
 		),
 		enabled: filtersOpened || true, // Always enabled for now, can optimize for mobile later
+		// Keep previous data while fetching new data (prevents filters from disappearing)
+		placeholderData: (previousData) => previousData,
 	});
 
-	// Fetch filtered brands and collections based on current filters
-	const { data: brands = [] } = useQuery({
-		...filteredBrandsDashboardQueryOptions(
-			selectedCategory ?? undefined,
-			selectedCollection ?? undefined,
-			selectedStoreLocation ?? undefined,
-		),
-	});
-
-	const { data: collections = [] } = useQuery({
-		...filteredCollectionsDashboardQueryOptions(
-			selectedCategory ?? undefined,
-			selectedBrand ?? undefined,
-			selectedStoreLocation ?? undefined,
-		),
-	});
+	// Extract individual filter arrays from unified response
+	const brands = filterOptions?.brands ?? [];
+	const collections = filterOptions?.collections ?? [];
+	const storeLocations = filterOptions?.storeLocations ?? [];
+	const attributeFilters = filterOptions?.attributes ?? [];
 
 	const { data: categories = [] } = useQuery({
 		...categoriesQueryOptions(),
@@ -337,9 +326,6 @@ function RouteComponent() {
 	const { data: categoryCounts = {} } = useQuery(
 		productCategoryCountsQueryOptions(),
 	);
-
-	// Get store locations (hardcoded data)
-	const storeLocations = getAllStoreLocations();
 
 	// Listen for action button clicks from navbar - navigate to create page
 	useEffect(() => {
@@ -711,10 +697,10 @@ function RouteComponent() {
 					}))}
 					selectedCategory={selectedCategory}
 					onCategoryChange={updateCategory}
-					brands={brands.map((b: Brand) => ({ slug: b.slug, name: b.name }))}
+					brands={brands.map((b) => ({ slug: b.slug, name: b.name }))}
 					selectedBrand={selectedBrand}
 					onBrandChange={updateBrand}
-					collections={collections.map((co: Collection) => ({
+					collections={collections.map((co) => ({
 						slug: co.slug,
 						name: co.name,
 					}))}

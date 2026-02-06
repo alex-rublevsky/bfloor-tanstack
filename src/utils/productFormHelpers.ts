@@ -41,7 +41,7 @@ export function transformProductToFormData(product: TransformProductInput): {
 } {
 	// Convert variations to the frontend format
 	const formattedVariations =
-		product.variations?.map((variation: ProductVariationWithAttributes) => {
+		product.variations?.map((variation) => {
 			const attributeValues: Record<string, string> = {};
 			variation.attributes?.forEach((attr) => {
 				attributeValues[attr.attributeId] = attr.value;

@@ -34,7 +34,7 @@ const PRODUCT_NEW_PATTERN: RouteMatcher = (pathname) =>
  * Action button configurations for dashboard routes
  */
 const ACTION_BUTTON_CONFIGS: ActionButtonRouteConfig[] = [
-	// Product create page - Cancel + Create buttons
+	// Product create page - Cancel + Create buttons (primary uses status variant)
 	{
 		matcher: PRODUCT_NEW_PATTERN,
 		buttons: () => [
@@ -57,6 +57,12 @@ const ACTION_BUTTON_CONFIGS: ActionButtonRouteConfig[] = [
 						}),
 					),
 				variant: "default",
+				useStatusButton: true,
+				statusLabels: {
+					analyzing: "Создание",
+					success: "Готово",
+					warning: "Ошибка",
+				},
 			},
 		],
 	},
@@ -100,6 +106,7 @@ const ACTION_BUTTON_CONFIGS: ActionButtonRouteConfig[] = [
 				label: "Добавить товар",
 				onClick: () => window.dispatchEvent(new CustomEvent("dashboardAction")),
 				variant: "default",
+				useStatusButton: true,
 			},
 		],
 	},
@@ -111,6 +118,7 @@ const ACTION_BUTTON_CONFIGS: ActionButtonRouteConfig[] = [
 				label: "Добавить категорию",
 				onClick: () => window.dispatchEvent(new CustomEvent("dashboardAction")),
 				variant: "default",
+				useStatusButton: true,
 			},
 		],
 	},
@@ -122,6 +130,7 @@ const ACTION_BUTTON_CONFIGS: ActionButtonRouteConfig[] = [
 				label: "Добавить бренд",
 				onClick: () => window.dispatchEvent(new CustomEvent("dashboardAction")),
 				variant: "default",
+				useStatusButton: true,
 			},
 		],
 	},
@@ -133,6 +142,7 @@ const ACTION_BUTTON_CONFIGS: ActionButtonRouteConfig[] = [
 				label: "Добавить коллекцию",
 				onClick: () => window.dispatchEvent(new CustomEvent("dashboardAction")),
 				variant: "default",
+				useStatusButton: true,
 			},
 		],
 	},
@@ -144,6 +154,7 @@ const ACTION_BUTTON_CONFIGS: ActionButtonRouteConfig[] = [
 				label: "Добавить атрибут",
 				onClick: () => window.dispatchEvent(new CustomEvent("dashboardAction")),
 				variant: "default",
+				useStatusButton: true,
 			},
 		],
 	},

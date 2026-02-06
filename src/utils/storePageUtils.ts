@@ -8,8 +8,8 @@ import { z } from "zod";
 
 // Shared search params schema for store pages
 export const storeSearchParamsSchema = z.object({
-	brand: z.string().optional(),
-	collection: z.string().optional(),
+	brands: z.string().optional(), // Multi-select: comma-separated brand slugs
+	collections: z.string().optional(), // Multi-select: comma-separated collection slugs
 	storeLocation: z.number().optional(),
 	attributeFilters: z.string().optional(), // JSON string of Record<number, string[]>
 	sort: z

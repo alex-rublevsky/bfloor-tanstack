@@ -25,16 +25,13 @@ import { getAllCollections } from "~/server_functions/dashboard/collections/getA
 import { getProductCollectionCounts } from "~/server_functions/dashboard/collections/getProductCollectionCounts";
 import { getAllBrands } from "~/server_functions/dashboard/getAllBrands";
 import { getAllOrders } from "~/server_functions/dashboard/orders/getAllOrders";
+import { getAllFilterOptionsDashboard } from "~/server_functions/dashboard/store/getAllFilterOptions";
 import { getAllProducts } from "~/server_functions/dashboard/store/getAllProducts";
-import { getFilteredBrandsDashboard } from "~/server_functions/dashboard/store/getFilteredBrands";
-import { getFilteredCollectionsDashboard } from "~/server_functions/dashboard/store/getFilteredCollections";
 import { getProductBySlug as getDashboardProductBySlug } from "~/server_functions/dashboard/store/getProductBySlug";
+import { getAllFilterOptions } from "~/server_functions/store/getAllFilterOptions";
 import { getStoreData } from "~/server_functions/store/getAllProducts";
-import { getAttributeValuesForFiltering } from "~/server_functions/store/getAttributeValuesForFiltering";
 import { getBrandBySlug } from "~/server_functions/store/getBrandBySlug";
 import { getCategoryBySlug } from "~/server_functions/store/getCategoryBySlug";
-import { getFilteredBrands } from "~/server_functions/store/getFilteredBrands";
-import { getFilteredCollections } from "~/server_functions/store/getFilteredCollections";
 import { getProductBySlug } from "~/server_functions/store/getProductBySlug";
 import { getProductDetailsBySlug } from "~/server_functions/store/getProductDetailsBySlug";
 import { getRecommendedProducts } from "~/server_functions/store/getRecommendedProducts";
@@ -52,8 +49,6 @@ type PaginatedResponse = {
 		hasNextPage: boolean;
 		hasPreviousPage: boolean;
 	};
-	/** Present on first page of getStoreData: min/max price for current filter set (no extra API call) */
-	priceBounds?: { min: number; max: number };
 };
 
 /**
@@ -70,8 +65,8 @@ export const storeDataInfiniteQueryOptions = (
 	search?: string,
 	filters?: {
 		categorySlug?: string | null;
-		brandSlug?: string | null;
-		collectionSlug?: string | null;
+		brandSlugs?: string[] | null; // Multi-select: array of brand slugs
+		collectionSlugs?: string[] | null; // Multi-select: array of collection slugs
 		storeLocationId?: number | null;
 		attributeFilters?: Record<number, string[]>; // attributeId -> array of value IDs
 		minPrice?: number | null;
@@ -91,8 +86,8 @@ export const storeDataInfiniteQueryOptions = (
 			{
 				search: search ?? "",
 				categorySlug: filters?.categorySlug ?? null,
-				brandSlug: filters?.brandSlug ?? null,
-				collectionSlug: filters?.collectionSlug ?? null,
+				brandSlugs: JSON.stringify(filters?.brandSlugs ?? []),
+				collectionSlugs: JSON.stringify(filters?.collectionSlugs ?? []),
 				storeLocationId: filters?.storeLocationId ?? null,
 				attributeFilters: JSON.stringify(filters?.attributeFilters ?? {}),
 				minPrice: filters?.minPrice ?? null,
@@ -107,13 +102,13 @@ export const storeDataInfiniteQueryOptions = (
 					limit: 30,
 					search,
 					categorySlug: filters?.categorySlug ?? undefined,
-					brandSlug: filters?.brandSlug ?? undefined,
-					collectionSlug: filters?.collectionSlug ?? undefined,
+					brandSlugs: filters?.brandSlugs ?? undefined,
+					collectionSlugs: filters?.collectionSlugs ?? undefined,
 					storeLocationId: filters?.storeLocationId ?? undefined,
 					attributeFilters: filters?.attributeFilters ?? undefined,
 					minPrice: filters?.minPrice ?? undefined,
 					maxPrice: filters?.maxPrice ?? undefined,
-					sort: filters?.sort ?? "best-selling",
+					sort: filters?.sort ?? undefined,
 				},
 			}),
 		staleTime: 1000 * 60 * 60 * 24 * 7, // 7 days - products cached aggressively
@@ -134,238 +129,102 @@ export const storeDataInfiniteQueryOptions = (
 	});
 
 /**
- * Attribute values for filtering query options
- * Used for: Store and dashboard pages to show available attribute filter options
- *
- * Cache Strategy: Moderate caching for dynamic data
- * - Attribute values cached for 1 hour (changes based on current filters)
- * - Kept in memory for 3 hours
- * - Query key includes attributeFilters so cache invalidates when filters change
+ * =============================================================================
+ * UNIFIED FILTER OPTIONS (REPLACES OLD SEPARATE FILTER QUERIES)
+ * =============================================================================
+ * Single query that returns ALL filter options (brands, collections, store locations, attributes)
+ * This replaces the separate queries above with a unified, consistent approach.
  */
-export const attributeValuesForFilteringQueryOptions = (
+
+/**
+ * All filter options query (Store version - active products only)
+ * Used for: Store pages to show all available filter options in a single request
+ *
+ * Cache Strategy: Moderate caching for filter-dependent data
+ * - Filter options cached for 3 days per filter combination
+ * - Kept in memory for 7 days
+ * - Query key includes all filters so cache invalidates when filters change
+ *
+ * Benefits over separate queries:
+ * - Single API call instead of 4 (2-3x faster)
+ * - Guaranteed consistency (all filters use same product set)
+ * - All filters adapt to ALL other filters (including attributes)
+ * - Better cache hit rate (single cache entry per filter combination)
+ */
+export const allFilterOptionsQueryOptions = (
 	categorySlug?: string,
-	brandSlug?: string,
-	collectionSlug?: string,
+	brandSlugs?: string[], // Multi-select: array of brand slugs
+	collectionSlugs?: string[], // Multi-select: array of collection slugs
+	storeLocationId?: number,
 	attributeFilters?: Record<number, string[]>,
 ) =>
 	queryOptions({
 		queryKey: [
-			"attributeValuesForFiltering",
+			"allFilterOptions",
 			{
 				categorySlug: categorySlug ?? null,
-				brandSlug: brandSlug ?? null,
-				collectionSlug: collectionSlug ?? null,
+				brandSlugs: JSON.stringify(brandSlugs ?? []),
+				collectionSlugs: JSON.stringify(collectionSlugs ?? []),
+				storeLocationId: storeLocationId ?? null,
 				attributeFilters: JSON.stringify(attributeFilters ?? {}),
 			},
 		],
 		queryFn: async () =>
-			getAttributeValuesForFiltering({
+			getAllFilterOptions({
 				data: {
 					categorySlug,
-					brandSlug,
-					collectionSlug,
-					attributeFilters: attributeFilters ?? undefined,
-					includeInactive: false, // Client-side: filter by isActive
-				},
-			}),
-		staleTime: 1000 * 60 * 60 * 24 * 3, // 3 days - values change based on filters (increased from 1 hour)
-		gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days - keep in memory (increased from 3 hours)
-		retry: 3,
-		refetchOnWindowFocus: false,
-		refetchOnMount: false,
-	});
-
-/**
- * Filtered brands query options
- * Used for: Store and dashboard pages to show only brands available with current filters
- *
- * Cache Strategy: Moderate caching for filter-dependent data
- * - Brands cached for 1 hour per filter combination
- * - Kept in memory for 3 hours
- * - Query key includes all filters so cache invalidates when filters change
- */
-export const filteredBrandsQueryOptions = (
-	categorySlug?: string,
-	collectionSlug?: string,
-	storeLocationId?: number,
-) =>
-	queryOptions({
-		queryKey: [
-			"filteredBrands",
-			{
-				categorySlug: categorySlug ?? null,
-				collectionSlug: collectionSlug ?? null,
-				storeLocationId: storeLocationId ?? null,
-			},
-		],
-		queryFn: async () =>
-			getFilteredBrands({
-				data: {
-					categorySlug,
-					collectionSlug,
+					brandSlugs,
+					collectionSlugs,
 					storeLocationId,
+					attributeFilters,
+					includeInactive: false,
 				},
 			}),
-		staleTime: 1000 * 60 * 60 * 32, // 1 hour - filter-dependent data
-		gcTime: 1000 * 60 * 60 * 48, // 3 hours - keep in memory
+		staleTime: 1000 * 60 * 60 * 24 * 3, // 3 days - filter-dependent data
+		gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days - keep in memory
 		retry: 3,
 		refetchOnWindowFocus: false,
 		refetchOnMount: false,
 	});
 
 /**
- * Filtered collections query options
- * Used for: Store and dashboard pages to show only collections available with current filters
+ * All filter options query (Dashboard version - includes inactive products)
+ * Used for: Dashboard pages to show all available filter options in a single request
  *
  * Cache Strategy: Moderate caching for filter-dependent data
- * - Collections cached for 1 hour per filter combination
- * - Kept in memory for 3 hours
- * - Query key includes all filters so cache invalidates when filters change
- */
-export const filteredCollectionsQueryOptions = (
-	categorySlug?: string,
-	brandSlug?: string,
-	storeLocationId?: number,
-) =>
-	queryOptions({
-		queryKey: [
-			"filteredCollections",
-			{
-				categorySlug: categorySlug ?? null,
-				brandSlug: brandSlug ?? null,
-				storeLocationId: storeLocationId ?? null,
-			},
-		],
-		queryFn: async () =>
-			getFilteredCollections({
-				data: {
-					categorySlug,
-					brandSlug,
-					storeLocationId,
-				},
-			}),
-		staleTime: 1000 * 60 * 60 * 32, // 1 hour - filter-dependent data
-		gcTime: 1000 * 60 * 60 * 48, // 3 hours - keep in memory
-		retry: 3,
-		refetchOnWindowFocus: false,
-		refetchOnMount: false,
-	});
-
-/**
- * Filtered brands query options (Dashboard version - includes inactive products)
- * Used for: Dashboard pages to show only brands available with current filters
- *
- * Cache Strategy: Moderate caching for filter-dependent data
- * - Brands cached for 1 hour per filter combination
- * - Kept in memory for 3 hours
- * - Query key includes all filters so cache invalidates when filters change
- */
-export const filteredBrandsDashboardQueryOptions = (
-	categorySlug?: string,
-	collectionSlug?: string,
-	storeLocationId?: number,
-) =>
-	queryOptions({
-		queryKey: [
-			"filteredBrandsDashboard",
-			{
-				categorySlug: categorySlug ?? null,
-				collectionSlug: collectionSlug ?? null,
-				storeLocationId: storeLocationId ?? null,
-			},
-		],
-		queryFn: async () =>
-			getFilteredBrandsDashboard({
-				data: {
-					categorySlug,
-					collectionSlug,
-					storeLocationId,
-				},
-			}),
-		staleTime: 1000 * 60 * 60 * 32, // 1 hour - filter-dependent data
-		gcTime: 1000 * 60 * 60 * 48, // 3 hours - keep in memory
-		retry: 3,
-		refetchOnWindowFocus: false,
-		refetchOnMount: false,
-	});
-
-/**
- * Filtered collections query options (Dashboard version - includes inactive products)
- * Used for: Dashboard pages to show only collections available with current filters
- *
- * Cache Strategy: Moderate caching for filter-dependent data
- * - Collections cached for 1 hour per filter combination
- * - Kept in memory for 3 hours
- * - Query key includes all filters so cache invalidates when filters change
- */
-export const filteredCollectionsDashboardQueryOptions = (
-	categorySlug?: string,
-	brandSlug?: string,
-	storeLocationId?: number,
-) =>
-	queryOptions({
-		queryKey: [
-			"filteredCollectionsDashboard",
-			{
-				categorySlug: categorySlug ?? null,
-				brandSlug: brandSlug ?? null,
-				storeLocationId: storeLocationId ?? null,
-			},
-		],
-		queryFn: async () =>
-			getFilteredCollectionsDashboard({
-				data: {
-					categorySlug,
-					brandSlug,
-					storeLocationId,
-				},
-			}),
-		staleTime: 1000 * 60 * 60 * 32, // 1 hour - filter-dependent data
-		gcTime: 1000 * 60 * 60 * 48, // 3 hours - keep in memory
-		retry: 3,
-		refetchOnWindowFocus: false,
-		refetchOnMount: false,
-	});
-
-/**
- * Attribute values for filtering query options (Dashboard version - includes inactive products)
- * Used for: Dashboard pages to show available attribute values for filtering
- *
- * Cache Strategy: Moderate caching for filter-dependent data
- * - Values cached for 3 days per filter combination
+ * - Filter options cached for 3 days per filter combination
  * - Kept in memory for 7 days
  * - Query key includes all filters so cache invalidates when filters change
  */
-export const attributeValuesForFilteringDashboardQueryOptions = (
+export const allFilterOptionsDashboardQueryOptions = (
 	categorySlug?: string,
-	brandSlug?: string,
-	collectionSlug?: string,
-	attributeFilters?: Record<number, string[]>,
+	brandSlugs?: string[], // Multi-select: array of brand slugs
+	collectionSlugs?: string[], // Multi-select: array of collection slugs
 	storeLocationId?: number,
+	attributeFilters?: Record<number, string[]>,
 ) =>
 	queryOptions({
 		queryKey: [
-			"attributeValuesForFilteringDashboard",
+			"allFilterOptionsDashboard",
 			{
 				categorySlug: categorySlug ?? null,
-				brandSlug: brandSlug ?? null,
-				collectionSlug: collectionSlug ?? null,
-				attributeFilters: JSON.stringify(attributeFilters ?? {}),
+				brandSlugs: JSON.stringify(brandSlugs ?? []),
+				collectionSlugs: JSON.stringify(collectionSlugs ?? []),
 				storeLocationId: storeLocationId ?? null,
+				attributeFilters: JSON.stringify(attributeFilters ?? {}),
 			},
 		],
 		queryFn: async () =>
-			getAttributeValuesForFiltering({
+			getAllFilterOptionsDashboard({
 				data: {
 					categorySlug,
-					brandSlug,
-					collectionSlug,
-					attributeFilters: attributeFilters ?? undefined,
+					brandSlugs,
+					collectionSlugs,
 					storeLocationId,
-					includeInactive: true, // Dashboard: include inactive products
+					attributeFilters,
 				},
 			}),
-		staleTime: 1000 * 60 * 60 * 24 * 3, // 3 days - values change based on filters
+		staleTime: 1000 * 60 * 60 * 24 * 3, // 3 days - filter-dependent data
 		gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days - keep in memory
 		retry: 3,
 		refetchOnWindowFocus: false,
@@ -514,8 +373,8 @@ export const productsInfiniteQueryOptions = (
 	search?: string,
 	filters?: {
 		categorySlug?: string | null;
-		brandSlug?: string | null;
-		collectionSlug?: string | null;
+		brandSlugs?: string[] | null; // Multi-select: array of brand slugs
+		collectionSlugs?: string[] | null; // Multi-select: array of collection slugs
 		storeLocationId?: number | null;
 		attributeFilters?: Record<number, string[]>; // attributeId -> array of value IDs
 		minPrice?: number | null;
@@ -540,8 +399,8 @@ export const productsInfiniteQueryOptions = (
 			{
 				search: search ?? "",
 				categorySlug: filters?.categorySlug ?? null,
-				brandSlug: filters?.brandSlug ?? null,
-				collectionSlug: filters?.collectionSlug ?? null,
+				brandSlugs: JSON.stringify(filters?.brandSlugs ?? []),
+				collectionSlugs: JSON.stringify(filters?.collectionSlugs ?? []),
 				storeLocationId: filters?.storeLocationId ?? null,
 				attributeFilters: JSON.stringify(filters?.attributeFilters ?? {}),
 				minPrice: filters?.minPrice ?? null,
@@ -556,8 +415,8 @@ export const productsInfiniteQueryOptions = (
 					limit: 30,
 					search,
 					categorySlug: filters?.categorySlug ?? undefined,
-					brandSlug: filters?.brandSlug ?? undefined,
-					collectionSlug: filters?.collectionSlug ?? undefined,
+					brandSlugs: filters?.brandSlugs ?? undefined,
+					collectionSlugs: filters?.collectionSlugs ?? undefined,
 					storeLocationId: filters?.storeLocationId ?? undefined,
 					attributeFilters: filters?.attributeFilters ?? undefined,
 					minPrice: filters?.minPrice ?? undefined,

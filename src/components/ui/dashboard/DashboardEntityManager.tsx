@@ -161,6 +161,9 @@ export function DashboardEntityManager<
 				data: form.createForm.formData as TFormData,
 			});
 
+			// Show success status
+			form.crud.setButtonStatus("success");
+
 			toast.success(
 				`${config.entityName} добавлен${config.entityName.endsWith("а") ? "а" : ""} успешно!`,
 			);
@@ -170,12 +173,15 @@ export function DashboardEntityManager<
 				queryKey: config.queryKey,
 			});
 
-			closeCreateDrawer();
+			// Close drawer after a brief delay to show success state
+			setTimeout(() => {
+				closeCreateDrawer();
+			}, 800);
 		} catch (err) {
 			const errorMsg = err instanceof Error ? err.message : "An error occurred";
 			form.crud.setError(errorMsg);
+			form.crud.setButtonStatus("warning");
 			toast.error(errorMsg);
-		} finally {
 			form.crud.stopSubmitting();
 		}
 	};
@@ -225,6 +231,9 @@ export function DashboardEntityManager<
 				data: form.editForm.formData as TFormData,
 			});
 
+			// Show success status
+			form.crud.setButtonStatus("success");
+
 			toast.success(
 				`${config.entityName} обновлен${config.entityName.endsWith("а") ? "а" : ""} успешно!`,
 			);
@@ -234,12 +243,15 @@ export function DashboardEntityManager<
 				queryKey: config.queryKey,
 			});
 
-			closeEditModal();
+			// Close drawer after a brief delay to show success state
+			setTimeout(() => {
+				closeEditModal();
+			}, 800);
 		} catch (err) {
 			const errorMsg = err instanceof Error ? err.message : "An error occurred";
 			form.crud.setError(errorMsg);
+			form.crud.setButtonStatus("warning");
 			toast.error(errorMsg);
-		} finally {
 			form.crud.stopSubmitting();
 		}
 	};
@@ -341,6 +353,8 @@ export function DashboardEntityManager<
 							: undefined
 					}
 					layout="single-column"
+					buttonStatus={form.crud.buttonStatus}
+					successLabel="Готово"
 				>
 					<form onSubmit={handleSubmit} id={createFormId} className="contents">
 						<DrawerSection maxWidth>
@@ -405,6 +419,8 @@ export function DashboardEntityManager<
 							? form.crud.error
 							: undefined
 					}
+					buttonStatus={form.crud.buttonStatus}
+					successLabel="Готово"
 					layout="single-column"
 				>
 					<form onSubmit={handleUpdate} id={editFormId} className="contents">

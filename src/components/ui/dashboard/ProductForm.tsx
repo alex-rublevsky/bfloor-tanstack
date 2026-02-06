@@ -110,6 +110,7 @@ export function ProductForm({
 							onTagsChange(String(itemId), checked);
 						}}
 						idPrefix={`${idPrefix}-tag`}
+						horizontal={true}
 					/>
 				</DrawerSection>
 

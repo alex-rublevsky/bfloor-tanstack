@@ -255,6 +255,62 @@ export const productStoreLocations = sqliteTable(
 	],
 );
 
+// Junction table for product-brand relationships (unified filtering pattern)
+// Replaces direct products.brandSlug for consistent filtering across all filter types
+export const productBrands = sqliteTable(
+	"product_brands",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		productId: integer("product_id")
+			.references(() => products.id, { onDelete: "cascade" })
+			.notNull(),
+		brandSlug: text("brand_slug")
+			.references(() => brands.slug, { onDelete: "cascade" })
+			.notNull(),
+		createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+	},
+	(table) => [
+		// Unique constraint: one brand per product (allows future multi-brand expansion)
+		unique().on(table.productId, table.brandSlug),
+		// Performance indexes matching productAttributeValues pattern
+		index("idx_product_brands_product_id").on(table.productId),
+		index("idx_product_brands_brand_slug").on(table.brandSlug),
+		// Composite index for common query patterns (EXISTS subqueries, JOINs)
+		index("idx_product_brands_product_brand").on(
+			table.productId,
+			table.brandSlug,
+		),
+	],
+);
+
+// Junction table for product-collection relationships (unified filtering pattern)
+// Replaces direct products.collectionSlug for consistent filtering across all filter types
+export const productCollections = sqliteTable(
+	"product_collections",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		productId: integer("product_id")
+			.references(() => products.id, { onDelete: "cascade" })
+			.notNull(),
+		collectionSlug: text("collection_slug")
+			.references(() => collections.slug, { onDelete: "cascade" })
+			.notNull(),
+		createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+	},
+	(table) => [
+		// Unique constraint: one collection per product (allows future multi-collection expansion)
+		unique().on(table.productId, table.collectionSlug),
+		// Performance indexes matching productAttributeValues pattern
+		index("idx_product_collections_product_id").on(table.productId),
+		index("idx_product_collections_collection_slug").on(table.collectionSlug),
+		// Composite index for common query patterns (EXISTS subqueries, JOINs)
+		index("idx_product_collections_product_collection").on(
+			table.productId,
+			table.collectionSlug,
+		),
+	],
+);
+
 export const orders = sqliteTable(
 	"orders",
 	{
@@ -391,6 +447,8 @@ export const schema = {
 	collections,
 	// storeLocations removed - now hardcoded in ~/data/storeLocations.ts
 	productStoreLocations,
+	productBrands,
+	productCollections,
 	// Order tables
 	orders,
 	orderItems,

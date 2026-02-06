@@ -15,15 +15,15 @@ import { Select } from "~/components/ui/shared/Select";
 import { Slider } from "~/components/ui/shared/Slider";
 import { useDeviceType } from "~/hooks/use-mobile";
 import { usePrefetch } from "~/hooks/usePrefetch";
-import type { AttributeFilter } from "~/server_functions/store/getAttributeValuesForFiltering";
+import type { AttributeFilter } from "~/server_functions/store/getAllFilterOptions";
 
 interface ProductFiltersProps {
 	brands?: { slug: string; name: string }[];
-	selectedBrand?: string | null;
-	onBrandChange?: (brand: string | null) => void;
+	selectedBrands?: string[]; // Multi-select: array of brand slugs
+	onBrandsChange?: (brands: string[]) => void;
 	collections?: { slug: string; name: string }[];
-	selectedCollection?: string | null;
-	onCollectionChange?: (collection: string | null) => void;
+	selectedCollections?: string[]; // Multi-select: array of collection slugs
+	onCollectionsChange?: (collections: string[]) => void;
 	storeLocations?: { id: number; address: string }[];
 	selectedStoreLocation?: number | null;
 	onStoreLocationChange?: (locationId: number | null) => void;
@@ -45,11 +45,11 @@ interface ProductFiltersProps {
 
 const ProductFilters = memo(function ProductFilters({
 	brands = [],
-	selectedBrand = null,
-	onBrandChange,
+	selectedBrands = [],
+	onBrandsChange,
 	collections = [],
-	selectedCollection = null,
-	onCollectionChange,
+	selectedCollections = [],
+	onCollectionsChange,
 	storeLocations = [],
 	selectedStoreLocation = null,
 	onStoreLocationChange,
@@ -81,14 +81,16 @@ const ProductFilters = memo(function ProductFilters({
 		// Category will be passed from route context if needed
 		prefetchFilterOptions(
 			undefined, // Category comes from route, not filter state
-			selectedBrand ?? undefined,
-			selectedCollection ?? undefined,
+			selectedBrands.length > 0 ? selectedBrands : undefined,
+			selectedCollections.length > 0 ? selectedCollections : undefined,
+			selectedStoreLocation ?? undefined,
 			selectedAttributeFilters,
 		);
 	}, [
 		prefetchFilterOptions,
-		selectedBrand,
-		selectedCollection,
+		selectedBrands,
+		selectedCollections,
+		selectedStoreLocation,
 		selectedAttributeFilters,
 	]);
 
@@ -117,18 +119,18 @@ const ProductFilters = memo(function ProductFilters({
 		[onPriceRangeChange],
 	);
 
-	const handleBrandChange = useCallback(
-		(brand: string | null) => {
-			onBrandChange?.(brand);
+	const handleBrandsChange = useCallback(
+		(brands: string[]) => {
+			onBrandsChange?.(brands);
 		},
-		[onBrandChange],
+		[onBrandsChange],
 	);
 
-	const handleCollectionChange = useCallback(
-		(collection: string | null) => {
-			onCollectionChange?.(collection);
+	const handleCollectionsChange = useCallback(
+		(collections: string[]) => {
+			onCollectionsChange?.(collections);
 		},
-		[onCollectionChange],
+		[onCollectionsChange],
 	);
 
 	const handleStoreLocationChange = useCallback(
@@ -153,16 +155,16 @@ const ProductFilters = memo(function ProductFilters({
 	);
 
 	const hasAnyActiveFilters =
-		(selectedBrand && selectedBrand.length > 0) ||
-		(selectedCollection && selectedCollection.length > 0) ||
+		selectedBrands.length > 0 ||
+		selectedCollections.length > 0 ||
 		selectedStoreLocation !== null ||
 		currentPriceRange[0] !== priceRange.min ||
 		currentPriceRange[1] !== priceRange.max ||
 		Object.keys(selectedAttributeFilters).length > 0;
 
 	const resetAll = () => {
-		onBrandChange?.(null);
-		onCollectionChange?.(null);
+		onBrandsChange?.([]);
+		onCollectionsChange?.([]);
 		onStoreLocationChange?.(null);
 		onPriceRangeChange?.([priceRange.min, priceRange.max]);
 		// Reset all attribute filters
@@ -198,8 +200,8 @@ const ProductFilters = memo(function ProductFilters({
 			</div>,
 		);
 
-		// Brands filter - only show if more than 1 option
-		if (brands.length > 1) {
+		// Brands filter - show if multiple options OR if any brands are selected
+		if (brands.length > 1 || selectedBrands.length > 0) {
 			filterSections.push(
 				<div key="brands" className="min-w-fit">
 					<div className="mb-1 flex items-center justify-between">
@@ -210,11 +212,14 @@ const ProductFilters = memo(function ProductFilters({
 							id: brand.slug,
 							label: brand.name,
 						}))}
-						selectedIds={selectedBrand ? [selectedBrand] : []}
+						selectedIds={selectedBrands}
 						onItemChange={(itemId, checked) => {
-							// Single-select behavior: if checked, select this one; if unchecked, clear selection
-							const brandSlug = checked ? String(itemId) : null;
-							handleBrandChange(brandSlug);
+							// Multi-select behavior: add or remove from array
+							const brandSlug = String(itemId);
+							const newBrands = checked
+								? [...selectedBrands, brandSlug]
+								: selectedBrands.filter((b) => b !== brandSlug);
+							handleBrandsChange(newBrands);
 						}}
 						idPrefix="filter-brand"
 						scrollable={true}
@@ -224,8 +229,8 @@ const ProductFilters = memo(function ProductFilters({
 			);
 		}
 
-		// Collections filter - only show if more than 1 option
-		if (collections.length > 1) {
+		// Collections filter - show if multiple options OR if any collections are selected
+		if (collections.length > 1 || selectedCollections.length > 0) {
 			filterSections.push(
 				<div key="collections" className="min-w-fit">
 					<div className="mb-1 flex items-center justify-between">
@@ -236,11 +241,14 @@ const ProductFilters = memo(function ProductFilters({
 							id: collection.slug,
 							label: collection.name,
 						}))}
-						selectedIds={selectedCollection ? [selectedCollection] : []}
+						selectedIds={selectedCollections}
 						onItemChange={(itemId, checked) => {
-							// Single-select behavior: if checked, select this one; if unchecked, clear selection
-							const collectionSlug = checked ? String(itemId) : null;
-							handleCollectionChange(collectionSlug);
+							// Multi-select behavior: add or remove from array
+							const collectionSlug = String(itemId);
+							const newCollections = checked
+								? [...selectedCollections, collectionSlug]
+								: selectedCollections.filter((c) => c !== collectionSlug);
+							handleCollectionsChange(newCollections);
 						}}
 						idPrefix="filter-collection"
 						scrollable={true}
@@ -268,11 +276,13 @@ const ProductFilters = memo(function ProductFilters({
 
 		// Attribute filters (order from API = ATTRIBUTE_FILTER_DISPLAY_ORDER)
 		attributeFilters.forEach((attrFilter) => {
-			// Skip if only 1 value available (no choice to make)
-			if (attrFilter.values.length <= 1) return;
-
 			const selectedValueIds =
 				selectedAttributeFilters[attrFilter.attributeId] || [];
+
+			// Skip if only 1 value available AND nothing is selected (no choice to make)
+			// BUT always show if something is selected (so user can see and clear their selection)
+			if (attrFilter.values.length <= 1 && selectedValueIds.length === 0)
+				return;
 			// Convert to CheckboxList format
 			const checkboxItems: CheckboxListItem[] = attrFilter.values.map((v) => ({
 				id: v.id.toString(),
@@ -363,36 +373,38 @@ const ProductFilters = memo(function ProductFilters({
 			</div>,
 		);
 
-		// Brands – horizontal pills
-		if (brands.length > 1) {
+		// Brands – horizontal pills (show if multiple options OR if any selected)
+		if (brands.length > 1 || selectedBrands.length > 0) {
 			sections.push(
 				<div key="brands" className="min-w-0">
 					<FilterGroup
 						title="Бренды"
 						options={brands}
-						selectedOptions={selectedBrand}
-						onOptionChange={(slug: string | null) => handleBrandChange(slug)}
+						selectedOptions={selectedBrands}
+						onOptionChange={(brands: string[]) => handleBrandsChange(brands)}
 						variant="filterMobile"
 						noWrap
+						multiSelect={true}
 						className={pillSectionClass}
 					/>
 				</div>,
 			);
 		}
 
-		// Collections – horizontal pills
-		if (collections.length > 1) {
+		// Collections – horizontal pills (show if multiple options OR if any selected)
+		if (collections.length > 1 || selectedCollections.length > 0) {
 			sections.push(
 				<div key="collections" className="min-w-0">
 					<FilterGroup
 						title="Коллекции"
 						options={collections}
-						selectedOptions={selectedCollection}
-						onOptionChange={(slug: string | null) =>
-							handleCollectionChange(slug)
+						selectedOptions={selectedCollections}
+						onOptionChange={(collections: string[]) =>
+							handleCollectionsChange(collections)
 						}
 						variant="filterMobile"
 						noWrap
+						multiSelect={true}
 						className={pillSectionClass}
 					/>
 				</div>,
@@ -417,9 +429,13 @@ const ProductFilters = memo(function ProductFilters({
 
 		// Attribute filters – horizontal pills, multi-select
 		attributeFilters.forEach((attrFilter) => {
-			if (attrFilter.values.length <= 1) return;
 			const selectedValueIds =
 				selectedAttributeFilters[attrFilter.attributeId] || [];
+
+			// Skip if only 1 value available AND nothing is selected (no choice to make)
+			// BUT always show if something is selected (so user can see and clear their selection)
+			if (attrFilter.values.length <= 1 && selectedValueIds.length === 0)
+				return;
 			sections.push(
 				<div key={`attr-${attrFilter.attributeId}`} className="min-w-0">
 					<FilterGroup

@@ -103,22 +103,6 @@ export const EnhancedDescriptionField = React.forwardRef<
 		// Formatting help content
 		const formattingHelp = (
 			<div className="space-y-1 text-muted-foreground text-xs">
-				<div className="space-y-1">
-					<div>
-						<strong>Markdown:</strong> **жирный**, *курсив*, [ссылка](url)
-					</div>
-					<div>
-						<strong>HTML:</strong> &lt;div&gt;, &lt;p&gt;, &lt;strong&gt;,
-						&lt;em&gt;
-					</div>
-					<div>
-						<strong>Списки:</strong> - элемент или 1. элемент
-					</div>
-					<div>
-						<strong>Перенос строки:</strong> \n\n для нового абзаца
-					</div>
-				</div>
-
 				{validation.issues.length > 0 && (
 					<div className="mt-2 rounded border border-yellow-200 bg-yellow-50 p-2 text-yellow-800">
 						<div className="font-medium">Проблемы:</div>

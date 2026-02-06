@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ButtonStatus } from "~/components/ui/shared/Button";
 
 /**
  * Common state management for dashboard CRUD operations
@@ -31,6 +32,9 @@ export function useDashboardCRUD() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 
+	// Button status for animated status buttons
+	const [buttonStatus, setButtonStatus] = useState<ButtonStatus>("idle");
+
 	// Error state
 	const [error, setError] = useState("");
 
@@ -55,9 +59,13 @@ export function useDashboardCRUD() {
 	// Submission handlers
 	const startSubmitting = () => {
 		setIsSubmitting(true);
+		setButtonStatus("analyzing");
 		clearError();
 	};
-	const stopSubmitting = () => setIsSubmitting(false);
+	const stopSubmitting = () => {
+		setIsSubmitting(false);
+		setButtonStatus("idle");
+	};
 
 	// Delete handlers
 	const startDeleting = () => {
@@ -99,6 +107,10 @@ export function useDashboardCRUD() {
 		startDeleting,
 		stopDeleting,
 		setIsDeleting,
+
+		// Button status
+		buttonStatus,
+		setButtonStatus,
 
 		// Error handling
 		error,

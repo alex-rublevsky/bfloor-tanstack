@@ -2,7 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq, inArray, type SQL, sql } from "drizzle-orm";
 import { DB } from "~/db";
-import { productStoreLocations, products, productVariations } from "~/schema";
+import {
+	productBrands,
+	productCollections,
+	productStoreLocations,
+	products,
+	productVariations,
+} from "~/schema";
 import {
 	parseProductAttributes,
 	parseVariationAttributes,
@@ -17,8 +23,8 @@ export const getAllProducts = createServerFn({ method: "GET" })
 				limit?: number;
 				search?: string;
 				categorySlug?: string;
-				brandSlug?: string;
-				collectionSlug?: string;
+				brandSlugs?: string[]; // Multi-select: array of brand slugs
+				collectionSlugs?: string[]; // Multi-select: array of collection slugs
 				storeLocationId?: number;
 				attributeFilters?: Record<number, string[]>; // attributeId -> array of value IDs
 				minPrice?: number;
@@ -59,13 +65,13 @@ export const getAllProducts = createServerFn({ method: "GET" })
 				data.categorySlug && data.categorySlug.length > 0
 					? data.categorySlug
 					: undefined;
-			const brandFilter =
-				data.brandSlug && data.brandSlug.length > 0
-					? data.brandSlug
+			const brandFilters =
+				data.brandSlugs && data.brandSlugs.length > 0
+					? data.brandSlugs
 					: undefined;
-			const collectionFilter =
-				data.collectionSlug && data.collectionSlug.length > 0
-					? data.collectionSlug
+			const collectionFilters =
+				data.collectionSlugs && data.collectionSlugs.length > 0
+					? data.collectionSlugs
 					: undefined;
 			const storeLocationFilter =
 				typeof data.storeLocationId === "number"
@@ -133,11 +139,19 @@ export const getAllProducts = createServerFn({ method: "GET" })
 			if (categoryFilter) {
 				conditions.push(eq(products.categorySlug, categoryFilter));
 			}
-			if (brandFilter) {
-				conditions.push(eq(products.brandSlug, brandFilter));
+			if (brandFilters) {
+				conditions.push(sql`EXISTS (
+				SELECT 1 FROM ${productBrands}
+				WHERE ${productBrands.productId} = ${products.id}
+				  AND ${productBrands.brandSlug} IN (${sql.join(brandFilters, sql`, `)})
+			)`);
 			}
-			if (collectionFilter) {
-				conditions.push(eq(products.collectionSlug, collectionFilter));
+			if (collectionFilters) {
+				conditions.push(sql`EXISTS (
+				SELECT 1 FROM ${productCollections}
+				WHERE ${productCollections.productId} = ${products.id}
+				  AND ${productCollections.collectionSlug} IN (${sql.join(collectionFilters, sql`, `)})
+			)`);
 			}
 			if (minPriceFilter !== undefined) {
 				conditions.push(sql`${products.price} >= ${minPriceFilter}`);

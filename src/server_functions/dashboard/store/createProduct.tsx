@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm";
 import { DB } from "~/db";
 import {
 	productAttributeValues,
+	productBrands,
+	productCollections,
 	productStoreLocations,
 	products,
 	productVariations,
@@ -161,7 +163,6 @@ export const createProduct = createServerFn({ method: "POST" })
 					categorySlug: productData.categorySlug || null,
 					brandSlug: productData.brandSlug || null,
 					collectionSlug: productData.collectionSlug || null,
-					storeLocationId: productData.storeLocationId || null,
 					isActive: productData.isActive,
 					isFeatured: productData.isFeatured,
 					discount: productData.discount || null,
@@ -174,6 +175,24 @@ export const createProduct = createServerFn({ method: "POST" })
 				.returning();
 
 			const newProduct = insertedProducts[0];
+
+			// Insert brand relationship into junction table
+			if (productData.brandSlug) {
+				await db.insert(productBrands).values({
+					productId: newProduct.id,
+					brandSlug: productData.brandSlug,
+					createdAt: new Date(),
+				});
+			}
+
+			// Insert collection relationship into junction table
+			if (productData.collectionSlug) {
+				await db.insert(productCollections).values({
+					productId: newProduct.id,
+					collectionSlug: productData.collectionSlug,
+					createdAt: new Date(),
+				});
+			}
 
 			// Handle variations
 			if (productData.hasVariations && productData.variations?.length) {

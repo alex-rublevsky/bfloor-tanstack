@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import DeleteConfirmationDialog from "~/components/ui/dashboard/ConfirmationDialog";
 import { ProductForm } from "~/components/ui/dashboard/ProductForm";
-import { DrawerSection } from "~/components/ui/dashboard/ProductFormSection";
 import { Button } from "~/components/ui/shared/Button";
 import { Eye, Trash } from "~/components/ui/shared/Icon";
 import { useFormNavigation } from "~/hooks/useFormNavigation";
@@ -191,22 +190,34 @@ function EditProductPage() {
 					← Назад
 				</button>
 				{loaderData.product.slug && (
-					<Button
-						asChild
-						variant="outline"
-						size="sm"
-						className="flex items-center gap-2"
-					>
-						<Link
-							to="/product/$productId"
-							params={{
-								productId: loaderData.product.slug,
-							}}
+					<div className="flex items-center gap-2">
+						<Button
+							asChild
+							variant="default"
+							size="sm"
+							className="flex items-center gap-2"
 						>
-							<Eye className="h-4 w-4" />
-							<span>посмотреть на страницу этого товара</span>
-						</Link>
-					</Button>
+							<Link
+								to="/product/$productId"
+								params={{
+									productId: loaderData.product.slug,
+								}}
+							>
+								<Eye className="h-4 w-4" />
+								<span>посмотреть на страницу этого товара</span>
+							</Link>
+						</Button>
+						<Button
+							type="button"
+							variant="destructive"
+							size="sm"
+							onClick={handleDeleteClick}
+							className="flex items-center gap-2"
+						>
+							<Trash className="h-4 w-4" />
+							<span>Удалить товар</span>
+						</Button>
+					</div>
 				)}
 			</div>
 
@@ -238,28 +249,6 @@ function EditProductPage() {
 					idPrefix="edit"
 					productId={loaderData.originalSlug}
 				/>
-
-				{/* Delete Product Section */}
-				<DrawerSection variant="default" className="lg:col-span-2">
-					<div className="flex flex-col gap-2">
-						<h3 className="font-medium text-destructive text-sm">
-							Опасная зона
-						</h3>
-						<p className="text-muted-foreground text-sm">
-							Удаление товара является необратимым действием. Все данные о
-							товаре будут безвозвратно удалены.
-						</p>
-						<Button
-							type="button"
-							variant="destructive"
-							onClick={handleDeleteClick}
-							className="mt-2 w-fit"
-						>
-							<Trash size={16} />
-							<span>Удалить товар</span>
-						</Button>
-					</div>
-				</DrawerSection>
 
 				{productForm.error && (
 					<div className="mt-4 text-destructive text-sm">

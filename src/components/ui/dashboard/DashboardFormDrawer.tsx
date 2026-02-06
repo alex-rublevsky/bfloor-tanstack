@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { ButtonStatus } from "~/components/ui/shared/Button";
 import { Button } from "~/components/ui/shared/Button";
 import {
 	Drawer,
@@ -34,6 +35,14 @@ interface DashboardFormDrawerProps {
 	 * Optional: Additional footer actions to display before Cancel/Apply buttons
 	 */
 	footerActions?: ReactNode;
+	/**
+	 * Optional: Button status for animated status variant (idle/analyzing/success/warning)
+	 */
+	buttonStatus?: ButtonStatus;
+	/**
+	 * Optional: Success label for status button
+	 */
+	successLabel?: string;
 }
 
 export function DashboardFormDrawer({
@@ -50,6 +59,8 @@ export function DashboardFormDrawer({
 	layout = "two-column",
 	fullWidth = true,
 	footerActions,
+	buttonStatus,
+	successLabel = "Готово",
 }: DashboardFormDrawerProps) {
 	return (
 		<Drawer open={isOpen} onOpenChange={onOpenChange}>
@@ -87,14 +98,30 @@ export function DashboardFormDrawer({
 							<Button variant="secondary" type="button" onClick={onCancel}>
 								Отмена
 							</Button>
-							<Button
-								variant="green"
-								type="submit"
-								form={formId}
-								disabled={isSubmitting}
-							>
-								{isSubmitting ? submittingText : submitButtonText}
-							</Button>
+							{buttonStatus !== undefined ? (
+								<Button
+									variant="status"
+									type="submit"
+									form={formId}
+									status={buttonStatus}
+									statusLabels={{
+										analyzing: submittingText,
+										success: successLabel,
+										warning: "Ошибка",
+									}}
+								>
+									{submitButtonText}
+								</Button>
+							) : (
+								<Button
+									variant="default"
+									type="submit"
+									form={formId}
+									disabled={isSubmitting}
+								>
+									{isSubmitting ? submittingText : submitButtonText}
+								</Button>
+							)}
 						</div>
 					</div>
 				</DrawerFooter>

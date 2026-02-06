@@ -81,14 +81,6 @@ export function useProductForm({
 	>(initialSelectedStoreLocationIds);
 	const [deletedImages, setDeletedImages] = useState<string[]>([]);
 
-	// Debug logging for store locations
-	useEffect(() => {
-		console.log(
-			"[useProductForm] Store location IDs state:",
-			selectedStoreLocationIds,
-		);
-	}, [selectedStoreLocationIds]);
-
 	// Stable callbacks for slug generation
 	const handleSlugChange = useCallback(
 		(slug: string) => setFormData((prev) => ({ ...prev, slug })),
@@ -137,11 +129,10 @@ export function useProductForm({
 	const handleStoreLocationChange = useCallback(
 		(locationId: number, checked: boolean) => {
 			setSelectedStoreLocationIds((prev) => {
-				if (checked) {
-					return [...prev, locationId];
-				} else {
-					return prev.filter((id) => id !== locationId);
-				}
+				const newIds = checked
+					? [...prev, locationId]
+					: prev.filter((id) => id !== locationId);
+				return newIds;
 			});
 		},
 		[],

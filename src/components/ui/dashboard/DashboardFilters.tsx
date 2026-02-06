@@ -6,7 +6,7 @@
 
 import { memo, useState } from "react";
 import { useDeviceType } from "~/hooks/use-mobile";
-import type { AttributeFilter } from "~/server_functions/store/getAttributeValuesForFiltering";
+import type { AttributeFilter } from "~/server_functions/store/getAllFilterOptions";
 import { Button } from "../shared/Button";
 import {
 	Drawer,

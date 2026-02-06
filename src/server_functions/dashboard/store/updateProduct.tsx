@@ -4,8 +4,10 @@ import { eq, inArray } from "drizzle-orm";
 import { DB } from "~/db";
 import {
 	productAttributeValues,
-	products,
+	productBrands,
+	productCollections,
 	productStoreLocations,
+	products,
 	productVariations,
 	variationAttributes,
 } from "~/schema";
@@ -444,12 +446,6 @@ export const updateProduct = createServerFn({ method: "POST" })
 			};
 
 			const handleStoreLocations = async () => {
-				// Debug logging
-				console.log(
-					"[updateProduct] Store location IDs received:",
-					productData.storeLocationIds,
-				);
-
 				// Delete existing connections
 				await db
 					.delete(productStoreLocations)
@@ -462,11 +458,6 @@ export const updateProduct = createServerFn({ method: "POST" })
 						(id): id is number => typeof id === "number" && !Number.isNaN(id),
 					);
 
-					console.log(
-						"[updateProduct] Valid location IDs to insert:",
-						validLocationIds,
-					);
-
 					if (validLocationIds.length > 0) {
 						await db.insert(productStoreLocations).values(
 							validLocationIds.map((locationId) => ({
@@ -476,8 +467,6 @@ export const updateProduct = createServerFn({ method: "POST" })
 							})),
 						);
 					}
-				} else {
-					console.log("[updateProduct] No store location IDs provided");
 				}
 			};
 
@@ -558,6 +547,58 @@ export const updateProduct = createServerFn({ method: "POST" })
 			};
 
 			// Update product and related data
+			// Helper to update brand junction table
+			const handleBrandJunction = async () => {
+				const newBrandSlug = preserveIfEmpty(
+					productData.brandSlug,
+					existingProductData.brandSlug,
+				);
+				const oldBrandSlug = existingProductData.brandSlug;
+
+				// Only update if brand changed
+				if (newBrandSlug !== oldBrandSlug) {
+					// Delete old brand relationship
+					await db
+						.delete(productBrands)
+						.where(eq(productBrands.productId, productId));
+
+					// Insert new brand relationship if provided
+					if (newBrandSlug) {
+						await db.insert(productBrands).values({
+							productId: productId,
+							brandSlug: newBrandSlug,
+							createdAt: new Date(),
+						});
+					}
+				}
+			};
+
+			// Helper to update collection junction table
+			const handleCollectionJunction = async () => {
+				const newCollectionSlug = preserveIfEmpty(
+					productData.collectionSlug,
+					existingProductData.collectionSlug,
+				);
+				const oldCollectionSlug = existingProductData.collectionSlug;
+
+				// Only update if collection changed
+				if (newCollectionSlug !== oldCollectionSlug) {
+					// Delete old collection relationship
+					await db
+						.delete(productCollections)
+						.where(eq(productCollections.productId, productId));
+
+					// Insert new collection relationship if provided
+					if (newCollectionSlug) {
+						await db.insert(productCollections).values({
+							productId: productId,
+							collectionSlug: newCollectionSlug,
+							createdAt: new Date(),
+						});
+					}
+				}
+			};
+
 			const [updatedProductResult] = await Promise.all([
 				// Update main product and return updated row to avoid extra query
 				db
@@ -590,7 +631,6 @@ export const updateProduct = createServerFn({ method: "POST" })
 							productData.collectionSlug,
 							existingProductData.collectionSlug,
 						),
-						storeLocationId: productData.storeLocationId || null,
 						isActive: productData.isActive,
 						isFeatured: productData.isFeatured,
 						discount: productData.discount || null,
@@ -607,6 +647,8 @@ export const updateProduct = createServerFn({ method: "POST" })
 				handleVariations(),
 				handleStoreLocations(),
 				handleProductAttributes(),
+				handleBrandJunction(),
+				handleCollectionJunction(),
 			]);
 
 			return {

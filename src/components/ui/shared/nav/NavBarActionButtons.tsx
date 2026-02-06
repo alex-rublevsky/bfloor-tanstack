@@ -99,14 +99,37 @@ interface MobileActionButtonProps {
 	button: ActionButtonConfig;
 	position: "left" | "right";
 	className?: string;
+	formStatus?: ButtonStatus;
 }
 
 export function MobileActionButton({
 	button,
 	position,
 	className = "",
+	formStatus = "idle",
 }: MobileActionButtonProps) {
 	const isPrimary = button.variant === "default";
+
+	// Handle status button variant (e.g., "Update product" button)
+	if (isPrimary && button.useStatusButton) {
+		return (
+			<Button
+				variant="status"
+				size="sm"
+				onClick={button.onClick}
+				status={formStatus}
+				statusLabels={button.statusLabels}
+				className={cn(
+					"fixed bottom-22 z-50 md:hidden",
+					position === "left" ? "left-2" : "right-2",
+					className,
+				)}
+				aria-label={button.label}
+			>
+				{button.label}
+			</Button>
+		);
+	}
 
 	return (
 		<Button
@@ -116,14 +139,11 @@ export function MobileActionButton({
 			className={cn(
 				"fixed bottom-22 z-50 whitespace-nowrap rounded-full md:hidden",
 				position === "left" ? "left-2" : "right-2",
-				isPrimary
-					? "bg-primary text-primary-foreground hover:bg-primary-hover"
-					: "border border-border bg-background text-foreground hover:bg-muted",
 				className,
 			)}
 			aria-label={button.label}
 		>
-			<span className="flex items-center gap-1.5 px-3 py-1.5 text-xs">
+			<span className={"flex items-center gap-1.5 px-3 py-1.5 text-xs"}>
 				{isPrimary && <Plus className="h-4 w-4" />}
 				{button.label}
 			</span>
@@ -137,13 +157,23 @@ export function MobileActionButton({
  */
 interface MobileActionButtonsProps {
 	buttons: ActionButtonConfig[];
+	formStatus?: ButtonStatus;
 }
 
-export function MobileActionButtons({ buttons }: MobileActionButtonsProps) {
+export function MobileActionButtons({
+	buttons,
+	formStatus = "idle",
+}: MobileActionButtonsProps) {
 	if (buttons.length === 0) return null;
 
 	if (buttons.length === 1) {
-		return <MobileActionButton button={buttons[0]} position="right" />;
+		return (
+			<MobileActionButton
+				button={buttons[0]}
+				position="right"
+				formStatus={formStatus}
+			/>
+		);
 	}
 
 	// Multiple buttons: Cancel on left, Primary on right
@@ -156,6 +186,7 @@ export function MobileActionButtons({ buttons }: MobileActionButtonsProps) {
 						key={`mobile-action-${index}-${button.label}`}
 						button={button}
 						position={isCancel ? "left" : "right"}
+						formStatus={formStatus}
 					/>
 				);
 			})}

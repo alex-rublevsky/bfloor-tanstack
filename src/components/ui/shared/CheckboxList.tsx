@@ -15,6 +15,7 @@ interface CheckboxListProps {
 	showOnlyActive?: boolean; // Filter to show only active items
 	scrollable?: boolean; // Enable scrollable container with limited height
 	maxHeight?: string; // Max height for scrollable container (default: "200px")
+	horizontal?: boolean; // Enable horizontal layout with wrapping (default: false)
 }
 
 export function CheckboxList({
@@ -25,6 +26,7 @@ export function CheckboxList({
 	showOnlyActive = false,
 	scrollable = false,
 	maxHeight = "200px",
+	horizontal = false,
 }: CheckboxListProps) {
 	// Filter items if needed
 	const filteredItems = showOnlyActive
@@ -32,7 +34,13 @@ export function CheckboxList({
 		: items;
 
 	const content = (
-		<div className="grid w-fit grid-cols-1 gap-0">
+		<div
+			className={
+				horizontal
+					? "flex w-full flex-wrap gap-0"
+					: "grid w-fit grid-cols-1 gap-0"
+			}
+		>
 			{filteredItems.map((item) => {
 				const isChecked = selectedIds.includes(item.id);
 

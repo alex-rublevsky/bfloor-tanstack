@@ -75,7 +75,11 @@ export function EmptyState({
 
 			{/* Action Button */}
 			{actionButton && (
-				<Button onClick={actionButton.onClick} className="gap-2">
+				<Button
+					variant="default"
+					onClick={actionButton.onClick}
+					className="gap-2"
+				>
 					<Plus className="h-4 w-4" />
 					{actionButton.text}
 				</Button>
