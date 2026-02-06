@@ -6,8 +6,8 @@ import {
 	productAttributeValues,
 	productBrands,
 	productCollections,
-	productStoreLocations,
 	products,
+	productStoreLocations,
 	productVariations,
 	variationAttributes,
 } from "~/schema";
