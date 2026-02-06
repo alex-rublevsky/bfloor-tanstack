@@ -64,14 +64,14 @@ select.field-sizing-content,
 
 /* Padding and text size on each option so hover fills the full row */
 .select-native option {
-	padding-block: 0.5rem;
+	padding-block: 0.375rem;
 	padding-inline: 0.75rem;
 	font-size: 0.875rem; /* text-sm */
 }
 
 /* Small size variant - smaller text and padding in dropdown */
 .select-native.h-8 option {
-	padding-block: 0.375rem;
+	padding-block: 0.25rem;
 	padding-inline: 0.625rem;
 	font-size: 0.75rem; /* text-xs */
 	line-height: 1.25; /* Tighter line height for better centering */

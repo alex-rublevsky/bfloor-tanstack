@@ -162,6 +162,16 @@
 	}
 }
 
+/* Disabled state */
+.checkbox-input:disabled + .checkbox-check {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.checkbox-input:disabled ~ * {
+	cursor: not-allowed;
+}
+
 .checkbox-input:focus-visible + .checkbox-check {
 	box-shadow:
 		0 0 0 var(--outline-offset) var(--background),
@@ -176,16 +186,6 @@
 
 .checkbox-wrapper:hover .checkbox-check::before {
 	opacity: 0.5;
-}
-
-/* Disabled state */
-.checkbox-input:disabled + .checkbox-check {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
-.checkbox-input:disabled ~ * {
-	cursor: not-allowed;
 }
 
 .checkbox-wrapper:has(.checkbox-input:disabled) {

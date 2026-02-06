@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
 import { Button } from "~/components/ui/shared/Button";
 import { CheckboxList } from "~/components/ui/shared/CheckboxList";
 import { Input } from "~/components/ui/shared/input";
@@ -28,25 +29,28 @@ export default function ProductAttributesForm({
 		allAttributeValuesByAttributeQueryOptions(),
 	);
 
-	const handleUpdateAttributeValue = (attributeId: string, value: string) => {
-		const currentAttributes = attributes || [];
-		const existingAttributeIndex = currentAttributes.findIndex(
-			(attr) => attr.attributeId === attributeId,
-		);
-
-		let newAttributes: ProductAttributeFormData[];
-		if (existingAttributeIndex >= 0) {
-			// Update existing attribute
-			newAttributes = currentAttributes.map((attr) =>
-				attr.attributeId === attributeId ? { ...attr, value } : attr,
+	const handleUpdateAttributeValue = useCallback(
+		(attributeId: string, value: string) => {
+			const currentAttributes = attributes || [];
+			const existingAttributeIndex = currentAttributes.findIndex(
+				(attr) => attr.attributeId === attributeId,
 			);
-		} else {
-			// Add new attribute
-			newAttributes = [...currentAttributes, { attributeId, value }];
-		}
 
-		onChange(newAttributes);
-	};
+			let newAttributes: ProductAttributeFormData[];
+			if (existingAttributeIndex >= 0) {
+				// Update existing attribute
+				newAttributes = currentAttributes.map((attr) =>
+					attr.attributeId === attributeId ? { ...attr, value } : attr,
+				);
+			} else {
+				// Add new attribute
+				newAttributes = [...currentAttributes, { attributeId, value }];
+			}
+
+			onChange(newAttributes);
+		},
+		[attributes, onChange],
+	);
 
 	// Handle checkbox selection for standardized attributes
 	const handleAttributeValueToggle = (
@@ -169,12 +173,15 @@ export default function ProductAttributesForm({
 		return selectedIds;
 	};
 
-	const handleDeleteAttribute = (attributeId: string) => {
-		const currentAttributes = attributes || [];
-		onChange(
-			currentAttributes.filter((attr) => attr.attributeId !== attributeId),
-		);
-	};
+	const handleDeleteAttribute = useCallback(
+		(attributeId: string) => {
+			const currentAttributes = attributes || [];
+			onChange(
+				currentAttributes.filter((attr) => attr.attributeId !== attributeId),
+			);
+		},
+		[attributes, onChange],
+	);
 
 	// Check if an attribute is out of scope (not in predefined attributes)
 	const isOutOfScopeAttribute = (attributeId: string) => {
@@ -361,7 +368,7 @@ export default function ProductAttributesForm({
 						return (
 							<div
 								key={attributeInfo.id}
-								className="min-w-fit flex-shrink-0 space-y-2"
+								className="min-w-fit shrink-0 space-y-2"
 							>
 								<label
 									htmlFor={`attr-${attributeInfo.id}`}

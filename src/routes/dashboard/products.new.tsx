@@ -1,11 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { toast } from "sonner";
 import { ProductForm } from "~/components/ui/dashboard/ProductForm";
+import { useFormNavigation } from "~/hooks/useFormNavigation";
 import { useProductForm } from "~/hooks/useProductForm";
+import { useProductFormHandlers } from "~/hooks/useProductFormHandlers";
 import { createProduct } from "~/server_functions/dashboard/store/createProduct";
-import type { ProductFormData } from "~/types";
 
 export const Route = createFileRoute("/dashboard/products/new")({
 	component: NewProductPage,
@@ -44,44 +44,11 @@ function NewProductPage() {
 		}
 	};
 
-	const handleTagsChange = (itemId: string, checked: boolean) => {
-		productForm.setFormData((prev) => {
-			const currentTags = prev.tags || [];
-			return {
-				...prev,
-				tags: checked
-					? [...currentTags, itemId]
-					: currentTags.filter((t) => t !== itemId),
-			};
-		});
-	};
-
-	const handleAttributesChange = (
-		attributes: ProductFormData["attributes"],
-	) => {
-		productForm.setFormData((prev) => ({ ...prev, attributes }));
-	};
-
-	// Listen for navigation bar button clicks
-	useEffect(() => {
-		const handleFormAction = (e: Event) => {
-			const customEvent = e as CustomEvent<{ action: string }>;
-			if (customEvent.detail?.action === "cancel") {
-				navigate({ to: "/dashboard" });
-			} else if (customEvent.detail?.action === "submit") {
-				const form = document.getElementById(
-					createProductFormId,
-				) as HTMLFormElement;
-				if (form) {
-					form.requestSubmit();
-				}
-			}
-		};
-
-		window.addEventListener("productFormAction", handleFormAction);
-		return () =>
-			window.removeEventListener("productFormAction", handleFormAction);
-	}, [navigate]);
+	// Use shared handlers and navigation hook to avoid duplication
+	const { handleTagsChange, handleAttributesChange } = useProductFormHandlers(
+		productForm.setFormData,
+	);
+	useFormNavigation(createProductFormId, navigate);
 
 	return (
 		<div className="container mx-auto px-4 py-8">

@@ -17,6 +17,13 @@ export function StoreLocationsSelector({
 	onLocationChange,
 	idPrefix,
 }: StoreLocationsSelectorProps) {
+	// Debug logging
+	console.log(
+		"[StoreLocationsSelector] Selected location IDs:",
+		selectedLocationIds,
+	);
+	console.log("[StoreLocationsSelector] Store locations:", storeLocations);
+
 	// Convert store locations to CheckboxListItem format
 	const checkboxItems: CheckboxListItem[] = storeLocations.map((location) => ({
 		id: location.id,
@@ -30,6 +37,11 @@ export function StoreLocationsSelector({
 			items={checkboxItems}
 			selectedIds={selectedLocationIds}
 			onItemChange={(itemId, checked) => {
+				console.log(
+					"[StoreLocationsSelector] Location change:",
+					itemId,
+					checked,
+				);
 				onLocationChange(itemId as number, checked);
 			}}
 			idPrefix={`${idPrefix}-store-location`}

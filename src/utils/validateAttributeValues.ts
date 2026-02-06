@@ -66,6 +66,33 @@ export async function validateAttributeValues(
 			continue;
 		}
 
+		// For standardized attributes, first check if there are any standardized values defined
+		// If no standardized values exist, treat as free-text (allows migration from old data)
+		try {
+			const availableValues = await db
+				.select()
+				.from(attributeValues)
+				.where(
+					and(
+						eq(attributeValues.attributeId, attributeId),
+						eq(attributeValues.isActive, true),
+					),
+				)
+				.limit(1);
+
+			// If no standardized values are defined, skip validation (treat as free-text)
+			if (availableValues.length === 0) {
+				continue;
+			}
+		} catch (dbError) {
+			// If we can't check for available values, skip validation to avoid blocking
+			console.error(
+				`Error checking available values for attribute ${attr.attributeId}:`,
+				dbError,
+			);
+			continue;
+		}
+
 		// Handle comma-separated values for multi-value attributes
 		const valuesToCheck = attr.value.includes(",")
 			? attr.value

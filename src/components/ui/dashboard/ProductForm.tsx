@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { EnhancedDescriptionField } from "~/components/ui/dashboard/EnhancedDescriptionField";
 import { ImageUpload } from "~/components/ui/dashboard/ImageUpload";
 import ProductAttributesForm from "~/components/ui/dashboard/ProductAttributesForm";
@@ -64,8 +65,25 @@ export function ProductForm({
 	const { data: categories } = useQuery(categoriesQueryOptions());
 	const { data: brands } = useQuery(brandsQueryOptions());
 	const { data: collections } = useQuery(collectionsQueryOptions());
-	// Get store locations from hardcoded data
-	const storeLocations = getAllStoreLocations();
+
+	// Memoize store locations (static data, no need to call on every render)
+	const storeLocations = useMemo(() => getAllStoreLocations(), []);
+
+	// Memoize tag items transformation
+	const tagItems = useMemo(
+		() =>
+			PRODUCT_TAGS.map((tag) => ({
+				id: tag,
+				label: getProductTagName(tag),
+			})),
+		[],
+	);
+
+	// Memoize categories with count (avoid recreating array on every render)
+	const categoriesWithCount = useMemo(
+		() => categories?.map((c) => ({ ...c, count: 0 })),
+		[categories],
+	);
 
 	return (
 		<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -86,10 +104,7 @@ export function ProductForm({
 				{/* Tags Block */}
 				<DrawerSection variant="default" title="Теги">
 					<CheckboxList
-						items={PRODUCT_TAGS.map((tag) => ({
-							id: tag,
-							label: getProductTagName(tag),
-						}))}
+						items={tagItems}
 						selectedIds={formData.tags || []}
 						onItemChange={(itemId, checked) => {
 							onTagsChange(String(itemId), checked);
@@ -115,7 +130,7 @@ export function ProductForm({
 						value={formData.description || ""}
 						onChange={onChange}
 						placeholder="Добавьте описание товара..."
-						className="min-h-[4rem]"
+						className="min-h-16"
 						showPreview={true}
 						showHelp={true}
 						autoClean={false}
@@ -136,7 +151,7 @@ export function ProductForm({
 						onAutoSlugChange={onAutoSlugChange}
 						hasAttemptedSubmit={hasAttemptedSubmit}
 						idPrefix={idPrefix}
-						categories={categories?.map((c) => ({ ...c, count: 0 }))}
+						categories={categoriesWithCount}
 						brands={brands}
 						collections={collections}
 						productId={productId}
@@ -149,7 +164,7 @@ export function ProductForm({
 						value={formData.importantNote || ""}
 						onChange={onChange}
 						placeholder="Добавьте важную заметку с поддержкой Markdown..."
-						className="min-h-[4rem]"
+						className="min-h-16"
 						label=""
 						showPreview={true}
 						showHelp={true}
@@ -163,7 +178,7 @@ export function ProductForm({
 						value={formData.dimensions || ""}
 						onChange={onChange}
 						placeholder="Введите габариты товара..."
-						className="field-sizing-content min-h-[4rem] w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+						className="field-sizing-content min-h-16 w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					/>
 				</DrawerSection>
 			</div>

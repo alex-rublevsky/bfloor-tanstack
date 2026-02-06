@@ -70,7 +70,7 @@ const DashboardFilters = memo(function DashboardFilters({
 	// Desktop: Horizontal row of selects
 	if (!isMobileOrTablet) {
 		return (
-			<div className="flex flex-wrap items-center gap-3 overflow-visible bg-background px-4 py-3">
+			<div className="flex flex-wrap items-center gap-2 overflow-visible bg-background px-4 py-3">
 				{/* Order: Category, Brand, Collection, attribute filters, Store location */}
 				{/* Category Select */}
 				{categories.length > 0 && (

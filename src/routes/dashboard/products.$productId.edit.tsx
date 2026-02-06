@@ -7,13 +7,14 @@ import { ProductForm } from "~/components/ui/dashboard/ProductForm";
 import { DrawerSection } from "~/components/ui/dashboard/ProductFormSection";
 import { Button } from "~/components/ui/shared/Button";
 import { Eye, Trash } from "~/components/ui/shared/Icon";
+import { useFormNavigation } from "~/hooks/useFormNavigation";
 import { useProductForm } from "~/hooks/useProductForm";
+import { useProductFormHandlers } from "~/hooks/useProductFormHandlers";
 import { dispatchDashboardFormStatus } from "~/lib/dashboardFormStatus";
 import { dashboardProductQueryOptions } from "~/lib/queryOptions";
 import { deleteProduct } from "~/server_functions/dashboard/store/deleteProduct";
 import { deleteProductImage } from "~/server_functions/dashboard/store/deleteProductImage";
 import { updateProduct } from "~/server_functions/dashboard/store/updateProduct";
-import type { ProductFormData } from "~/types";
 import { transformProductToFormData } from "~/utils/productFormHelpers";
 
 export const Route = createFileRoute("/dashboard/products/$productId/edit")({
@@ -144,23 +145,10 @@ function EditProductPage() {
 		}
 	};
 
-	const handleTagsChange = (itemId: string, checked: boolean) => {
-		productForm.setFormData((prev) => {
-			const currentTags = prev.tags || [];
-			return {
-				...prev,
-				tags: checked
-					? [...currentTags, itemId]
-					: currentTags.filter((t) => t !== itemId),
-			};
-		});
-	};
-
-	const handleAttributesChange = (
-		attributes: ProductFormData["attributes"],
-	) => {
-		productForm.setFormData((prev) => ({ ...prev, attributes }));
-	};
+	// Use shared handlers to avoid duplication
+	const { handleTagsChange, handleAttributesChange } = useProductFormHandlers(
+		productForm.setFormData,
+	);
 
 	const handleDeleteClick = useCallback(() => {
 		setShowDeleteDialog(true);
@@ -189,26 +177,8 @@ function EditProductPage() {
 		setShowDeleteDialog(false);
 	};
 
-	// Listen for navigation bar button clicks
-	useEffect(() => {
-		const handleFormAction = (e: Event) => {
-			const customEvent = e as CustomEvent<{ action: string }>;
-			if (customEvent.detail?.action === "cancel") {
-				navigate({ to: "/dashboard" });
-			} else if (customEvent.detail?.action === "submit") {
-				const form = document.getElementById(
-					editProductFormId,
-				) as HTMLFormElement;
-				if (form) {
-					form.requestSubmit();
-				}
-			}
-		};
-
-		window.addEventListener("productFormAction", handleFormAction);
-		return () =>
-			window.removeEventListener("productFormAction", handleFormAction);
-	}, [navigate]);
+	// Use shared navigation hook
+	useFormNavigation(editProductFormId, navigate);
 
 	return (
 		<div className="container mx-auto px-4 py-8">

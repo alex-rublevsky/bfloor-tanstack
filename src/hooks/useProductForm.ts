@@ -81,6 +81,14 @@ export function useProductForm({
 	>(initialSelectedStoreLocationIds);
 	const [deletedImages, setDeletedImages] = useState<string[]>([]);
 
+	// Debug logging for store locations
+	useEffect(() => {
+		console.log(
+			"[useProductForm] Store location IDs state:",
+			selectedStoreLocationIds,
+		);
+	}, [selectedStoreLocationIds]);
+
 	// Stable callbacks for slug generation
 	const handleSlugChange = useCallback(
 		(slug: string) => setFormData((prev) => ({ ...prev, slug })),
@@ -224,6 +232,12 @@ export function useProductForm({
 				variations: formData.variations,
 				storeLocationIds: selectedStoreLocationIds,
 			};
+
+			// Debug logging
+			console.log(
+				"[useProductForm] Submitting with store location IDs:",
+				selectedStoreLocationIds,
+			);
 
 			await onSubmit(submissionData);
 			onSuccess?.();

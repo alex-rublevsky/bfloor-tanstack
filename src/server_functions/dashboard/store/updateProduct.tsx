@@ -4,8 +4,8 @@ import { eq, inArray } from "drizzle-orm";
 import { DB } from "~/db";
 import {
 	productAttributeValues,
-	productStoreLocations,
 	products,
+	productStoreLocations,
 	productVariations,
 	variationAttributes,
 } from "~/schema";
@@ -444,6 +444,12 @@ export const updateProduct = createServerFn({ method: "POST" })
 			};
 
 			const handleStoreLocations = async () => {
+				// Debug logging
+				console.log(
+					"[updateProduct] Store location IDs received:",
+					productData.storeLocationIds,
+				);
+
 				// Delete existing connections
 				await db
 					.delete(productStoreLocations)
@@ -456,6 +462,11 @@ export const updateProduct = createServerFn({ method: "POST" })
 						(id): id is number => typeof id === "number" && !Number.isNaN(id),
 					);
 
+					console.log(
+						"[updateProduct] Valid location IDs to insert:",
+						validLocationIds,
+					);
+
 					if (validLocationIds.length > 0) {
 						await db.insert(productStoreLocations).values(
 							validLocationIds.map((locationId) => ({
@@ -465,6 +476,8 @@ export const updateProduct = createServerFn({ method: "POST" })
 							})),
 						);
 					}
+				} else {
+					console.log("[updateProduct] No store location IDs provided");
 				}
 			};
 
