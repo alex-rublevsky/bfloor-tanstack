@@ -11,6 +11,7 @@ export type ActionButtonConfig = {
 	useStatusButton?: boolean;
 	/** Labels for status suffix when useStatusButton is true */
 	statusLabels?: {
+		noChanges?: string;
 		analyzing?: string;
 		success?: string;
 		warning?: string;
@@ -91,6 +92,7 @@ const ACTION_BUTTON_CONFIGS: ActionButtonRouteConfig[] = [
 				variant: "default",
 				useStatusButton: true,
 				statusLabels: {
+					noChanges: "Нет изменений",
 					analyzing: "Сохранение",
 					success: "Готово",
 					warning: "Ошибка",

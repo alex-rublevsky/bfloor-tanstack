@@ -215,8 +215,10 @@ export function ProductBasicInfoFields({
 									target: { name: "brandSlug", value },
 								} as React.ChangeEvent<HTMLSelectElement>);
 							}}
-							placeholder="Выберите бренд"
-							options={brands.map((b) => ({ value: b.slug, label: b.name }))}
+							options={[
+								{ value: "", label: "Без бренда" },
+								...brands.map((b) => ({ value: b.slug, label: b.name })),
+							]}
 						/>
 					</div>
 
@@ -236,11 +238,13 @@ export function ProductBasicInfoFields({
 									target: { name: "collectionSlug", value },
 								} as React.ChangeEvent<HTMLSelectElement>);
 							}}
-							placeholder="Выберите коллекцию"
-							options={collections.map((c) => ({
-								value: c.slug,
-								label: c.name,
-							}))}
+							options={[
+								{ value: "", label: "Без коллекции" },
+								...collections.map((c) => ({
+									value: c.slug,
+									label: c.name,
+								})),
+							]}
 						/>
 					</div>
 				</div>

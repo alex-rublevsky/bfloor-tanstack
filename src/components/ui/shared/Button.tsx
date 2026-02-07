@@ -8,20 +8,26 @@ import { Edit } from "~/components/ui/shared/Icon";
 import { cn } from "~/utils/utils";
 
 /** Status variant: uses project CSS variables; idle = primary (text primary-foreground) */
-const STATUS_BG: Record<"idle" | "analyzing" | "success" | "warning", string> =
-	{
-		idle: "var(--primary)",
-		analyzing: "var(--muted)",
-		success: "color-mix(in oklch, var(--primary) 22%, var(--background))",
-		warning: "color-mix(in oklch, var(--destructive) 18%, var(--background))",
-	};
-const STATUS_FG: Record<"idle" | "analyzing" | "success" | "warning", string> =
-	{
-		idle: "var(--primary-foreground)",
-		analyzing: "var(--foreground)",
-		success: "var(--primary)",
-		warning: "var(--destructive)",
-	};
+const STATUS_BG: Record<
+	"idle" | "noChanges" | "analyzing" | "success" | "warning",
+	string
+> = {
+	idle: "var(--primary)",
+	noChanges: "var(--muted)",
+	analyzing: "var(--muted)",
+	success: "color-mix(in oklch, var(--primary) 22%, var(--background))",
+	warning: "color-mix(in oklch, var(--destructive) 18%, var(--background))",
+};
+const STATUS_FG: Record<
+	"idle" | "noChanges" | "analyzing" | "success" | "warning",
+	string
+> = {
+	idle: "var(--primary-foreground)",
+	noChanges: "var(--muted-foreground)",
+	analyzing: "var(--foreground)",
+	success: "var(--primary)",
+	warning: "var(--destructive)",
+};
 
 // Type definitions for TanStack Router props
 type RouterParams = Record<string, string | number | boolean>;
@@ -45,7 +51,7 @@ const buttonVariants = cva(
 					"bg-discount-badge text-discount-badge-foreground hover:bg-destructive/90",
 
 				outline:
-					"bg-transparent text-foreground border border-black hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground",
+					"bg-background text-foreground border border-border hover:bg-primary hover:text-primary-foreground! hover:[&_span]:!text-primary-foreground active:bg-primary active:text-primary-foreground! active:[&_span]:!text-primary-foreground",
 				accent:
 					"bg-accent text-accent-foreground hover:bg-accent-hover active:bg-accent-hover active:text-accent-foreground",
 				link: "text-primary underline-offset-4 hover:underline active:underline",
@@ -74,7 +80,12 @@ const buttonVariants = cva(
 	},
 );
 
-export type ButtonStatus = "idle" | "analyzing" | "success" | "warning";
+export type ButtonStatus =
+	| "idle"
+	| "noChanges"
+	| "analyzing"
+	| "success"
+	| "warning";
 
 export interface ButtonProps
 	extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -86,6 +97,7 @@ export interface ButtonProps
 	status?: ButtonStatus;
 	/** Labels for status suffix text when variant="status" */
 	statusLabels?: {
+		noChanges?: string;
 		analyzing?: string;
 		success?: string;
 		warning?: string;
@@ -112,20 +124,31 @@ function StatusButtonContent({
 	statusLabels?: ButtonProps["statusLabels"];
 	children: React.ReactNode;
 }) {
+	const noChangesLabel = statusLabels?.noChanges ?? "No changes";
 	const analyzingLabel = statusLabels?.analyzing ?? "Analyzing";
 	const successLabel = statusLabels?.success ?? "Safe";
 	const warningLabel = statusLabels?.warning ?? "Warning";
 
+	const iconTransition = {
+		type: "spring" as const,
+		stiffness: 400,
+		damping: 28,
+		mass: 0.6,
+	};
+	const easeSmooth = [0.25, 0.46, 0.45, 0.94] as const;
+	const colorTransition = { duration: 0.4, ease: easeSmooth };
+	const textTransition = { duration: 0.3, ease: easeSmooth };
+
 	return (
 		<MotionConfig
 			transition={{
-				scale: {
-					duration: 0.6,
+				scale: iconTransition,
+				opacity: { duration: 0.35, ease: easeSmooth },
+				layout: {
 					type: "spring",
-					bounce: 0.3,
+					stiffness: 350,
+					damping: 30,
 				},
-				opacity: { duration: 0.3 },
-				layout: { duration: 0.7, bounce: 0.3, type: "spring" },
 			}}
 		>
 			<motion.div
@@ -143,6 +166,7 @@ function StatusButtonContent({
 					backgroundColor: STATUS_BG[status],
 					color: STATUS_FG[status],
 				}}
+				transition={colorTransition}
 			>
 				{/* Icon slot: same size as default button [&_svg]:size-4 */}
 				<motion.div
@@ -153,18 +177,48 @@ function StatusButtonContent({
 						{status === "idle" ? (
 							<motion.div
 								key="idle"
-								initial={{ scale: 0.5, opacity: 0 }}
+								initial={{ scale: 0.6, opacity: 0 }}
 								animate={{ scale: 1, opacity: 1 }}
-								exit={{ scale: 0.5, opacity: 0 }}
+								exit={{ scale: 0.6, opacity: 0 }}
+								transition={iconTransition}
 							>
 								<Edit size={16} className="block" />
+							</motion.div>
+						) : status === "noChanges" ? (
+							<motion.div
+								key="noChanges"
+								initial={{ scale: 0.6, opacity: 0 }}
+								animate={{ scale: 1, opacity: 1 }}
+								exit={{ scale: 0.6, opacity: 0 }}
+								transition={iconTransition}
+							>
+								<svg
+									aria-hidden
+									style={{
+										height: "1rem",
+										width: "1rem",
+										display: "block",
+									}}
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth={2}
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<title>No changes</title>
+									<circle cx="12" cy="12" r="10" />
+									<path d="M8 12h8" />
+								</svg>
 							</motion.div>
 						) : status === "analyzing" ? (
 							<motion.div
 								key="analyzing"
-								initial={{ scale: 0.5, opacity: 0 }}
+								initial={{ scale: 0.6, opacity: 0 }}
 								animate={{ scale: 1, opacity: 1 }}
-								exit={{ scale: 0.5, opacity: 0 }}
+								exit={{ scale: 0.6, opacity: 0 }}
+								transition={iconTransition}
 							>
 								<svg
 									aria-hidden
@@ -196,9 +250,10 @@ function StatusButtonContent({
 						) : status === "success" ? (
 							<motion.div
 								key="success"
-								initial={{ scale: 0.5, opacity: 0 }}
+								initial={{ scale: 0.6, opacity: 0 }}
 								animate={{ scale: 1, opacity: 1 }}
-								exit={{ scale: 0.5, opacity: 0 }}
+								exit={{ scale: 0.6, opacity: 0 }}
+								transition={iconTransition}
 							>
 								<svg
 									aria-hidden
@@ -225,9 +280,10 @@ function StatusButtonContent({
 						) : status === "warning" ? (
 							<motion.div
 								key="warning"
-								initial={{ scale: 0.5, opacity: 0 }}
+								initial={{ scale: 0.6, opacity: 0 }}
 								animate={{ scale: 1, opacity: 1 }}
-								exit={{ scale: 0.5, opacity: 0 }}
+								exit={{ scale: 0.6, opacity: 0 }}
+								transition={iconTransition}
 							>
 								<motion.div
 									animate={{ x: [0, 4, -4, 2, -2, 0] }}
@@ -274,8 +330,8 @@ function StatusButtonContent({
 						animate={{
 							opacity: status === "analyzing" ? 1 : 0,
 							transition: {
-								duration: status === "analyzing" ? 0.175 : 0.125,
-								delay: status === "analyzing" ? 0.1 : 0,
+								...textTransition,
+								delay: status === "analyzing" ? 0.08 : 0,
 							},
 						}}
 						// @ts-expect-error React doesn't know inert yet
@@ -300,10 +356,11 @@ function StatusButtonContent({
 						className="will-transform"
 						initial={false}
 						animate={{
-							opacity: status === "analyzing" ? 0 : 1,
+							opacity:
+								status === "noChanges" ? 1 : status === "analyzing" ? 0 : 1,
 							transition: {
-								duration: status === "analyzing" ? 0.125 : 0.175,
-								delay: status === "analyzing" ? 0 : 0.1,
+								...textTransition,
+								delay: status === "analyzing" ? 0 : 0.08,
 							},
 						}}
 						// @ts-expect-error React doesn't know inert yet
@@ -311,20 +368,20 @@ function StatusButtonContent({
 						style={{
 							display: "inline-flex",
 							justifyContent: "flex-start",
-							width: status === "analyzing" ? 0 : "auto",
+							width:
+								status === "noChanges"
+									? "auto"
+									: status === "analyzing"
+										? 0
+										: "auto",
 							overflow: "hidden",
 						}}
 					>
 						<motion.span
 							layout="position"
 							className="will-transform inline-block"
-							style={
-								status === "idle"
-									? { color: "var(--primary-foreground)" }
-									: undefined
-							}
 						>
-							{children}
+							{status === "noChanges" ? noChangesLabel : children}
 						</motion.span>
 					</motion.span>
 
@@ -335,7 +392,7 @@ function StatusButtonContent({
 						animate={{
 							opacity: status === "success" ? 1 : 0,
 							transition: {
-								duration: 0.175,
+								...textTransition,
 								delay: status === "success" ? 0.05 : 0,
 							},
 						}}
@@ -363,8 +420,8 @@ function StatusButtonContent({
 						animate={{
 							opacity: status === "warning" ? 1 : 0,
 							transition: {
-								duration: 0.175,
-								delay: status === "warning" ? 0.075 : 0,
+								...textTransition,
+								delay: status === "warning" ? 0.06 : 0,
 							},
 						}}
 						// @ts-expect-error React doesn't know inert yet
@@ -506,8 +563,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 					}),
 					// Status variant: no bg/color from CVA, inner motion.div handles it
 					isStatusVariant && "h-auto min-h-0 border-0 bg-transparent p-0",
-					// Use cursor-not-allowed for disabled buttons, cursor-default for enabled buttons
-					disabled ? "cursor-not-allowed" : "cursor-pointer",
+					// Use cursor-not-allowed for disabled or noChanges (non-actionable) state
+					disabled || (isStatusVariant && status === "noChanges")
+						? "cursor-not-allowed"
+						: "cursor-pointer",
 					// Adjust button styling when description is present - must come after buttonVariants to override
 					hasDescription && "h-auto whitespace-normal px-4 py-3",
 				)}

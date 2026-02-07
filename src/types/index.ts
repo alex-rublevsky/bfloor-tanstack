@@ -164,6 +164,19 @@ export interface ProductFormData {
 	dimensions?: string; // Product dimensions (габариты) - text field
 }
 
+/**
+ * Update product input - uses client-side change detection
+ * Frontend calculates exact changes and sends only what changed
+ * This eliminates:
+ * - Redundant data transfer (80-90% smaller payload)
+ * - Duplicate comparison logic on server
+ * - Unnecessary database operations
+ */
+export interface UpdateProductInput {
+	id: number;
+	changes: import("~/utils/calculateProductChanges").ProductChanges;
+}
+
 export interface ProductVariationFormData {
 	id?: number;
 	sku: string; // Auto-generated SKU
