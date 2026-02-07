@@ -43,15 +43,15 @@ const buttonVariants = cva(
 			variant: {
 				default: "bg-primary text-primary-foreground! hover:bg-primary-hover",
 				secondary:
-					"bg-transparent border border-accent text-secondary-foreground hover:bg-accent active:bg-accent hover:text-accent-foreground",
+					"bg-transparent border border-accent text-secondary-foreground hover:bg-accent active:bg-accent hover:text-accent-foreground hover:[&_svg]:!text-accent-foreground active:[&_svg]:!text-accent-foreground",
 				destructive:
-					"bg-backgorund text-destructive border-[1.5px] border-destructive hover:bg-destructive hover:text-destructive-foreground active:bg-destructive active:text-destructive-foreground",
+					"bg-background text-destructive border-[1.5px] border-destructive hover:bg-destructive hover:text-destructive-foreground! hover:[&_span]:!text-destructive-foreground hover:[&_svg]:!text-destructive-foreground active:bg-destructive active:text-destructive-foreground! active:[&_span]:!text-destructive-foreground active:[&_svg]:!text-destructive-foreground",
 				green:
 					//TODO: update with hover and active styles. create the colors using oklch in css variables.
 					"bg-discount-badge text-discount-badge-foreground hover:bg-destructive/90",
 
 				outline:
-					"bg-background text-foreground border border-border hover:bg-primary hover:text-primary-foreground! hover:[&_span]:!text-primary-foreground active:bg-primary active:text-primary-foreground! active:[&_span]:!text-primary-foreground",
+					"bg-background text-foreground border border-border hover:bg-primary hover:text-primary-foreground! hover:[&_span]:!text-primary-foreground hover:[&_svg]:!text-primary-foreground active:bg-primary active:text-primary-foreground! active:[&_span]:!text-primary-foreground active:[&_svg]:!text-primary-foreground",
 				accent:
 					"bg-accent text-accent-foreground hover:bg-accent-hover active:bg-accent-hover active:text-accent-foreground",
 				link: "text-primary underline-offset-4 hover:underline active:underline",

@@ -235,12 +235,7 @@ function EditProductPage() {
 				</button>
 				{loaderData.product.slug && (
 					<div className="flex items-center gap-2">
-						<Button
-							asChild
-							variant="default"
-							size="sm"
-							className="flex items-center gap-2"
-						>
+						<Button asChild variant="default" size="sm">
 							<Link
 								to="/product/$productId"
 								params={{
@@ -248,7 +243,7 @@ function EditProductPage() {
 								}}
 							>
 								<Eye className="h-4 w-4" />
-								<span>посмотреть на страницу этого товара</span>
+								посмотреть на страницу этого товара
 							</Link>
 						</Button>
 						<Button
@@ -256,10 +251,9 @@ function EditProductPage() {
 							variant="destructive"
 							size="sm"
 							onClick={handleDeleteClick}
-							className="flex items-center gap-2"
 						>
 							<Trash className="h-4 w-4" />
-							<span>Удалить товар</span>
+							Удалить товар
 						</Button>
 					</div>
 				)}

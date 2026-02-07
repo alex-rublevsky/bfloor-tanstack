@@ -1,31 +1,32 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { Toaster } from "~/components/ui/shared/sonner";
 import { userDataQueryOptions } from "~/lib/queryOptions";
+import { getUserData } from "~/utils/auth-server-func";
 import { simpleSearchSchema } from "~/utils/searchSchemas";
 
 export const Route = createFileRoute("/dashboard")({
-	// beforeLoad temporarily disabled for local development access
-	// beforeLoad: async () => {
-	// 	try {
-	// 		const userData = await getUserData();
+	//beforeLoad temporarily disabled for local development access
+	beforeLoad: async () => {
+		try {
+			const userData = await getUserData();
 
-	// 		// Check if user is authenticated and is admin
-	// 		if (!userData.isAuthenticated || !userData.isAdmin) {
-	// 			throw redirect({ to: "/login" });
-	// 		}
+			// Check if user is authenticated and is admin
+			if (!userData.isAuthenticated || !userData.isAdmin) {
+				throw redirect({ to: "/login" });
+			}
 
-	// 		// Ensure we have required user data
-	// 		if (!userData.userID || !userData.userEmail) {
-	// 			throw redirect({ to: "/login" });
-	// 		}
+			// Ensure we have required user data
+			if (!userData.userID || !userData.userEmail) {
+				throw redirect({ to: "/login" });
+			}
 
-	// 		// Return user data in context for the loader to use
-	// 		return { userData };
-	// 	} catch {
-	// 		throw redirect({ to: "/login" });
-	// 	}
-	// },
+			// Return user data in context for the loader to use
+			return { userData };
+		} catch {
+			throw redirect({ to: "/login" });
+		}
+	},
 	// Loader prefetches userData for NavBar and other components
 	loader: async ({ context }) => {
 		const { queryClient } = context;

@@ -44,6 +44,16 @@ export function CheckboxList({
 			{filteredItems.map((item) => {
 				const isChecked = selectedIds.includes(item.id);
 
+				// Debug logging for store locations
+				if (idPrefix.includes("store-location")) {
+					console.log(
+						`[CheckboxList] Item ${item.id} (type: ${typeof item.id}), selectedIds:`,
+						selectedIds,
+						`(types: ${selectedIds.map((id) => typeof id).join(", ")})`,
+						`isChecked: ${isChecked}`,
+					);
+				}
+
 				return (
 					<Checkbox
 						key={item.id}
