@@ -1,4 +1,4 @@
-import type { NavigateFunction } from "@tanstack/react-router";
+import type { UseNavigateResult } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 /**
@@ -7,7 +7,7 @@ import { useEffect } from "react";
  */
 export function useFormNavigation(
 	formId: string,
-	navigate: NavigateFunction,
+	navigate: UseNavigateResult<string>,
 	onCancel?: () => void,
 ) {
 	useEffect(() => {
