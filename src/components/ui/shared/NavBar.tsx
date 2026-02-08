@@ -1107,6 +1107,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 	return (
 		<>
 			<nav
+				data-persist-nav
 				style={{ viewTransitionName: "--persist-nav" }}
 				className={cn(
 					"navbar-scroll-aware border-border border-b",
@@ -1131,7 +1132,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 						{/* Second row: Logo, Catalog, Search, Cart, Dashboard */}
 						<div className="flex items-center gap-4">
 							{/* Logo - fixed width */}
-							<div className="flex-shrink-0">
+							<div className="flex-shrink-0" data-navbar-logo>
 								<Link
 									href="/"
 									className="transition-standard hover:opacity-80"
@@ -1198,7 +1199,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 						{/* Second row: Logo, Catalog, Search, Cart, Dashboard (compact single row) */}
 						<div className="flex items-center gap-2 md:gap-2 lg:gap-4">
 							{/* Logo */}
-							<div className="flex-shrink-0">
+							<div className="flex-shrink-0" data-navbar-logo>
 								<Link
 									href="/"
 									className="transition-standard hover:opacity-80"

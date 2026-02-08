@@ -5,6 +5,7 @@ import { Banner } from "~/components/ui/Banner";
 import AboutSection from "~/components/ui/home/AboutSection";
 import BenefitsSection from "~/components/ui/home/BenefitsSection";
 import TestimonialSliderSection from "~/components/ui/home/testimonial/TestimonialSection";
+import { Logo } from "~/components/ui/shared/Logo";
 import ProductSlider from "~/components/ui/shared/ProductSlider";
 import { PRODUCT_TAGS } from "~/constants/units";
 import {
@@ -48,6 +49,12 @@ function App() {
 
 	return (
 		<>
+			{/* Mobile logo — hidden on md+ where the navbar already shows the logo */}
+			<div className="flex items-center justify-center py-8 md:hidden">
+				<div data-navbar-logo>
+					<Logo className="h-8 w-auto" />
+				</div>
+			</div>
 			<Banner />
 			<ProductSlider mode="tabs" title="Товары по категориям" />
 			<ProductSlider mode="simple" title="Скидки" />

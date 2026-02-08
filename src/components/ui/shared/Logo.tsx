@@ -4,13 +4,19 @@ interface LogoProps {
 	className?: string;
 	width?: number;
 	height?: number;
+	/** When true, omit width/height attributes so the SVG scales purely via CSS */
+	responsive?: boolean;
 }
 
-export function Logo({ className, width = 377, height = 41 }: LogoProps) {
+export function Logo({
+	className,
+	width = 377,
+	height = 41,
+	responsive,
+}: LogoProps) {
 	return (
 		<svg
-			width={width}
-			height={height}
+			{...(responsive ? {} : { width, height })}
 			viewBox="0 0 377 41"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"

@@ -16,6 +16,7 @@ import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary";
 import { NotFound } from "~/components/NotFound";
 import { Footer } from "~/components/ui/shared/Footer";
 import { NavBar } from "~/components/ui/shared/NavBar";
+import { SplashLoader } from "~/components/ui/shared/SplashLoader";
 import { Toaster } from "~/components/ui/shared/sonner";
 import { CartProvider } from "~/lib/cartContext";
 import { ClientSearchProvider } from "~/lib/clientSearchContext";
@@ -144,6 +145,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				style={isStoreCategoryPage ? { height: "100vh" } : undefined}
 				suppressHydrationWarning
 			>
+				<SplashLoader />
 				<NavBar />
 
 				<main className="flex min-h-0 flex-1 flex-col">{children}</main>
