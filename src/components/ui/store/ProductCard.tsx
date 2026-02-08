@@ -307,7 +307,7 @@ const ProductCard = memo(
 												src={`${ASSETS_BASE_URL}/${imageArray[0]}`}
 												alt={product.name}
 												loading="eager"
-												className="absolute inset-0 h-full w-full object-cover object-center"
+												className="vt-image absolute inset-0 h-full w-full object-cover object-center"
 												style={
 													disableViewTransition
 														? undefined
@@ -348,7 +348,7 @@ const ProductCard = memo(
 													src={`${ASSETS_BASE_URL}/${imageArray[1]}`}
 													alt={product.name}
 													loading="eager"
-													className="absolute inset-0 hidden h-full w-full object-cover object-center opacity-0 transition-opacity duration-500 ease-in-out group-hover:opacity-100 md:block"
+													className="vt-image absolute inset-0 hidden h-full w-full object-cover object-center opacity-0 transition-opacity duration-500 ease-in-out group-hover:opacity-100 md:block"
 													style={
 														disableViewTransition
 															? undefined

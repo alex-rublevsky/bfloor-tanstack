@@ -2,7 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
-import { categories } from "~/schema";
+import { categories, products } from "~/schema";
+import { ApiError } from "~/utils/ApiError";
+import { getStorageBucket } from "~/utils/storage";
 
 export const deleteProductCategory = createServerFn({ method: "POST" })
 	.inputValidator((data: { id: number }) => data)
@@ -12,11 +14,8 @@ export const deleteProductCategory = createServerFn({ method: "POST" })
 			const id = data.id;
 
 			if (Number.isNaN(id)) {
-				setResponseStatus(400);
-				throw new Error("Invalid category ID");
+				throw new ApiError("Invalid category ID", 400);
 			}
-
-			// Removed debug log
 
 			// Check if category exists
 			const existingCategory = await db
@@ -26,8 +25,38 @@ export const deleteProductCategory = createServerFn({ method: "POST" })
 				.limit(1);
 
 			if (existingCategory.length === 0) {
-				setResponseStatus(404);
-				throw new Error("Category not found");
+				throw new ApiError("Category not found", 404);
+			}
+
+			// Check if any products are using this category
+			// CRITICAL: categories.slug has onDelete: "cascade" on products,
+			// so deleting a category would silently delete all its products
+			const productsUsingCategory = await db
+				.select({ id: products.id })
+				.from(products)
+				.where(eq(products.categorySlug, existingCategory[0].slug))
+				.limit(1);
+
+			if (productsUsingCategory.length > 0) {
+				throw new ApiError(
+					"Cannot delete category: there are products using this category",
+					409,
+				);
+			}
+
+			// Delete the category image from storage if it exists
+			const categoryImage = existingCategory[0].image;
+			if (categoryImage && !categoryImage.startsWith("staging/")) {
+				try {
+					const bucket = getStorageBucket();
+					await bucket.delete(categoryImage);
+				} catch (deleteError) {
+					console.warn(
+						"Failed to delete category image from storage:",
+						deleteError,
+					);
+					// Don't fail the category deletion if image deletion fails
+				}
 			}
 
 			// Delete the category
@@ -37,8 +66,12 @@ export const deleteProductCategory = createServerFn({ method: "POST" })
 				message: "Category deleted successfully",
 			};
 		} catch (error) {
-			console.error("Error deleting category:", error);
-			setResponseStatus(500);
-			throw new Error("Failed to delete category");
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error deleting category:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
 	});

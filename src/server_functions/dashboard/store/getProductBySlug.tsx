@@ -3,6 +3,7 @@ import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
 import { productStoreLocations, products, productVariations } from "~/schema";
+import { ApiError } from "~/utils/ApiError";
 import {
 	parseProductAttributes,
 	parseVariationAttributes,
@@ -16,8 +17,7 @@ export const getProductBySlug = createServerFn({ method: "GET" })
 			const productId = data.id;
 
 			if (Number.isNaN(productId)) {
-				setResponseStatus(400);
-				throw new Error("Invalid product ID");
+				throw new ApiError("Invalid product ID", 400);
 			}
 
 			// Fetch product
@@ -28,8 +28,7 @@ export const getProductBySlug = createServerFn({ method: "GET" })
 				.limit(1);
 
 			if (!productResult[0]) {
-				setResponseStatus(404);
-				throw new Error("Product not found");
+				throw new ApiError("Product not found", 404);
 			}
 
 			const product = productResult[0];
@@ -104,8 +103,12 @@ export const getProductBySlug = createServerFn({ method: "GET" })
 
 			return productWithDetails;
 		} catch (error) {
-			console.error("Error fetching product:", error);
-			setResponseStatus(500);
-			throw new Error("Failed to fetch product");
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error fetching product:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
 	});

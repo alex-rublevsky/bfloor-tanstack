@@ -12,12 +12,13 @@ function RouteComponent() {
 			<div className="mb-6 flex flex-wrap gap-4">
 				<Image
 					src={`${ASSETS_BASE_URL}/banners/bubisha.webp`}
-					className="h-full max-h-120 w-full rounded-lg sm:w-auto sm:max-w-xs sm:shrink-0 md:max-w-sm lg:max-w-md"
+					className="vt-image h-full max-h-120 w-full rounded-lg sm:w-auto sm:max-w-xs sm:shrink-0 md:max-w-sm lg:max-w-md"
 					alt="О компании"
+					style={{ viewTransitionName: "about-image" }}
 				/>
 
 				<div className="flex min-w-0 max-w-[65ch] flex-1 flex-col gap-4 sm:min-w-[45ch]">
-					<h1>О компании</h1>
+					<h1 style={{ viewTransitionName: "about-title" }}>О компании</h1>
 					<p>
 						У нас большой выбор напольных покрытий, для домов, офисов,
 						спортивных площадок и других мест отдыха. Мы предоставляем не только

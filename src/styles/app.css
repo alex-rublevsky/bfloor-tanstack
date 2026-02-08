@@ -823,21 +823,33 @@ section.no-padding > h2 {
 	}
 }
 
-/* View Transition Animations */
-.product-info-enter {
-	animation: slide-in-up 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
-}
+/* ============================================================================
+   VIEW TRANSITIONS
+   ============================================================================
+   Organized by transition type for maintainability.
+   
+   Naming Convention:
+   - product-image-{slug}     : Product images (store cards, dashboard, detail pages)
+   - product-name-{slug}      : Product names
+   - product-price-{slug}     : Product prices
+   - product-info-container   : Product detail page info card
+   - gallery-thumb-{slug}-{i} : Gallery thumbnails
+   - --persist-nav            : Persistent navigation bars
+   - --persist-bottom-nav     : Persistent bottom navigation
+   
+   CSS Variables for consistency:
+   --vt-duration: 0.5s
+   --vt-easing: cubic-bezier(0.4, 0, 0.2, 1)
+   ============================================================================ */
 
-@keyframes slide-in-up {
-	from {
-		transform: translateY(60px);
-		opacity: 0;
-	}
+:root {
+	/* Page fade timing (root element background cross-fade) */
+	--vt-page-duration: 0.34s;
+	--vt-page-easing: cubic-bezier(0.4, 0, 0.2, 1);
 
-	to {
-		transform: translateY(0);
-		opacity: 1;
-	}
+	/* Element morph timing (images/text flying between pages) */
+	--vt-element-duration: 0.34s;
+	--vt-element-easing: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Fade-in animation - single keyframe, easing applied when used */
@@ -849,91 +861,118 @@ section.no-padding > h2 {
 		opacity: 1;
 	}
 }
+
+@keyframes slide-in-up {
+	from {
+		transform: translateY(60px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+/* ----------------------------------------------------------------------------
+   Base View Transition Configuration
+   ---------------------------------------------------------------------------- */
 ::view-transition {
 	navigation: auto;
-	/* View transition layer must be below product info overlay (z-index: 9999) */
-	/* Set to a lower value to ensure product info stays on top */
-	z-index: 100;
-	/* Ensure proper stacking context for all view transition groups */
+	z-index: 100; /* Below product info overlay (z-index: 9999) */
 	isolation: isolate;
 }
 
-/* View transition for elements that actually transition */
-/* Remove root animation disabling to allow view transitions to work */
-::view-transition-old(root),
-::view-transition-new(root) {
-	animation-duration: 0.5s;
-	animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+/* Page fade timing - controls the cross-fade of the root/background */
+::view-transition-group(root) {
+	animation-duration: var(--vt-page-duration);
+	animation-timing-function: var(--vt-page-easing);
 }
 
-/* Smoother, slower transitions for product images */
-/* Synced with product-info-container duration for coordinated animation */
-::view-transition-old(product-image),
-::view-transition-new(product-image) {
-	animation-duration: 0.5s;
-	animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+/* Element morph timing - controls position/size morphing for all named elements */
+/* The ::view-transition-group() controls the movement/morphing animation */
+::view-transition-group(*) {
+	animation-duration: var(--vt-element-duration);
+	animation-timing-function: var(--vt-element-easing);
 }
 
-/* Specific smooth easing for image transitions */
-::view-transition-old(*),
-::view-transition-new(*) {
-	animation-duration: 0.5s;
-	animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* ----------------------------------------------------------------------------
+   Product Images (with rounded corners)
+   ---------------------------------------------------------------------------- */
+/* 
+   Strategy: Hide old snapshot, show only new (live) element.
+   This allows CSS transitions on the element itself to handle border-radius smoothly.
+   Reference: https://www.bram.us/2025/05/15/view-transitions-border-radius-revisited/
+*/
 
-/* Control z-index stacking during view transitions */
-/* Ensure product images stay below the product info card */
-/* Product info has z-index: 9999, so view transition must stay below */
 ::view-transition-group(product-image) {
-	/* Explicitly set lower z-index to stay below product info */
-	z-index: 0;
-	/* Create stacking context */
+	z-index: 0; /* Stay below product info */
 	isolation: isolate;
-	/* Ensure it respects the parent view-transition z-index */
 	position: relative;
 }
 
-::view-transition-old(product-image),
+::view-transition-old(product-image) {
+	display: none; /* Hide old snapshot to prevent border-radius fade */
+}
+
 ::view-transition-new(product-image) {
-	/* Keep images at lower z-index during entire transition */
+	animation: none; /* Let the live element's CSS transition handle the animation */
+	width: 100%;
+	height: 100%;
 	z-index: 0;
-	/* Ensure they don't overlap the product info */
 	contain: layout style paint;
-	/* Force lower stacking order */
 	position: relative;
 }
 
-/* Product info container view transition rules */
-/* The key is to NOT preserve the blur - let it fade naturally with opacity */
-
-/* Ensure product info overlay stays above view transitions */
+/* ----------------------------------------------------------------------------
+   Product Info Container (detail page overlay)
+   ---------------------------------------------------------------------------- */
 ::view-transition-group(product-info-container) {
 	z-index: 100;
-	/* Ensure it's always on top */
 	isolation: isolate;
 }
 
-/* Preserve only structural properties, NOT the blur */
-/* The blur will fade naturally as the element fades in/out */
 ::view-transition-old(product-info-container),
 ::view-transition-new(product-info-container) {
-	/* Preserve rounded corners */
 	border-radius: 0.5rem;
-	/* Sync animation timing */
-	animation-duration: 0.5s;
-	animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-	/* Maintain z-index */
+	animation-duration: var(--vt-duration);
+	animation-timing-function: var(--vt-easing);
 	z-index: 100;
-	/* Prevent overflow for clean corners */
 	overflow: hidden;
-	/* Let the blur fade naturally - don't force it */
-	/* The browser will capture the element's actual state including blur */
 }
 
-/* Persisted navbars should always stay above view transition layer */
+/* ----------------------------------------------------------------------------
+   Product Names & Prices
+   ---------------------------------------------------------------------------- */
+/* Use default animation timing - no special handling needed */
+
+/* ----------------------------------------------------------------------------
+   Gallery Thumbnails
+   ---------------------------------------------------------------------------- */
+/* Use default animation timing - no special handling needed */
+
+/* ----------------------------------------------------------------------------
+   Persistent Navigation Bars
+   ---------------------------------------------------------------------------- */
 ::view-transition-group(--persist-nav),
 ::view-transition-group(--persist-bottom-nav) {
-	z-index: 10001;
+	z-index: 10001; /* Always on top */
+}
+
+/* ----------------------------------------------------------------------------
+   Utility Classes for Elements with View Transitions
+   ---------------------------------------------------------------------------- */
+/* 
+   Apply to elements that have viewTransitionName and need smooth property transitions.
+   These ensure properties like border-radius animate smoothly during view transitions.
+*/
+.vt-image {
+	/* Sync transition duration with view transition */
+	transition: border-radius var(--vt-element-duration) var(--vt-element-easing);
+}
+
+.product-info-enter {
+	animation: slide-in-up var(--vt-duration) cubic-bezier(0.215, 0.61, 0.355, 1)
+		forwards;
 }
 
 /* Enable text selection in drawer content */

@@ -428,7 +428,7 @@ function RouteComponent() {
 								<img
 									src={`${ASSETS_BASE_URL}/${primaryImage}`}
 									alt={product.name}
-									className="h-full w-full object-cover"
+									className="vt-image h-full w-full rounded-md object-cover"
 									style={{
 										viewTransitionName: `product-image-${product.slug}`,
 									}}

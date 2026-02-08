@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
-import { brands, products } from "~/schema";
+import { brands, collections, products } from "~/schema";
+import { ApiError } from "~/utils/ApiError";
 import { getStorageBucket } from "~/utils/storage";
 
 export const deleteBrand = createServerFn({ method: "POST" })
@@ -20,8 +21,7 @@ export const deleteBrand = createServerFn({ method: "POST" })
 				.limit(1);
 
 			if (existingBrand.length === 0) {
-				setResponseStatus(404);
-				throw new Error("Brand not found");
+				throw new ApiError("Brand not found", 404);
 			}
 
 			// Check if any products are using this brand
@@ -32,9 +32,24 @@ export const deleteBrand = createServerFn({ method: "POST" })
 				.limit(1);
 
 			if (productsUsingBrand.length > 0) {
-				setResponseStatus(409);
-				throw new Error(
+				throw new ApiError(
 					"Cannot delete brand: there are products using this brand",
+					409,
+				);
+			}
+
+			// Check if any collections belong to this brand
+			// collections.brandSlug has onDelete: "cascade", so they'd be silently deleted
+			const collectionsUsingBrand = await db
+				.select({ id: collections.id })
+				.from(collections)
+				.where(eq(collections.brandSlug, existingBrand[0].slug))
+				.limit(1);
+
+			if (collectionsUsingBrand.length > 0) {
+				throw new ApiError(
+					"Cannot delete brand: there are collections belonging to this brand",
+					409,
 				);
 			}
 
@@ -67,8 +82,12 @@ export const deleteBrand = createServerFn({ method: "POST" })
 				message: "Brand deleted successfully",
 			};
 		} catch (error) {
-			console.error("Error deleting brand:", error);
-			setResponseStatus(500);
-			throw new Error("Failed to delete brand");
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error deleting brand:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
 	});

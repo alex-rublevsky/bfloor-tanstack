@@ -35,7 +35,7 @@ export function generateVariationSKU(
 	for (const attr of sortedAttributes) {
 		// Find the attribute definition to get the slug
 		const attrDef = attributeDefinitions.find(
-			(def) => def.name === attr.attributeId,
+			(def) => def.id.toString() === attr.attributeId,
 		);
 		const attributeSlug =
 			attrDef?.slug || attr.attributeId.toLowerCase().replace(/_/g, "-");

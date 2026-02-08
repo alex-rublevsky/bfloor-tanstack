@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { DB } from "~/db";
 import { brands } from "~/schema";
 import type { BrandFormData } from "~/types";
+import { ApiError } from "~/utils/ApiError";
 import { getStorageBucket } from "~/utils/storage";
 import { moveStagingImagesWithBucket } from "../store/moveStagingImages";
 
@@ -15,8 +16,10 @@ export const createBrand = createServerFn({ method: "POST" })
 			const brandData = data;
 
 			if (!brandData.name || !brandData.slug) {
-				setResponseStatus(400);
-				throw new Error("Missing required fields: name and slug are required");
+				throw new ApiError(
+					"Missing required fields: name and slug are required",
+					400,
+				);
 			}
 
 			// Check for duplicate slug
@@ -27,8 +30,7 @@ export const createBrand = createServerFn({ method: "POST" })
 				.limit(1);
 
 			if (existingBrand.length > 0) {
-				setResponseStatus(409);
-				throw new Error("A brand with this slug already exists");
+				throw new ApiError("A brand with this slug already exists", 409);
 			}
 
 			// Move staging images to final location before saving (in same request)
@@ -69,8 +71,12 @@ export const createBrand = createServerFn({ method: "POST" })
 				brand: insertResult[0],
 			};
 		} catch (error) {
-			console.error("Error creating brand:", error);
-			setResponseStatus(500);
-			throw new Error("Failed to create brand");
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error creating brand:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
 	});

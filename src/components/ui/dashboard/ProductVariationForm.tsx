@@ -42,8 +42,11 @@ interface ProductVariationFormProps {
 	variations: Variation[];
 	productSlug: string;
 	selectedAttributes: string[]; // Array of selected attribute IDs
-	onChange: (variations: Variation[]) => void;
+	onChange: (update: VariationUpdater) => void;
 }
+
+// Helper type for functional state updates
+type VariationUpdater = Variation[] | ((prev: Variation[]) => Variation[]);
 
 // Sortable variation item component
 function SortableVariationItem({
@@ -54,7 +57,6 @@ function SortableVariationItem({
 	productAttributes,
 	attributeMap,
 	productSlug,
-	variations,
 	onChange,
 	allAttributeValues,
 }: {
@@ -69,8 +71,7 @@ function SortableVariationItem({
 	productAttributes: ProductAttribute[];
 	attributeMap: Map<string, ProductAttribute>;
 	productSlug: string;
-	variations: Variation[];
-	onChange: (variations: Variation[]) => void;
+	onChange: (update: VariationUpdater) => void;
 	allAttributeValues?: Record<number, AttributeValue[]>;
 }) {
 	const {
@@ -87,36 +88,39 @@ function SortableVariationItem({
 		transition,
 	};
 
-	const handleAttributeValueChange = (attributeId: string, value: string) => {
-		const newAttributeValues = {
-			...variation.attributeValues,
-			[attributeId]: value,
-		};
-
-		// Generate new SKU based on updated attribute values
-		const attributeArray = selectedAttributes.map((attrId) => ({
-			attributeId: attrId,
-			value: newAttributeValues[attrId] || "",
-		}));
-
-		const newSKU = generateVariationSKU(
-			productSlug,
-			attributeArray,
-			productAttributes,
+	// Core helper: updates this variation using a functional updater so we
+	// always read from the latest state, never from potentially stale props.
+	const updateVariation = (
+		computeUpdates: (current: Variation) => Partial<Variation>,
+	) => {
+		onChange((prevVariations) =>
+			prevVariations.map((v) => {
+				if (v.id !== variation.id) return v;
+				return { ...v, ...computeUpdates(v) };
+			}),
 		);
+	};
 
-		// Update only the specific variation instead of mapping all variations
-		// Find index first to avoid unnecessary array operations
-		const variationIndex = variations.findIndex((v) => v.id === variation.id);
-		if (variationIndex === -1) return;
+	const handleAttributeValueChange = (attributeId: string, value: string) => {
+		updateVariation((current) => {
+			const newAttributeValues = {
+				...current.attributeValues,
+				[attributeId]: value,
+			};
 
-		const newVariations = [...variations];
-		newVariations[variationIndex] = {
-			...variations[variationIndex],
-			attributeValues: newAttributeValues,
-			sku: newSKU,
-		};
-		onChange(newVariations);
+			const attributeArray = selectedAttributes.map((attrId) => ({
+				attributeId: attrId,
+				value: newAttributeValues[attrId] || "",
+			}));
+
+			const newSKU = generateVariationSKU(
+				productSlug,
+				attributeArray,
+				productAttributes,
+			);
+
+			return { attributeValues: newAttributeValues, sku: newSKU };
+		});
 	};
 
 	const handleStandardizedValueToggle = (
@@ -131,28 +135,46 @@ function SortableVariationItem({
 		);
 		if (!selectedValue) return;
 
-		const currentValue = variation.attributeValues[attributeId] || "";
-		const currentValues = currentValue
-			? currentValue
-					.split(",")
-					.map((v) => v.trim())
-					.filter(Boolean)
-			: [];
+		updateVariation((current) => {
+			const currentValue = current.attributeValues[attributeId] || "";
+			const currentValues = currentValue
+				? currentValue
+						.split(",")
+						.map((v) => v.trim())
+						.filter(Boolean)
+				: [];
 
-		let newValue = "";
-		if (allowMultiple) {
-			let nextValues = currentValues;
-			if (checked && !currentValues.includes(selectedValue.value)) {
-				nextValues = [...currentValues, selectedValue.value];
-			} else if (!checked) {
-				nextValues = currentValues.filter((v) => v !== selectedValue.value);
+			let newValue = "";
+			if (allowMultiple) {
+				let nextValues = currentValues;
+				if (checked && !currentValues.includes(selectedValue.value)) {
+					nextValues = [...currentValues, selectedValue.value];
+				} else if (!checked) {
+					nextValues = currentValues.filter((v) => v !== selectedValue.value);
+				}
+				newValue = nextValues.join(",");
+			} else {
+				newValue = checked ? selectedValue.value : "";
 			}
-			newValue = nextValues.join(",");
-		} else {
-			newValue = checked ? selectedValue.value : "";
-		}
 
-		handleAttributeValueChange(attributeId, newValue);
+			const newAttributeValues = {
+				...current.attributeValues,
+				[attributeId]: newValue,
+			};
+
+			const attributeArray = selectedAttributes.map((attrId) => ({
+				attributeId: attrId,
+				value: newAttributeValues[attrId] || "",
+			}));
+
+			const newSKU = generateVariationSKU(
+				productSlug,
+				attributeArray,
+				productAttributes,
+			);
+
+			return { attributeValues: newAttributeValues, sku: newSKU };
+		});
 	};
 
 	return (
@@ -364,17 +386,14 @@ export default function ProductVariationForm({
 		const { active, over } = event;
 
 		if (over && active.id !== over.id) {
-			const oldIndex = variations.findIndex((item) => item.id === active.id);
-			const newIndex = variations.findIndex((item) => item.id === over.id);
-
-			const newVariations = arrayMove(variations, oldIndex, newIndex).map(
-				(item, index) => ({
+			onChange((prev) => {
+				const oldIndex = prev.findIndex((item) => item.id === active.id);
+				const newIndex = prev.findIndex((item) => item.id === over.id);
+				return arrayMove(prev, oldIndex, newIndex).map((item, index) => ({
 					...item,
 					sort: index,
-				}),
-			);
-
-			onChange(newVariations);
+				}));
+			});
 		}
 	};
 
@@ -390,14 +409,14 @@ export default function ProductVariationForm({
 			sku: generateVariationSKU(productSlug, attributeArray, attributes || []),
 			price: 0,
 			discount: null,
-			sort: variations.length,
+			sort: 0,
 			attributeValues: {}, // Empty attribute values initially
 		};
-		onChange([...variations, newVariation]);
+		onChange((prev) => [...prev, { ...newVariation, sort: prev.length }]);
 	};
 
 	const handleRemoveVariation = (id: string) => {
-		onChange(variations.filter((variation) => variation.id !== id));
+		onChange((prev) => prev.filter((variation) => variation.id !== id));
 	};
 
 	const handleUpdateVariation = (
@@ -405,8 +424,8 @@ export default function ProductVariationForm({
 		field: keyof Variation,
 		value: string | number | null | Record<string, string>,
 	) => {
-		onChange(
-			variations.map((variation) =>
+		onChange((prev) =>
+			prev.map((variation) =>
 				variation.id === id ? { ...variation, [field]: value } : variation,
 			),
 		);
@@ -461,7 +480,6 @@ export default function ProductVariationForm({
 									productAttributes={attributes || []}
 									attributeMap={attributeMap}
 									productSlug={productSlug}
-									variations={variations}
 									onChange={onChange}
 									allAttributeValues={allAttributeValues}
 								/>

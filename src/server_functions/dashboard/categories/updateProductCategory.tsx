@@ -2,8 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
-import { categories } from "~/schema";
+import { categories, products } from "~/schema";
 import type { CategoryFormData } from "~/types";
+import { ApiError } from "~/utils/ApiError";
 import { getStorageBucket } from "~/utils/storage";
 import { moveStagingImagesWithBucket } from "../store/moveStagingImages";
 
@@ -15,13 +16,14 @@ export const updateProductCategory = createServerFn({ method: "POST" })
 			const { id, data: categoryData } = data;
 
 			if (Number.isNaN(id)) {
-				setResponseStatus(400);
-				throw new Error("Invalid category ID");
+				throw new ApiError("Invalid category ID", 400);
 			}
 
 			if (!categoryData.name || !categoryData.slug) {
-				setResponseStatus(400);
-				throw new Error("Missing required fields: name and slug are required");
+				throw new ApiError(
+					"Missing required fields: name and slug are required",
+					400,
+				);
 			}
 
 			// Check if category exists
@@ -32,8 +34,7 @@ export const updateProductCategory = createServerFn({ method: "POST" })
 				.limit(1);
 
 			if (existingCategory.length === 0) {
-				setResponseStatus(404);
-				throw new Error("Category not found");
+				throw new ApiError("Category not found", 404);
 			}
 
 			// If slug is being changed, check for duplicate
@@ -45,8 +46,7 @@ export const updateProductCategory = createServerFn({ method: "POST" })
 					.limit(1);
 
 				if (duplicateCheck.length > 0) {
-					setResponseStatus(409);
-					throw new Error("A category with this slug already exists");
+					throw new ApiError("A category with this slug already exists", 409);
 				}
 			}
 
@@ -71,27 +71,52 @@ export const updateProductCategory = createServerFn({ method: "POST" })
 				}
 			}
 
-			// Update the category
-			const updateResult = await db
-				.update(categories)
-				.set({
-					name: categoryData.name,
-					slug: categoryData.slug,
-					parentSlug: categoryData.parentSlug || null,
-					image: finalImage || null,
-					isActive: categoryData.isActive ?? true,
-					order: categoryData.order ?? 0,
-				})
-				.where(eq(categories.id, id))
-				.returning();
+			const oldSlug = existingCategory[0].slug;
+			const slugChanged = oldSlug !== categoryData.slug;
+
+			// Update category + propagate slug changes in a single transaction
+			const updateResult = await db.transaction(async (tx) => {
+				const result = await tx
+					.update(categories)
+					.set({
+						name: categoryData.name,
+						slug: categoryData.slug,
+						parentSlug: categoryData.parentSlug || null,
+						image: finalImage || null,
+						isActive: categoryData.isActive ?? true,
+						order: categoryData.order ?? 0,
+					})
+					.where(eq(categories.id, id))
+					.returning();
+
+				// Propagate slug change to products
+				if (slugChanged) {
+					await tx
+						.update(products)
+						.set({ categorySlug: categoryData.slug })
+						.where(eq(products.categorySlug, oldSlug));
+
+					// Also update any child categories referencing this slug as parentSlug
+					await tx
+						.update(categories)
+						.set({ parentSlug: categoryData.slug })
+						.where(eq(categories.parentSlug, oldSlug));
+				}
+
+				return result;
+			});
 
 			return {
 				message: "Category updated successfully",
 				category: updateResult[0],
 			};
 		} catch (error) {
-			console.error("Error updating category:", error);
-			setResponseStatus(500);
-			throw new Error("Failed to update category");
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error updating category:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
 	});

@@ -2,7 +2,17 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq, inArray } from "drizzle-orm";
 import { DB } from "~/db";
-import { products, productVariations, variationAttributes } from "~/schema";
+import {
+	orderItems,
+	productAttributeValues,
+	productBrands,
+	productCollections,
+	productStoreLocations,
+	products,
+	productVariations,
+	variationAttributes,
+} from "~/schema";
+import { ApiError } from "~/utils/ApiError";
 import { getStorageBucket } from "~/utils/storage";
 import { getProductImageStorageKey } from "./moveStagingImages";
 
@@ -14,8 +24,7 @@ export const deleteProduct = createServerFn({ method: "POST" })
 			const productId = data.id;
 
 			if (Number.isNaN(productId)) {
-				setResponseStatus(400);
-				throw new Error("Invalid product ID");
+				throw new ApiError("Invalid product ID", 400);
 			}
 
 			// Check if product exists
@@ -26,19 +35,31 @@ export const deleteProduct = createServerFn({ method: "POST" })
 				.limit(1);
 
 			if (!existingProduct[0]) {
-				setResponseStatus(404);
-				throw new Error("Product not found");
+				throw new ApiError("Product not found", 404);
 			}
 
-			// Delete images from R2 if they exist
+			// Check if product has been ordered — refuse to delete to preserve order history
+			// orderItems.productId has onDelete: "cascade", so deleting would destroy orders
+			const existingOrderItems = await db
+				.select({ id: orderItems.id })
+				.from(orderItems)
+				.where(eq(orderItems.productId, productId))
+				.limit(1);
+
+			if (existingOrderItems.length > 0) {
+				throw new ApiError(
+					"Cannot delete product: it has existing orders. Deactivate it instead.",
+					409,
+				);
+			}
+
+			// === Delete images from storage (outside transaction — storage I/O) ===
 			if (existingProduct[0].images) {
 				try {
 					let imageArray: string[] = [];
 					try {
-						// Try to parse as JSON
 						imageArray = JSON.parse(existingProduct[0].images);
 					} catch {
-						// If it's not JSON, treat it as comma-separated string
 						imageArray = existingProduct[0].images
 							.split(",")
 							.map((img) => img.trim())
@@ -47,56 +68,74 @@ export const deleteProduct = createServerFn({ method: "POST" })
 
 					if (imageArray.length > 0) {
 						const bucket = getStorageBucket();
-						// Delete all images associated with this product (storage key is under images/)
-						await Promise.all(
+						await Promise.allSettled(
 							imageArray.map(async (imagePath) => {
 								try {
 									const storageKey = getProductImageStorageKey(imagePath);
 									await bucket.delete(storageKey);
 								} catch (error) {
-									// Log but don't fail if image deletion fails
 									console.warn(`Failed to delete image ${imagePath}:`, error);
 								}
 							}),
 						);
 					}
 				} catch (error) {
-					// Log but don't fail if image deletion fails
-					console.warn("Failed to delete images from R2:", error);
+					console.warn("Failed to delete images from storage:", error);
 				}
 			}
 
-			// Delete related data first (foreign key constraints)
-
-			// Get all variation IDs for this product
-			const existingVariations = await db
-				.select({ id: productVariations.id })
-				.from(productVariations)
-				.where(eq(productVariations.productId, productId));
-
-			const variationIds = existingVariations.map((variation) => variation.id);
-
-			// Delete variation attributes in a single query
-			if (variationIds.length > 0) {
-				await db
-					.delete(variationAttributes)
-					.where(inArray(variationAttributes.productVariationId, variationIds));
-
-				// Delete variations
-				await db
-					.delete(productVariations)
+			// === All DB deletes in a single transaction ===
+			await db.transaction(async (tx) => {
+				// Get variation IDs for cleanup
+				const existingVariations = await tx
+					.select({ id: productVariations.id })
+					.from(productVariations)
 					.where(eq(productVariations.productId, productId));
-			}
 
-			// Finally delete the product
-			await db.delete(products).where(eq(products.id, productId));
+				const variationIds = existingVariations.map((v) => v.id);
+
+				// Delete variation attributes + variations
+				if (variationIds.length > 0) {
+					await tx
+						.delete(variationAttributes)
+						.where(
+							inArray(variationAttributes.productVariationId, variationIds),
+						);
+					await tx
+						.delete(productVariations)
+						.where(eq(productVariations.productId, productId));
+				}
+
+				// Delete all junction table entries
+				await Promise.all([
+					tx
+						.delete(productBrands)
+						.where(eq(productBrands.productId, productId)),
+					tx
+						.delete(productCollections)
+						.where(eq(productCollections.productId, productId)),
+					tx
+						.delete(productStoreLocations)
+						.where(eq(productStoreLocations.productId, productId)),
+					tx
+						.delete(productAttributeValues)
+						.where(eq(productAttributeValues.productId, productId)),
+				]);
+
+				// Finally delete the product itself
+				await tx.delete(products).where(eq(products.id, productId));
+			});
 
 			return {
 				message: "Product deleted successfully",
 			};
 		} catch (error) {
-			console.error("Error deleting product:", error);
-			setResponseStatus(500);
-			throw new Error("Failed to delete product");
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error deleting product:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
 	});

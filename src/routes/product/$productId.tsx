@@ -946,10 +946,10 @@ function ProductPage() {
 
 										{/* Product Title */}
 										<div>
-											<h1 className="">
+											<h1 className="text-2xl! leading-[1.1]">
 												{productWithDetails?.name || "Product"}
 											</h1>
-											<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+											<div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-sm">
 												{/* Brand Logo/Name */}
 												{productWithDetails?.brand && (
 													<Link
@@ -1441,7 +1441,9 @@ function ProductPage() {
 
 								{/* Product Title */}
 								<div>
-									<h1 className="">{productWithDetails?.name || "Product"}</h1>
+									<h1 className="text-2xl! leading-[1.1]">
+										{productWithDetails?.name || "Product"}
+									</h1>
 									<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-gray-600 text-sm">
 										{/* Brand Logo/Name */}
 										{productWithDetails?.brand && (

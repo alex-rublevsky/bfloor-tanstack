@@ -150,7 +150,7 @@ export default function ImageGallery({
 									width={3000}
 									height={3000}
 									loading="eager"
-									className="block h-full w-auto rounded-none object-contain object-center"
+									className="vt-image block h-full w-auto rounded-none object-contain object-center"
 									style={{ viewTransitionName: transitionName }}
 								/>
 							</div>
@@ -167,7 +167,7 @@ export default function ImageGallery({
 							width={3000}
 							height={3000}
 							loading="eager"
-							className={`${mainImageVariants({ size })} block`}
+							className={`vt-image ${mainImageVariants({ size })} block`}
 							style={{ viewTransitionName: transitionName }}
 						/>
 					</div>
@@ -181,7 +181,7 @@ export default function ImageGallery({
 			{/* Desktop: Full-width carousel */}
 			<div className="relative hidden w-full lg:block">
 				<div
-					className="h-[70vh] min-h-[500px] w-full overflow-hidden"
+					className="h-[70vh] min-h-[500px] w-full cursor-grab overflow-hidden active:cursor-grabbing"
 					ref={emblaMainRef}
 				>
 					<div className="flex h-full touch-pan-y touch-pinch-zoom gap-0">
@@ -196,7 +196,7 @@ export default function ImageGallery({
 									width={3000}
 									height={3000}
 									loading={index === 0 ? "eager" : "lazy"}
-									className="block h-full w-auto rounded-none object-contain object-center"
+									className="vt-image block h-full w-auto rounded-none object-contain object-center"
 									style={{
 										viewTransitionName:
 											index === initialImageIndex ? transitionName : undefined,
@@ -240,7 +240,7 @@ export default function ImageGallery({
 											alt={`${alt} main image ${index + 1}`}
 											width={3000}
 											height={3000}
-											className={mainImageVariants({ size })}
+											className={`vt-image ${mainImageVariants({ size })}`}
 											style={{
 												maxHeight: "100%",
 												width: "auto",

@@ -3,6 +3,7 @@ import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
 import { collections } from "~/schema";
+import { ApiError } from "~/utils/ApiError";
 
 interface CollectionFormData {
 	name: string;
@@ -23,9 +24,9 @@ export const createCollection = createServerFn({ method: "POST" })
 				!collectionData.slug ||
 				!collectionData.brandSlug
 			) {
-				setResponseStatus(400);
-				throw new Error(
+				throw new ApiError(
 					"Missing required fields: name, slug, and brandSlug are required",
+					400,
 				);
 			}
 
@@ -37,8 +38,7 @@ export const createCollection = createServerFn({ method: "POST" })
 				.limit(1);
 
 			if (duplicateSlug[0]) {
-				setResponseStatus(400);
-				throw new Error("A collection with this slug already exists");
+				throw new ApiError("A collection with this slug already exists", 409);
 			}
 
 			// Insert collection
@@ -57,8 +57,12 @@ export const createCollection = createServerFn({ method: "POST" })
 				collection: insertedCollections[0],
 			};
 		} catch (error) {
-			console.error("Error creating collection:", error);
-			setResponseStatus(500);
-			throw new Error("Failed to create collection");
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error creating collection:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
 	});

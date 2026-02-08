@@ -127,7 +127,7 @@ function StoreCatalogPage() {
 															<img
 																src={`${ASSETS_BASE_URL}/${imagePath}`}
 																alt={category.name}
-																className="absolute inset-0 h-full w-full object-cover object-center transition-standard"
+																className="vt-image absolute inset-0 h-full w-full object-cover object-center transition-standard"
 																style={{
 																	viewTransitionName: entry?.productSlug
 																		? `product-image-${entry.productSlug}`

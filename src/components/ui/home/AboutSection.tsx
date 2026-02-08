@@ -9,11 +9,12 @@ function AboutSection() {
 				<Image
 					src={`${ASSETS_BASE_URL}/banners/bubisha.webp`}
 					alt="О компании"
-					className="h-full max-h-[30rem] rounded-lg"
+					className="vt-image h-full max-h-[30rem] rounded-lg"
+					style={{ viewTransitionName: "about-image" }}
 				/>
 			</div>
 			<div className="flex max-w-[59ch] flex-col gap-2 pt-4">
-				<h2>Магазин напольных покрытий</h2>
+				<h2 style={{ viewTransitionName: "about-title" }}>О компании</h2>
 				<p>
 					У нас большой выбор напольных покрытий, для домов, офисов, спортивных
 					площадок и других мест отдыха. Мы предоставляем не только

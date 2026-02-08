@@ -1,6 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import type { SqliteRemoteDatabase } from "drizzle-orm/sqlite-proxy";
-import type * as schema from "~/schema";
+import type { DbContext } from "~/db";
 import { attributeValues } from "~/schema";
 import { getAttributeMappings } from "./attributeMapping";
 
@@ -9,7 +8,7 @@ import { getAttributeMappings } from "./attributeMapping";
  * Returns array of validation errors (empty if all valid)
  */
 export async function validateAttributeValues(
-	db: SqliteRemoteDatabase<typeof schema>,
+	db: DbContext,
 	attributes: Array<{ attributeId: string; value: string }>,
 ): Promise<{ attributeId: string; value: string; error: string }[]> {
 	const errors: { attributeId: string; value: string; error: string }[] = [];

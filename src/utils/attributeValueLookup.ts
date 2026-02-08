@@ -1,6 +1,5 @@
 import { and, eq, inArray } from "drizzle-orm";
-import type { SqliteRemoteDatabase } from "drizzle-orm/sqlite-proxy";
-import type * as schema from "~/schema";
+import type { DbContext } from "~/db";
 import { attributeValues } from "~/schema";
 
 /**
@@ -8,7 +7,7 @@ import { attributeValues } from "~/schema";
  * Returns null if value doesn't exist
  */
 export async function getValueId(
-	db: SqliteRemoteDatabase<typeof schema>,
+	db: DbContext,
 	attributeId: number,
 	value: string,
 ): Promise<number | null> {
@@ -32,7 +31,7 @@ export async function getValueId(
  * Returns a Map of value string -> value ID
  */
 export async function getValueIds(
-	db: SqliteRemoteDatabase<typeof schema>,
+	db: DbContext,
 	attributeId: number,
 	values: string[],
 ): Promise<Map<string, number>> {
@@ -66,7 +65,7 @@ export async function getValueIds(
  * Returns a Map of value ID -> value string
  */
 export async function getValuesByIds(
-	db: SqliteRemoteDatabase<typeof schema>,
+	db: DbContext,
 	valueIds: number[],
 ): Promise<Map<number, string>> {
 	if (valueIds.length === 0) {
@@ -94,7 +93,7 @@ export async function getValuesByIds(
  * This replaces N queries (one per attribute) with a single query
  */
 export async function getBatchValueIds(
-	db: SqliteRemoteDatabase<typeof schema>,
+	db: DbContext,
 	attributeValuePairs: Array<{ attributeId: number; values: string[] }>,
 ): Promise<Map<number, Map<string, number>>> {
 	if (attributeValuePairs.length === 0) {

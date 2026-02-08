@@ -97,7 +97,7 @@ function SortableImageItem({
 				<img
 					src={imageSrc}
 					alt={`Product ${index + 1}`}
-					className="h-auto w-full object-contain"
+					className="vt-image h-auto w-full rounded-lg object-contain"
 					style={viewTransitionStyle}
 					onLoad={() => {}}
 					onError={(e) => {

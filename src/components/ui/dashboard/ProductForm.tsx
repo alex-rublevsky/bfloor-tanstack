@@ -33,7 +33,9 @@ interface ProductFormProps {
 	) => void;
 	onImagesChange: (images: string) => void;
 	onStoreLocationChange: (locationId: number, checked: boolean) => void;
-	onVariationsChange: (variations: Variation[]) => void;
+	onVariationsChange: (
+		update: Variation[] | ((prev: Variation[]) => Variation[]),
+	) => void;
 	onSelectedVariationAttributesChange: (attributes: string[]) => void;
 	onSlugChange: (slug: string) => void;
 	onAutoSlugChange: (isAuto: boolean) => void;

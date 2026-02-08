@@ -1,23 +1,25 @@
 import { eq, sql } from "drizzle-orm";
-import type { SqliteRemoteDatabase } from "drizzle-orm/sqlite-proxy";
-import type * as schema from "~/schema";
+import type { DbContext } from "~/db";
 import { productAttributes, products } from "~/schema";
 
 /**
- * Removes a specific attribute value from all products that have it selected
- * Handles comma-separated values in product_attributes JSON
+ * Removes a specific attribute value from all products that have it selected.
+ * Handles both formats:
+ *   - New array format: [{attributeId: "5", value: "Wood,Oak"}, ...]
+ *   - Legacy object format: {"thickness": "3mm", "5": "Wood"}
+ * Comma-separated multi-values within a single entry are supported.
  *
- * @param db - Database connection
- * @param attributeId - ID of the attribute (vid-profilya = 35)
- * @param valueToRemove - The value string to remove (e.g., "Профиль для лестницы")
+ * @param db - Database connection or transaction context
+ * @param attributeId - Numeric ID of the attribute
+ * @param valueToRemove - The value string to remove
  * @returns Number of products updated
  */
 export async function cleanupAttributeValueFromProducts(
-	db: SqliteRemoteDatabase<typeof schema>,
+	db: DbContext,
 	attributeId: number,
 	valueToRemove: string,
 ): Promise<{ updatedCount: number; productIds: number[] }> {
-	// Get the attribute slug to find it in product_attributes JSON
+	// Get the attribute slug for legacy object-format lookup
 	const attribute = await db
 		.select()
 		.from(productAttributes)
@@ -29,8 +31,9 @@ export async function cleanupAttributeValueFromProducts(
 	}
 
 	const attributeSlug = attribute[0].slug;
+	const attrIdStr = attributeId.toString();
 
-	// Get all products with this attribute
+	// Get all products with non-null attributes
 	const allProducts = await db
 		.select({
 			id: products.id,
@@ -46,64 +49,89 @@ export async function cleanupAttributeValueFromProducts(
 		if (!product.productAttributes) continue;
 
 		try {
-			const parsed = JSON.parse(product.productAttributes);
+			let parsed = JSON.parse(product.productAttributes);
+			let changed = false;
 
-			// Check if product has this attribute
-			const currentValue =
-				parsed[attributeSlug] || parsed[attributeId.toString()];
-			if (!currentValue) continue;
+			if (Array.isArray(parsed)) {
+				// New array format: [{attributeId: "5", value: "Wood,Oak"}, ...]
+				const updatedArray: typeof parsed = [];
 
-			// Handle both single value and comma-separated values
-			const values =
-				typeof currentValue === "string"
-					? currentValue
-							.split(",")
-							.map((v: string) => v.trim())
-							.filter(Boolean)
-					: [String(currentValue)];
+				for (const entry of parsed) {
+					if (entry.attributeId !== attrIdStr) {
+						updatedArray.push(entry);
+						continue;
+					}
 
-			// Check if value to remove is in the list
-			if (!values.includes(valueToRemove)) continue;
+					// Handle comma-separated multi-values
+					const values = entry.value
+						.split(",")
+						.map((v: string) => v.trim())
+						.filter(Boolean);
 
-			// Remove the value
-			const updatedValues = values.filter((v: string) => v !== valueToRemove);
+					if (!values.includes(valueToRemove)) {
+						updatedArray.push(entry);
+						continue;
+					}
 
-			// Update or remove the attribute
-			if (updatedValues.length === 0) {
-				// Remove attribute entirely if no values left
-				if (parsed[attributeSlug]) {
-					delete parsed[attributeSlug];
+					const updatedValues = values.filter(
+						(v: string) => v !== valueToRemove,
+					);
+
+					if (updatedValues.length > 0) {
+						// Keep entry with remaining values
+						updatedArray.push({
+							...entry,
+							value: updatedValues.join(","),
+						});
+					}
+					// If no values left, entry is dropped entirely
+					changed = true;
 				}
-				if (parsed[attributeId.toString()]) {
-					delete parsed[attributeId.toString()];
-				}
-			} else {
-				// Update with remaining values (join if multiple, single if one)
-				const newValue =
-					updatedValues.length === 1
-						? updatedValues[0]
-						: updatedValues.join(",");
 
-				// Use slug as key if it exists, otherwise use attributeId
-				if (parsed[attributeSlug] !== undefined) {
-					parsed[attributeSlug] = newValue;
+				if (changed) {
+					parsed = updatedArray;
+				}
+			} else if (typeof parsed === "object" && parsed !== null) {
+				// Legacy object format: {"thickness": "3mm"} or {"5": "Wood"}
+				const currentValue = parsed[attributeSlug] || parsed[attrIdStr];
+				if (!currentValue) continue;
+
+				const values =
+					typeof currentValue === "string"
+						? currentValue
+								.split(",")
+								.map((v: string) => v.trim())
+								.filter(Boolean)
+						: [String(currentValue)];
+
+				if (!values.includes(valueToRemove)) continue;
+
+				const updatedValues = values.filter((v: string) => v !== valueToRemove);
+
+				if (updatedValues.length === 0) {
+					if (parsed[attributeSlug] !== undefined) delete parsed[attributeSlug];
+					if (parsed[attrIdStr] !== undefined) delete parsed[attrIdStr];
 				} else {
-					parsed[attributeId.toString()] = newValue;
+					const newValue = updatedValues.join(",");
+					if (parsed[attributeSlug] !== undefined) {
+						parsed[attributeSlug] = newValue;
+					} else {
+						parsed[attrIdStr] = newValue;
+					}
 				}
+				changed = true;
 			}
 
-			// Update the product
-			await db
-				.update(products)
-				.set({
-					productAttributes: JSON.stringify(parsed),
-				})
-				.where(eq(products.id, product.id));
+			if (changed) {
+				await db
+					.update(products)
+					.set({ productAttributes: JSON.stringify(parsed) })
+					.where(eq(products.id, product.id));
 
-			updatedProductIds.push(product.id);
-			updateCount++;
+				updatedProductIds.push(product.id);
+				updateCount++;
+			}
 		} catch (error) {
-			// Skip products with invalid JSON
 			console.warn(
 				`Failed to parse attributes for product ${product.id}:`,
 				error,

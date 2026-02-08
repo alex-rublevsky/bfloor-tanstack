@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
 	generateVariationSKU,
 	useProductAttributes,
@@ -107,14 +107,6 @@ export function useProductForm({
 		}));
 	}, []);
 
-	// Sync variations to form data
-	useEffect(() => {
-		setFormData((prev) => ({
-			...prev,
-			variations: formatVariations(variations),
-		}));
-	}, [variations, formatVariations]);
-
 	const handleImagesChange = useCallback(
 		(images: string, deletedImagesList?: string[]) => {
 			setFormData((prev) => ({ ...prev, images }));
@@ -138,9 +130,12 @@ export function useProductForm({
 		[],
 	);
 
-	const handleVariationsChange = useCallback((newVariations: Variation[]) => {
-		setVariations(newVariations);
-	}, []);
+	const handleVariationsChange = useCallback(
+		(update: Variation[] | ((prev: Variation[]) => Variation[])) => {
+			setVariations(update);
+		},
+		[],
+	);
 
 	const handleChange = useCallback(
 		(
@@ -218,17 +213,12 @@ export function useProductForm({
 		setError("");
 
 		try {
+			// Compute formatted variations at submit time (instead of syncing via useEffect)
 			const submissionData = {
 				...formData,
-				variations: formData.variations,
+				variations: formatVariations(variations),
 				storeLocationIds: selectedStoreLocationIds,
 			};
-
-			// Debug logging
-			console.log(
-				"[useProductForm] Submitting with store location IDs:",
-				selectedStoreLocationIds,
-			);
 
 			await onSubmit(submissionData);
 			onSuccess?.();

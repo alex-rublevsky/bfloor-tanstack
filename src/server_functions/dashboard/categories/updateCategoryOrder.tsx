@@ -3,6 +3,7 @@ import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
 import { categories } from "~/schema";
+import { ApiError } from "~/utils/ApiError";
 
 interface CategoryOrderUpdate {
 	id: number;
@@ -21,27 +22,30 @@ export const updateCategoryOrder = createServerFn({ method: "POST" })
 			const { updates } = data;
 
 			if (!updates || updates.length === 0) {
-				setResponseStatus(400);
-				throw new Error("No updates provided");
+				throw new ApiError("No updates provided", 400);
 			}
 
-			// Update each category's order in a transaction-like manner
-			// SQLite doesn't have true transactions via drizzle-orm sqlite-proxy,
-			// but we can batch the updates
-			for (const update of updates) {
-				await db
-					.update(categories)
-					.set({ order: update.order })
-					.where(eq(categories.id, update.id));
-			}
+			// All order updates in a single transaction for atomicity
+			await db.transaction(async (tx) => {
+				for (const update of updates) {
+					await tx
+						.update(categories)
+						.set({ order: update.order })
+						.where(eq(categories.id, update.id));
+				}
+			});
 
 			return {
 				message: "Category order updated successfully",
 				updatedCount: updates.length,
 			};
 		} catch (error) {
-			console.error("Error updating category order:", error);
-			setResponseStatus(500);
-			throw new Error("Failed to update category order");
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error updating category order:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
 	});

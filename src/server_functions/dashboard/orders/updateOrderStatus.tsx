@@ -3,6 +3,7 @@ import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
 import { orders } from "~/schema";
+import { ApiError } from "~/utils/ApiError";
 
 export const updateOrderStatus = createServerFn({ method: "POST" })
 	.inputValidator((data: { id: number; status: string }) => data)
@@ -12,13 +13,11 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 			const { id: orderId, status } = data;
 
 			if (Number.isNaN(orderId)) {
-				setResponseStatus(400);
-				throw new Error("Invalid order ID");
+				throw new ApiError("Invalid order ID", 400);
 			}
 
 			if (!status) {
-				setResponseStatus(400);
-				throw new Error("Status is required");
+				throw new ApiError("Status is required", 400);
 			}
 
 			// Validate status
@@ -30,9 +29,9 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 				"cancelled",
 			];
 			if (!validStatuses.includes(status)) {
-				setResponseStatus(400);
-				throw new Error(
+				throw new ApiError(
 					`Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+					400,
 				);
 			}
 
@@ -44,8 +43,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 				.limit(1);
 
 			if (!existingOrder[0]) {
-				setResponseStatus(404);
-				throw new Error("Order not found");
+				throw new ApiError("Order not found", 404);
 			}
 
 			// Update order status
@@ -56,14 +54,11 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 				updateData.completedAt = new Date();
 			}
 
-			await db.update(orders).set(updateData).where(eq(orders.id, orderId));
-
-			// Fetch and return updated order
 			const updatedOrder = await db
-				.select()
-				.from(orders)
+				.update(orders)
+				.set(updateData)
 				.where(eq(orders.id, orderId))
-				.limit(1);
+				.returning();
 
 			return {
 				success: true,
@@ -71,12 +66,12 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 				order: updatedOrder[0],
 			};
 		} catch (error) {
-			console.error("Error updating order status:", error);
-			setResponseStatus(500);
-			throw new Error(
-				error instanceof Error
-					? error.message
-					: "Failed to update order status",
-			);
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error updating order status:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
 	});

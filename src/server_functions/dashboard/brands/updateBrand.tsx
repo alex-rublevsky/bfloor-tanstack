@@ -2,8 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
-import { brands } from "~/schema";
+import { brands, collections, productBrands, products } from "~/schema";
 import type { BrandFormData } from "~/types";
+import { ApiError } from "~/utils/ApiError";
 import { getStorageBucket } from "~/utils/storage";
 import { moveStagingImagesWithBucket } from "../store/moveStagingImages";
 
@@ -15,33 +16,33 @@ export const updateBrand = createServerFn({ method: "POST" })
 			const { id, data: brandData } = data;
 
 			if (!brandData.name || !brandData.slug) {
-				setResponseStatus(400);
-				throw new Error("Missing required fields: name and slug are required");
+				throw new ApiError(
+					"Missing required fields: name and slug are required",
+					400,
+				);
 			}
 
-			// Check for duplicate slug (excluding current brand)
-			const existingBrand = await db
-				.select({ slug: brands.slug })
+			// Check if brand exists
+			const currentBrand = await db
+				.select({ id: brands.id, slug: brands.slug })
 				.from(brands)
-				.where(eq(brands.slug, brandData.slug))
+				.where(eq(brands.id, id))
 				.limit(1);
 
-			if (existingBrand.length > 0) {
-				// Check if it's the same brand (same ID)
-				const currentBrand = await db
-					.select({ id: brands.id })
+			if (currentBrand.length === 0) {
+				throw new ApiError("Brand not found", 404);
+			}
+
+			// If slug is being changed, check for duplicate
+			if (currentBrand[0].slug !== brandData.slug) {
+				const duplicateSlug = await db
+					.select({ slug: brands.slug })
 					.from(brands)
-					.where(eq(brands.id, id))
+					.where(eq(brands.slug, brandData.slug))
 					.limit(1);
 
-				if (currentBrand.length === 0) {
-					setResponseStatus(404);
-					throw new Error("Brand not found");
-				}
-
-				if (existingBrand[0].slug !== brandData.slug) {
-					setResponseStatus(409);
-					throw new Error("A brand with this slug already exists");
+				if (duplicateSlug.length > 0) {
+					throw new ApiError("A brand with this slug already exists", 409);
 				}
 			}
 
@@ -66,31 +67,59 @@ export const updateBrand = createServerFn({ method: "POST" })
 				}
 			}
 
-			// Update the brand
-			const updateResult = await db
-				.update(brands)
-				.set({
-					name: brandData.name,
-					slug: brandData.slug,
-					image: finalLogo || null,
-					countryId: brandData.countryId || null,
-					isActive: brandData.isActive ?? true,
-				})
-				.where(eq(brands.id, id))
-				.returning();
+			const oldSlug = currentBrand[0].slug;
+			const slugChanged = oldSlug !== brandData.slug;
 
-			if (updateResult.length === 0) {
-				setResponseStatus(404);
-				throw new Error("Brand not found");
-			}
+			// Update brand + propagate slug changes in a single transaction
+			const updateResult = await db.transaction(async (tx) => {
+				const result = await tx
+					.update(brands)
+					.set({
+						name: brandData.name,
+						slug: brandData.slug,
+						image: finalLogo || null,
+						countryId: brandData.countryId || null,
+						isActive: brandData.isActive ?? true,
+					})
+					.where(eq(brands.id, id))
+					.returning();
+
+				if (result.length === 0) {
+					throw new ApiError("Brand not found", 404);
+				}
+
+				// Propagate slug change to all referencing tables
+				if (slugChanged) {
+					await Promise.all([
+						tx
+							.update(products)
+							.set({ brandSlug: brandData.slug })
+							.where(eq(products.brandSlug, oldSlug)),
+						tx
+							.update(productBrands)
+							.set({ brandSlug: brandData.slug })
+							.where(eq(productBrands.brandSlug, oldSlug)),
+						tx
+							.update(collections)
+							.set({ brandSlug: brandData.slug })
+							.where(eq(collections.brandSlug, oldSlug)),
+					]);
+				}
+
+				return result;
+			});
 
 			return {
 				message: "Brand updated successfully",
 				brand: updateResult[0],
 			};
 		} catch (error) {
-			console.error("Error updating brand:", error);
-			setResponseStatus(500);
-			throw new Error("Failed to update brand");
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error updating brand:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
 	});

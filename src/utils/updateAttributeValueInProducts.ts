@@ -1,25 +1,27 @@
 import { eq, sql } from "drizzle-orm";
-import type { SqliteRemoteDatabase } from "drizzle-orm/sqlite-proxy";
-import type * as schema from "~/schema";
+import type { DbContext } from "~/db";
 import { productAttributes, products } from "~/schema";
 
 /**
- * Updates a specific attribute value in all products that have it selected
- * Handles comma-separated values in product_attributes JSON
- * Useful when renaming an attribute value
- * @param db - Database connection
- * @param attributeId - ID of the attribute (vid-profilya = 35)
- * @param oldValue - The old value string to replace (e.g., "Профиль для лестницы")
- * @param newValue - The new value string (e.g., "Профиль лестничный")
+ * Updates a specific attribute value in all products that have it selected.
+ * Handles both formats:
+ *   - New array format: [{attributeId: "5", value: "Wood,Oak"}, ...]
+ *   - Legacy object format: {"thickness": "3mm", "5": "Wood"}
+ * Comma-separated multi-values within a single entry are supported.
+ *
+ * @param db - Database connection or transaction context
+ * @param attributeId - Numeric ID of the attribute
+ * @param oldValue - The old value string to replace
+ * @param newValue - The new value string
  * @returns Number of products updated
  */
 export async function updateAttributeValueInProducts(
-	db: SqliteRemoteDatabase<typeof schema>,
+	db: DbContext,
 	attributeId: number,
 	oldValue: string,
 	newValue: string,
 ): Promise<{ updatedCount: number; productIds: number[] }> {
-	// Get the attribute slug to find it in product_attributes JSON
+	// Get the attribute slug for legacy object-format lookup
 	const attribute = await db
 		.select()
 		.from(productAttributes)
@@ -31,8 +33,9 @@ export async function updateAttributeValueInProducts(
 	}
 
 	const attributeSlug = attribute[0].slug;
+	const attrIdStr = attributeId.toString();
 
-	// Get all products with this attribute
+	// Get all products with non-null attributes
 	const allProducts = await db
 		.select({
 			id: products.id,
@@ -49,52 +52,65 @@ export async function updateAttributeValueInProducts(
 
 		try {
 			const parsed = JSON.parse(product.productAttributes);
+			let changed = false;
 
-			// Check if product has this attribute
-			const currentValue =
-				parsed[attributeSlug] || parsed[attributeId.toString()];
-			if (!currentValue) continue;
+			if (Array.isArray(parsed)) {
+				// New array format: [{attributeId: "5", value: "Wood,Oak"}, ...]
+				for (const entry of parsed) {
+					if (entry.attributeId !== attrIdStr) continue;
 
-			// Handle both single value and comma-separated values
-			const values =
-				typeof currentValue === "string"
-					? currentValue
-							.split(",")
-							.map((v: string) => v.trim())
-							.filter(Boolean)
-					: [String(currentValue)];
+					// Handle comma-separated multi-values
+					const values = entry.value
+						.split(",")
+						.map((v: string) => v.trim())
+						.filter(Boolean);
 
-			// Check if old value is in the list
-			if (!values.includes(oldValue)) continue;
+					if (!values.includes(oldValue)) continue;
 
-			// Replace old value with new value
-			const updatedValues = values.map((v: string) =>
-				v === oldValue ? newValue : v,
-			);
+					const updatedValues = values.map((v: string) =>
+						v === oldValue ? newValue : v,
+					);
+					entry.value = updatedValues.join(",");
+					changed = true;
+				}
+			} else if (typeof parsed === "object" && parsed !== null) {
+				// Legacy object format: {"thickness": "3mm"} or {"5": "Wood"}
+				const currentValue = parsed[attributeSlug] || parsed[attrIdStr];
+				if (!currentValue) continue;
 
-			// Update the attribute value
-			const newValueString =
-				updatedValues.length === 1 ? updatedValues[0] : updatedValues.join(",");
+				const values =
+					typeof currentValue === "string"
+						? currentValue
+								.split(",")
+								.map((v: string) => v.trim())
+								.filter(Boolean)
+						: [String(currentValue)];
 
-			// Use slug as key if it exists, otherwise use attributeId
-			if (parsed[attributeSlug] !== undefined) {
-				parsed[attributeSlug] = newValueString;
-			} else {
-				parsed[attributeId.toString()] = newValueString;
+				if (!values.includes(oldValue)) continue;
+
+				const updatedValues = values.map((v: string) =>
+					v === oldValue ? newValue : v,
+				);
+				const newValueString = updatedValues.join(",");
+
+				if (parsed[attributeSlug] !== undefined) {
+					parsed[attributeSlug] = newValueString;
+				} else {
+					parsed[attrIdStr] = newValueString;
+				}
+				changed = true;
 			}
 
-			// Update the product
-			await db
-				.update(products)
-				.set({
-					productAttributes: JSON.stringify(parsed),
-				})
-				.where(eq(products.id, product.id));
+			if (changed) {
+				await db
+					.update(products)
+					.set({ productAttributes: JSON.stringify(parsed) })
+					.where(eq(products.id, product.id));
 
-			updatedProductIds.push(product.id);
-			updateCount++;
+				updatedProductIds.push(product.id);
+				updateCount++;
+			}
 		} catch (error) {
-			// Skip products with invalid JSON
 			console.warn(
 				`Failed to parse attributes for product ${product.id}:`,
 				error,

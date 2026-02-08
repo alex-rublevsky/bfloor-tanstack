@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
-import { collections } from "~/schema";
+import { collections, productCollections, products } from "~/schema";
+import { ApiError } from "~/utils/ApiError";
 
 interface CollectionFormData {
 	name: string;
@@ -19,8 +20,7 @@ export const updateCollection = createServerFn({ method: "POST" })
 			const { id: collectionId, data: collectionData } = data;
 
 			if (Number.isNaN(collectionId)) {
-				setResponseStatus(400);
-				throw new Error("Invalid collection ID");
+				throw new ApiError("Invalid collection ID", 400);
 			}
 
 			if (
@@ -28,9 +28,9 @@ export const updateCollection = createServerFn({ method: "POST" })
 				!collectionData.slug ||
 				!collectionData.brandSlug
 			) {
-				setResponseStatus(400);
-				throw new Error(
+				throw new ApiError(
 					"Missing required fields: name, slug, and brandSlug are required",
+					400,
 				);
 			}
 
@@ -49,40 +49,57 @@ export const updateCollection = createServerFn({ method: "POST" })
 			]);
 
 			if (!existingCollection[0]) {
-				setResponseStatus(404);
-				throw new Error("Коллекция не найдена");
+				throw new ApiError("Коллекция не найдена", 404);
 			}
 
 			if (duplicateSlug[0] && duplicateSlug[0].id !== collectionId) {
-				setResponseStatus(400);
-				throw new Error("A collection with this slug already exists");
+				throw new ApiError("A collection with this slug already exists", 409);
 			}
 
-			// Update collection
-			await db
-				.update(collections)
-				.set({
-					name: collectionData.name,
-					slug: collectionData.slug,
-					brandSlug: collectionData.brandSlug,
-					isActive: collectionData.isActive,
-				})
-				.where(eq(collections.id, collectionId));
+			const oldSlug = existingCollection[0].slug;
+			const slugChanged = oldSlug !== collectionData.slug;
 
-			// Fetch and return updated collection
-			const updatedCollection = await db
-				.select()
-				.from(collections)
-				.where(eq(collections.id, collectionId))
-				.limit(1);
+			// Update collection + propagate slug changes in a single transaction
+			const updatedCollection = await db.transaction(async (tx) => {
+				const result = await tx
+					.update(collections)
+					.set({
+						name: collectionData.name,
+						slug: collectionData.slug,
+						brandSlug: collectionData.brandSlug,
+						isActive: collectionData.isActive,
+					})
+					.where(eq(collections.id, collectionId))
+					.returning();
+
+				// Propagate slug change to all referencing tables
+				if (slugChanged) {
+					await Promise.all([
+						tx
+							.update(products)
+							.set({ collectionSlug: collectionData.slug })
+							.where(eq(products.collectionSlug, oldSlug)),
+						tx
+							.update(productCollections)
+							.set({ collectionSlug: collectionData.slug })
+							.where(eq(productCollections.collectionSlug, oldSlug)),
+					]);
+				}
+
+				return result;
+			});
 
 			return {
 				message: "Коллекция обновлена успешно!",
 				collection: updatedCollection[0],
 			};
 		} catch (error) {
-			console.error("Error updating collection:", error);
-			setResponseStatus(500);
-			throw new Error("Failed to update collection");
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error updating collection:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
 	});
