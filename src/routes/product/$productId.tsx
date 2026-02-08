@@ -1082,7 +1082,7 @@ function ProductPage() {
 															type="button"
 															onClick={decrementQuantity}
 															disabled={quantity <= 1}
-															className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted text-primary hover:bg-secondary active:bg-muted-hover disabled:cursor-not-allowed disabled:opacity-50 hover:[&_svg]:text-[var(--muted)]"
+															className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted hover:bg-secondary active:bg-muted-hover disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:text-primary hover:[&_svg]:text-[var(--muted)]"
 														>
 															<Icon name="minus" size={20} />
 														</Button>
@@ -1129,7 +1129,7 @@ function ProductPage() {
 														<Button
 															type="button"
 															onClick={incrementQuantity}
-															className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted text-primary hover:bg-secondary active:bg-muted-hover hover:[&_svg]:text-[var(--muted)]"
+															className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted hover:bg-secondary active:bg-muted-hover [&_svg]:text-primary hover:[&_svg]:text-[var(--muted)]"
 														>
 															<Icon name="plus" size={20} />
 														</Button>
@@ -1574,7 +1574,7 @@ function ProductPage() {
 														type="button"
 														onClick={decrementQuantity}
 														disabled={quantity <= 1}
-														className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted text-primary hover:bg-secondary active:bg-muted-hover disabled:cursor-not-allowed disabled:opacity-50 hover:[&_svg]:text-[var(--muted)]"
+														className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted hover:bg-secondary active:bg-muted-hover disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:text-primary hover:[&_svg]:text-[var(--muted)]"
 													>
 														<Icon name="minus" size={20} />
 													</Button>
@@ -1619,7 +1619,7 @@ function ProductPage() {
 													<Button
 														type="button"
 														onClick={incrementQuantity}
-														className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted text-primary hover:bg-secondary active:bg-muted-hover hover:[&_svg]:text-[var(--muted)]"
+														className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted hover:bg-secondary active:bg-muted-hover [&_svg]:text-primary hover:[&_svg]:text-[var(--muted)]"
 													>
 														<Icon name="plus" size={20} />
 													</Button>
