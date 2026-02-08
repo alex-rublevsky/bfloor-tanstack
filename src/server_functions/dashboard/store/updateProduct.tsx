@@ -470,9 +470,12 @@ export const updateProduct = createServerFn({ method: "POST" })
 								(id) => !shouldHaveVariations || !incomingIds.has(id),
 							);
 
-							// Update existing variations
-							if (toUpdate.length > 0) {
-								const updatingIds = toUpdate.map((v) => v.id!);
+							// Update existing variations (only those with id)
+							const toUpdateWithIds = toUpdate.filter(
+								(v): v is typeof v & { id: number } => v.id !== undefined,
+							);
+							if (toUpdateWithIds.length > 0) {
+								const updatingIds = toUpdateWithIds.map((v) => v.id);
 
 								// Delete old attributes for variations being updated
 								await tx
@@ -485,18 +488,20 @@ export const updateProduct = createServerFn({ method: "POST" })
 									);
 
 								// Update variations + insert new attributes in parallel
-								const allAttrsToInsert = toUpdate.flatMap((variation) => {
-									const attrs = variation.attributes || [];
-									return attrs.map((attr) => ({
-										productVariationId: variation.id!,
-										attributeId: attr.attributeId,
-										value: attr.value,
-										createdAt: new Date(),
-									}));
-								});
+								const allAttrsToInsert = toUpdateWithIds.flatMap(
+									(variation) => {
+										const attrs = variation.attributes || [];
+										return attrs.map((attr) => ({
+											productVariationId: variation.id,
+											attributeId: attr.attributeId,
+											value: attr.value,
+											createdAt: new Date(),
+										}));
+									},
+								);
 
 								await Promise.all([
-									...toUpdate.map((variation) =>
+									...toUpdateWithIds.map((variation) =>
 										tx
 											.update(productVariations)
 											.set({
@@ -514,7 +519,7 @@ export const updateProduct = createServerFn({ method: "POST" })
 														? JSON.stringify(variation.attributes)
 														: null,
 											})
-											.where(eq(productVariations.id, variation.id!)),
+											.where(eq(productVariations.id, variation.id)),
 									),
 									allAttrsToInsert.length > 0
 										? tx.insert(variationAttributes).values(allAttrsToInsert)

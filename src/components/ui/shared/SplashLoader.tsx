@@ -192,6 +192,27 @@ export function SplashLoader() {
 			// Temporarily remove --persist-nav to prevent z-index conflict
 			if (nav) nav.style.viewTransitionName = "none";
 
+			// Suppress every other view-transition-name in the DOM so all page
+			// content is captured inside the root snapshot group.  Without this,
+			// named elements (product card images/names/prices, about-section,
+			// etc.) are "cut out" of the root — leaving holes in the splash
+			// background — and rendered as independent layers that can peek
+			// through before the splash finishes fading.
+			const suppressedVtNames: { el: HTMLElement; name: string }[] = [];
+			for (const el of document.querySelectorAll<HTMLElement>("[style]")) {
+				const vtn = el.style.viewTransitionName;
+				if (
+					vtn &&
+					vtn !== "none" &&
+					vtn !== "" &&
+					vtn !== "site-logo" &&
+					el !== nav
+				) {
+					suppressedVtNames.push({ el, name: vtn });
+					el.style.viewTransitionName = "none";
+				}
+			}
+
 			// Scope CSS so the delayed background fade only affects this transition
 			document.documentElement.classList.add("splash-dismissing");
 
@@ -204,6 +225,10 @@ export function SplashLoader() {
 				navLogo.style.viewTransitionName = "";
 				if (nav) nav.style.viewTransitionName = "--persist-nav";
 				document.documentElement.classList.remove("splash-dismissing");
+				// Restore suppressed names so route transitions work normally
+				for (const { el, name } of suppressedVtNames) {
+					el.style.viewTransitionName = name;
+				}
 			});
 		};
 

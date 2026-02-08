@@ -29,6 +29,7 @@ import { EmptyState } from "~/components/ui/shared/EmptyState";
 import { Icon } from "~/components/ui/shared/Icon";
 import { ASSETS_BASE_URL } from "~/constants/urls";
 import { usePrefetch } from "~/hooks/usePrefetch";
+import { setDashboardButtons } from "~/lib/dashboardActions";
 import {
 	allFilterOptionsDashboardQueryOptions,
 	categoriesQueryOptions,
@@ -309,7 +310,7 @@ function RouteComponent() {
 
 	// Fetch all filter options in a single unified query
 	// This replaces the separate queries for brands, collections, store locations, and attributes
-	const { data: filterOptions, isFetching: isFiltersFetching } = useQuery({
+	const { data: filterOptions } = useQuery({
 		...allFilterOptionsDashboardQueryOptions(
 			selectedCategory ?? undefined,
 			selectedBrand ? [selectedBrand] : undefined,
@@ -337,15 +338,20 @@ function RouteComponent() {
 		productCategoryCountsQueryOptions(),
 	);
 
-	// Listen for action button clicks from navbar - navigate to create page
+	// Set navbar action button — navigates to create page directly
 	useEffect(() => {
-		const handleAction = () => {
-			window.location.href = "/dashboard/products/new";
-		};
-
-		window.addEventListener("dashboardAction", handleAction);
-		return () => window.removeEventListener("dashboardAction", handleAction);
-	}, []);
+		setDashboardButtons([
+			{
+				label: "Добавить товар",
+				onClick: () => {
+					navigate({ to: "/dashboard/products/new" });
+				},
+				variant: "default",
+				useStatusButton: true,
+			},
+		]);
+		return () => setDashboardButtons([]);
+	}, [navigate]);
 
 	// Merge products from all pages
 	const flatData = useMemo(

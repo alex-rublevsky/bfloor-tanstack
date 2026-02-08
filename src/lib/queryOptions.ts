@@ -629,7 +629,7 @@ export const productAttributesQueryOptions = () =>
 		queryKey: ["productAttributes"],
 		queryFn: async () => getAllProductAttributes(),
 		staleTime: 1000 * 60 * 60 * 24 * 30, // 30 days - attributes rarely change (increased from 7)
-		gcTime: 1000 * 60 * 60 * 24 * 60, // 60 days - keep in memory (increased from 14)
+		gcTime: 1000 * 60 * 60 * 24 * 24, // 24 days - keep in memory (max safe 32-bit timeout value)
 		retry: 3,
 		refetchOnWindowFocus: false,
 		refetchOnMount: false,

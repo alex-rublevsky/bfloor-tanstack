@@ -978,14 +978,25 @@ section.no-padding > h2 {
 	mix-blend-mode: normal;
 }
 
-/* Delay the background cross-fade so the logo stays visible against the
-   solid splash background while it morphs to its destination.
+/* Delay the cross-fade of ALL named groups so the entire page appears as
+   one unit behind the fading splash background.  Without the wildcard,
+   elements with their own view-transition-name (product cards, about
+   section, etc.) animate at the default 0.34s with no delay and "peek
+   through" before the splash background finishes fading.
    Scoped via .splash-dismissing class — does not affect route transitions. */
-html.splash-dismissing::view-transition-old(root),
-html.splash-dismissing::view-transition-new(root) {
+html.splash-dismissing::view-transition-old(*),
+html.splash-dismissing::view-transition-new(*) {
 	animation-delay: 0.25s;
 	animation-duration: 0.45s;
 	animation-fill-mode: both;
+}
+
+/* The splash → navbar logo morph should start immediately (no delay).
+   Specificity ties with the wildcard rule above, so order matters. */
+html.splash-dismissing::view-transition-old(site-logo),
+html.splash-dismissing::view-transition-new(site-logo) {
+	animation-delay: 0s;
+	animation-duration: 0.6s;
 }
 
 /* ----------------------------------------------------------------------------

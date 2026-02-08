@@ -562,7 +562,7 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 	// Fetch all filter options in a single unified query
 	// This replaces the separate queries for brands, collections, store locations, and attributes
 	const filtersVisible = filtersOpened || isDesktop;
-	const { data: filterOptions, isFetching: isFiltersFetching } = useQuery({
+	const { data: filterOptions } = useQuery({
 		...allFilterOptionsQueryOptions(
 			categorySlug ?? undefined,
 			selectedBrands.length > 0 ? selectedBrands : undefined,

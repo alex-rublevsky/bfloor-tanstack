@@ -11,6 +11,7 @@ import { Input } from "~/components/ui/shared/input";
 import { Switch } from "~/components/ui/shared/Switch";
 import { useDashboardForm } from "~/hooks/useDashboardForm";
 import { generateSlug, useSlugGeneration } from "~/hooks/useSlugGeneration";
+import { setDashboardButtons } from "~/lib/dashboardActions";
 import { Trash } from "../shared/Icon";
 
 // Generic types for the entity manager
@@ -105,9 +106,7 @@ export function DashboardEntityManager<
 	const editFormId = useId();
 
 	// Form state management
-	const form = useDashboardForm<TFormData>(config.defaultFormData, {
-		listenToActionButton: true,
-	});
+	const form = useDashboardForm<TFormData>(config.defaultFormData);
 
 	const [isCreateAutoSlug, setIsCreateAutoSlug] = useState(true);
 	const [isEditAutoSlug, setIsEditAutoSlug] = useState(false);
@@ -141,15 +140,18 @@ export function DashboardEntityManager<
 		handleEditSlugChange,
 	);
 
-	// Listen for action button clicks from navbar
+	// Set navbar action button — opens create drawer directly
 	useEffect(() => {
-		const handleAction = () => {
-			form.crud.openCreateDrawer();
-		};
-
-		window.addEventListener("dashboardAction", handleAction);
-		return () => window.removeEventListener("dashboardAction", handleAction);
-	}, [form.crud.openCreateDrawer]);
+		setDashboardButtons([
+			{
+				label: `Добавить ${toAccusativeCase(config.entityName)}`,
+				onClick: () => form.crud.openCreateDrawer(),
+				variant: "default",
+				useStatusButton: true,
+			},
+		]);
+		return () => setDashboardButtons([]);
+	}, [config.entityName, form.crud.openCreateDrawer]);
 
 	// Submit handler for creating entities
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

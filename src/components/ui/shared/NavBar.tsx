@@ -11,13 +11,15 @@ import {
 } from "~/components/ui/shared/Drawer";
 import { Link } from "~/components/ui/shared/Link";
 import { SearchInput } from "~/components/ui/shared/SearchInput";
-import { getActionButtonsForRoute } from "~/config/dashboardActionButtons";
 import { usePrefetch } from "~/hooks/usePrefetch";
 import { useScrollDirection } from "~/hooks/useScrollDirection";
 import { useSearchPlaceholderWithCount } from "~/hooks/useSearchPlaceholderWithCount";
 import { useCart } from "~/lib/cartContext";
 import { useClientSearch } from "~/lib/clientSearchContext";
-import { useDashboardFormStatus } from "~/lib/dashboardFormStatus";
+import {
+	useDashboardButtons,
+	useDashboardFormStatus,
+} from "~/lib/dashboardActions";
 import {
 	categoriesQueryOptions,
 	productCategoryCountsQueryOptions,
@@ -968,16 +970,13 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 		return () => clearTimeout(handle);
 	}, [isDashboard, isMiscPage, dashboardSearchInput, navigate, pathname]);
 
-	// Get action buttons from configuration - memoized to prevent unnecessary re-renders
-	const actionButtons = useMemo(
-		() => getActionButtonsForRoute(pathname),
-		[pathname],
-	);
+	// Read action buttons + form status from store (pages set these directly)
+	const actionButtons = useDashboardButtons();
+	const formStatus = useDashboardFormStatus();
 	const actionButton = useMemo(
 		() => (actionButtons.length === 1 ? actionButtons[0] : null),
 		[actionButtons],
 	);
-	const formStatus = useDashboardFormStatus();
 
 	// Dashboard navigation layout
 	if (isDashboard) {
@@ -1094,11 +1093,7 @@ export function NavBar({ className }: Omit<NavBarProps, "items">) {
 				</nav>
 
 				{/* Bottom Navigation Bar - Mobile only */}
-				<BottomNavBar
-					isDashboard={true}
-					actionButtons={actionButtons}
-					userData={userData || undefined}
-				/>
+				<BottomNavBar isDashboard={true} userData={userData || undefined} />
 			</>
 		);
 	}

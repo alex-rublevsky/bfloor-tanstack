@@ -4,7 +4,7 @@
  */
 
 import type { ButtonStatus } from "~/components/ui/shared/Button";
-import type { ActionButtonConfig } from "~/config/dashboardActionButtons";
+import type { ActionButtonConfig } from "~/lib/dashboardActions";
 import { cn } from "~/utils/utils";
 import { Button } from "../Button";
 import { Plus } from "../Icon";
@@ -13,7 +13,7 @@ interface ActionButtonProps {
 	button: ActionButtonConfig;
 	className?: string;
 	showIcon?: boolean;
-	/** Status for the "Update product" button; from useDashboardFormStatus() in NavBar */
+	/** Status for the "Update product" button; from useDashboardFormStatus() store */
 	formStatus?: ButtonStatus;
 }
 

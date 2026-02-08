@@ -6,10 +6,12 @@ import DeleteConfirmationDialog from "~/components/ui/dashboard/ConfirmationDial
 import { ProductForm } from "~/components/ui/dashboard/ProductForm";
 import { Button } from "~/components/ui/shared/Button";
 import { Eye, Trash } from "~/components/ui/shared/Icon";
-import { useFormNavigation } from "~/hooks/useFormNavigation";
 import { useProductForm } from "~/hooks/useProductForm";
 import { useProductFormHandlers } from "~/hooks/useProductFormHandlers";
-import { dispatchDashboardFormStatus } from "~/lib/dashboardFormStatus";
+import {
+	setDashboardButtons,
+	setDashboardFormStatus,
+} from "~/lib/dashboardActions";
 import { dashboardProductQueryOptions } from "~/lib/queryOptions";
 import { deleteProduct } from "~/server_functions/dashboard/store/deleteProduct";
 import { deleteProductImage } from "~/server_functions/dashboard/store/deleteProductImage";
@@ -120,9 +122,8 @@ function EditProductPage() {
 			});
 		},
 		onSuccess: () => {
-			dispatchDashboardFormStatus("success");
+			setDashboardFormStatus("success");
 			toast.success("Product updated successfully!");
-			setTimeout(() => dispatchDashboardFormStatus("idle"), 1500);
 
 			// Remove (not just invalidate) the individual product cache so that
 			// ensureQueryData in the edit page loader will do a fresh fetch instead
@@ -165,18 +166,44 @@ function EditProductPage() {
 	const hasChanges = hasProductChanges(changes);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
+	// Set navbar action buttons directly (plain store, no provider needed)
+	useEffect(() => {
+		setDashboardButtons([
+			{
+				label: "Отмена",
+				onClick: () => navigate({ to: "/dashboard" }),
+				variant: "outline",
+			},
+			{
+				label: "Обновить товар",
+				onClick: () => {
+					const form = document.getElementById(
+						editProductFormId,
+					) as HTMLFormElement;
+					form?.requestSubmit();
+				},
+				variant: "default",
+				useStatusButton: true,
+				statusLabels: {
+					noChanges: "Нет изменений",
+					analyzing: "Сохранение",
+					success: "Готово",
+					warning: "Ошибка",
+				},
+			},
+		]);
+		return () => {
+			setDashboardButtons([]);
+			setDashboardFormStatus("idle");
+		};
+	}, [navigate]);
+
 	// Sync nav button status with form state (noChanges vs idle)
 	// Don't override while submitting (analyzing → success/warning)
 	useEffect(() => {
 		if (isSubmitting) return;
-		dispatchDashboardFormStatus(hasChanges ? "idle" : "noChanges");
+		setDashboardFormStatus(hasChanges ? "idle" : "noChanges");
 	}, [hasChanges, isSubmitting]);
-
-	// Reset nav button status to idle when leaving the edit page
-	// Without this, "noChanges" status leaks to the index/other pages
-	useEffect(() => {
-		return () => dispatchDashboardFormStatus("idle");
-	}, []);
 
 	// Handle submit; drive status button (analyzing → success/warning)
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -186,17 +213,17 @@ function EditProductPage() {
 		if (!hasChanges) return;
 
 		setIsSubmitting(true);
-		dispatchDashboardFormStatus("analyzing");
+		setDashboardFormStatus("analyzing");
 		try {
 			await productForm.handleSubmit(e);
 			// onSuccess (below) will set "success" then navigate away
 		} catch (err) {
-			dispatchDashboardFormStatus("warning");
+			setDashboardFormStatus("warning");
 			const errorMessage =
 				err instanceof Error ? err.message : "An error occurred";
 			toast.error(errorMessage);
 			setTimeout(() => {
-				dispatchDashboardFormStatus("idle");
+				setDashboardFormStatus("idle");
 				setIsSubmitting(false);
 			}, 2500);
 		}
@@ -233,9 +260,6 @@ function EditProductPage() {
 	const handleDeleteCancel = () => {
 		setShowDeleteDialog(false);
 	};
-
-	// Use shared navigation hook
-	useFormNavigation(editProductFormId, navigate);
 
 	return (
 		<div className="container mx-auto px-4 py-8">

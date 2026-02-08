@@ -5,9 +5,11 @@ import {
 	DrawerContent,
 	DrawerTrigger,
 } from "~/components/ui/shared/Drawer";
-import type { ActionButtonConfig } from "~/config/dashboardActionButtons";
 import { useCart } from "~/lib/cartContext";
-import { useDashboardFormStatus } from "~/lib/dashboardFormStatus";
+import {
+	useDashboardButtons,
+	useDashboardFormStatus,
+} from "~/lib/dashboardActions";
 import { signOut } from "~/utils/auth-client";
 import { cn } from "~/utils/utils";
 import { CartDrawerContent } from "../store/CartDrawerContent";
@@ -20,11 +22,6 @@ interface BottomNavBarProps {
 	className?: string;
 	// Dashboard props
 	isDashboard?: boolean;
-	actionButton?: {
-		label: string;
-		onClick: () => void;
-	} | null;
-	actionButtons?: ActionButtonConfig[];
 	// User data for dashboard menu
 	userData?: {
 		userID: string;
@@ -131,20 +128,14 @@ function CatalogButton() {
 export function BottomNavBar({
 	className,
 	isDashboard = false,
-	actionButton,
-	actionButtons,
 	userData,
 }: BottomNavBarProps) {
 	const router = useRouter();
 	const navigate = useNavigate();
 	const pathname = router.state.location.pathname;
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
+	const buttons = useDashboardButtons();
 	const formStatus = useDashboardFormStatus();
-
-	// Use actionButtons if provided, otherwise fall back to single actionButton
-	const buttons: ActionButtonConfig[] =
-		actionButtons ||
-		(actionButton ? [{ ...actionButton, variant: "default" as const }] : []);
 
 	// Dashboard navigation items for mobile bottom bar - only Products and Orders
 	const dashboardMobileItems = [

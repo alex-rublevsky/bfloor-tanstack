@@ -2,7 +2,6 @@
 
 // Legacy export for backward compatibility (will be deprecated)
 export { useIsMobile as useIsMobileLegacy } from "./use-mobile";
-export { useDashboardAction } from "./useDashboardAction";
 export { useDashboardCRUD } from "./useDashboardCRUD";
 export { useDashboardForm } from "./useDashboardForm";
 // UI hooks

@@ -1,10 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { ProductForm } from "~/components/ui/dashboard/ProductForm";
-import { useFormNavigation } from "~/hooks/useFormNavigation";
 import { useProductForm } from "~/hooks/useProductForm";
 import { useProductFormHandlers } from "~/hooks/useProductFormHandlers";
+import { setDashboardButtons } from "~/lib/dashboardActions";
 import { createProduct } from "~/server_functions/dashboard/store/createProduct";
 
 export const Route = createFileRoute("/dashboard/products/new")({
@@ -44,11 +45,38 @@ function NewProductPage() {
 		}
 	};
 
-	// Use shared handlers and navigation hook to avoid duplication
+	// Use shared handlers to avoid duplication
 	const { handleTagsChange, handleAttributesChange } = useProductFormHandlers(
 		productForm.setFormData,
 	);
-	useFormNavigation(createProductFormId, navigate);
+
+	// Set navbar action buttons directly (plain store, no provider needed)
+	useEffect(() => {
+		setDashboardButtons([
+			{
+				label: "Отмена",
+				onClick: () => navigate({ to: "/dashboard" }),
+				variant: "outline",
+			},
+			{
+				label: "Создать товар",
+				onClick: () => {
+					const form = document.getElementById(
+						createProductFormId,
+					) as HTMLFormElement;
+					form?.requestSubmit();
+				},
+				variant: "default",
+				useStatusButton: true,
+				statusLabels: {
+					analyzing: "Создание",
+					success: "Готово",
+					warning: "Ошибка",
+				},
+			},
+		]);
+		return () => setDashboardButtons([]);
+	}, [navigate]);
 
 	return (
 		<div className="container mx-auto px-4 py-8">
