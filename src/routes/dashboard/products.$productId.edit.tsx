@@ -123,13 +123,19 @@ function EditProductPage() {
 			dispatchDashboardFormStatus("success");
 			toast.success("Product updated successfully!");
 			setTimeout(() => dispatchDashboardFormStatus("idle"), 1500);
-			navigate({ to: "/dashboard" });
+
+			// Remove (not just invalidate) the individual product cache so that
+			// ensureQueryData in the edit page loader will do a fresh fetch instead
+			// of returning stale cached data.
+			queryClient.removeQueries({
+				queryKey: ["bfloorDashboardProduct", loaderData.productIdNum],
+			});
+			// Invalidate the product list — the active observer on the dashboard
+			// will trigger a background refetch automatically.
 			queryClient.invalidateQueries({
 				queryKey: ["bfloorDashboardProductsInfinite"],
 			});
-			queryClient.invalidateQueries({
-				queryKey: ["bfloorDashboardProduct", loaderData.productIdNum],
-			});
+			// Remove store caches so storefront picks up changes
 			queryClient.removeQueries({
 				queryKey: ["bfloorStoreDataInfinite"],
 			});
@@ -141,6 +147,8 @@ function EditProductPage() {
 					queryKey: ["bfloorProduct", productForm.formData.slug],
 				});
 			}
+
+			navigate({ to: "/dashboard" });
 		},
 	});
 
@@ -163,6 +171,12 @@ function EditProductPage() {
 		if (isSubmitting) return;
 		dispatchDashboardFormStatus(hasChanges ? "idle" : "noChanges");
 	}, [hasChanges, isSubmitting]);
+
+	// Reset nav button status to idle when leaving the edit page
+	// Without this, "noChanges" status leaks to the index/other pages
+	useEffect(() => {
+		return () => dispatchDashboardFormStatus("idle");
+	}, []);
 
 	// Handle submit; drive status button (analyzing → success/warning)
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

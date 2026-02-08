@@ -7,6 +7,55 @@ import { routeTree } from "./routeTree.gen";
 import { incrementProductView } from "./server_functions/store/incrementProductView";
 
 export function getRouter() {
+	// Wrap document.startViewTransition once at initialization (client-side only)
+	// This removes backdrop-filter from product-info-overlay before snapshots
+	// this is needed for proper animation of product info card, which has complex interaction of z index relative to the animated image (requires card to have viewtransition name), as well as blur animation.
+	if (typeof document !== "undefined") {
+		const originalStartViewTransition = document.startViewTransition;
+
+		if (originalStartViewTransition) {
+			document.startViewTransition = (callback) => {
+				const overlay = document.querySelector(
+					".product-info-overlay",
+				) as HTMLElement;
+				const isLeavingProductPage =
+					overlay && !window.location.pathname.startsWith("/product/");
+
+				if (overlay) {
+					if (isLeavingProductPage) {
+						// When LEAVING product page: remove view-transition-name
+						// Element won't participate in transition, avoiding blur artifact
+						overlay.style.viewTransitionName = "none";
+					} else {
+						// When ON product page: remove backdrop-filter before snapshot
+						overlay.style.backdropFilter = "none";
+						// biome-ignore lint/suspicious/noExplicitAny: webkitBackdropFilter not in TypeScript types
+						(overlay.style as any).webkitBackdropFilter = "none";
+						overlay.style.background =
+							"oklch(from var(--background) l c h / 0.95)";
+						void overlay.offsetHeight; // Force reflow
+					}
+				}
+
+				// Call original
+				const transition = originalStartViewTransition.call(document, callback);
+
+				// Restore after transition
+				if (overlay) {
+					transition.finished.finally(() => {
+						overlay.style.viewTransitionName = "";
+						overlay.style.backdropFilter = "";
+						// biome-ignore lint/suspicious/noExplicitAny: webkitBackdropFilter not in TypeScript types
+						(overlay.style as any).webkitBackdropFilter = "";
+						overlay.style.background = "";
+					});
+				}
+
+				return transition;
+			};
+		}
+	}
+
 	const router = createTanStackRouter({
 		routeTree,
 		defaultPreload: "intent",
