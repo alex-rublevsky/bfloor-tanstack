@@ -158,18 +158,23 @@ export default function ImageGallery({
 					</div>
 				</div>
 
-				{/* Mobile: Single image */}
+				{/* Mobile/Tablet: Single image */}
 				<div className="lg:hidden">
-					<div className="relative aspect-[4/3] max-h-[50vh] w-full">
-						<img
-							src={`${ASSETS_BASE_URL}/${images[0]}`}
-							alt={alt}
-							width={3000}
-							height={3000}
-							loading="eager"
-							className={`vt-image ${mainImageVariants({ size })} block`}
-							style={{ viewTransitionName: transitionName }}
-						/>
+					<div className="relative aspect-[4/3] max-h-[50vh] w-full overflow-hidden">
+						<div className="flex h-full w-full items-center justify-center">
+							<img
+								src={`${ASSETS_BASE_URL}/${images[0]}`}
+								alt={alt}
+								width={3000}
+								height={3000}
+								loading="eager"
+								className="vt-image block max-h-full max-w-full object-contain"
+								style={{
+									width: "auto",
+									viewTransitionName: transitionName,
+								}}
+							/>
+						</div>
 					</div>
 				</div>
 			</div>

@@ -139,10 +139,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<body
 				className={
 					isStoreCategoryPage
-						? "store-category-viewport flex min-h-0 flex-col md:overflow-hidden"
+						? "store-category-viewport flex min-h-screen flex-col lg:h-screen lg:min-h-0 lg:overflow-hidden"
 						: "flex min-h-screen flex-col"
 				}
-				style={isStoreCategoryPage ? { height: "100vh" } : undefined}
 				suppressHydrationWarning
 			>
 				<SplashLoader />
