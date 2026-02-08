@@ -1,38 +1,35 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { Toaster } from "~/components/ui/shared/sonner";
 import { userDataQueryOptions } from "~/lib/queryOptions";
 import { simpleSearchSchema } from "~/utils/searchSchemas";
 
 export const Route = createFileRoute("/dashboard")({
-	// // //beforeLoad temporarily disabled for local development access
-	// // beforeLoad: async () => {
-	// // 	try {
-	// // 		const userData = await getUserData();
+	// Auth guard: reads from React Query cache first (populated by root loader),
+	// only hits the server on cache miss. Eliminates the redundant getUserData()
+	// round-trip that was happening on every dashboard navigation.
+	beforeLoad: async ({ context: { queryClient } }) => {
+		try {
+			const userData =
+				queryClient.getQueryData(userDataQueryOptions().queryKey) ??
+				(await queryClient.ensureQueryData(userDataQueryOptions()));
 
-	// // 		// Check if user is authenticated and is admin
-	// // 		if (!userData.isAuthenticated || !userData.isAdmin) {
-	// // 			throw redirect({ to: "/login" });
-	// // 		}
+			if (!userData || !userData.isAdmin) {
+				throw redirect({ to: "/login" });
+			}
 
-	// // 		// Ensure we have required user data
-	// // 		if (!userData.userID || !userData.userEmail) {
-	// // 			throw redirect({ to: "/login" });
-	// // 		}
+			if (!userData.userID || !userData.userEmail) {
+				throw redirect({ to: "/login" });
+			}
 
-	// // 		// Return user data in context for the loader to use
-	// // 		return { userData };
-	// // 	} catch {
-	// // 		throw redirect({ to: "/login" });
-	// // 	}
-	// },
-	// Loader prefetches userData for NavBar and other components
-	loader: async ({ context }) => {
-		const { queryClient } = context;
-		// Prefetch userData so NavBar can use it immediately from cache
-		await queryClient.ensureQueryData(userDataQueryOptions());
-		// Return empty object - data is now in query cache
-		return {};
+			return { userData };
+		} catch (error) {
+			// Re-throw redirects as-is
+			if (error && typeof error === "object" && "to" in error) {
+				throw error;
+			}
+			throw redirect({ to: "/login" });
+		}
 	},
 	component: RouteComponent,
 	validateSearch: zodValidator(simpleSearchSchema),

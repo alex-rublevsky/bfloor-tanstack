@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
-import { brands, collections, products } from "~/schema";
+import { brands, collections, productBrands, products } from "~/schema";
 import { ApiError } from "~/utils/ApiError";
 import { getStorageBucket } from "~/utils/storage";
 
@@ -15,7 +15,11 @@ export const deleteBrand = createServerFn({ method: "POST" })
 
 			// Check if brand exists and get its logo
 			const existingBrand = await db
-				.select({ id: brands.id, slug: brands.slug, image: brands.image })
+				.select({
+					id: brands.id,
+					slug: brands.slug,
+					image: brands.image,
+				})
 				.from(brands)
 				.where(eq(brands.id, id))
 				.limit(1);
@@ -24,12 +28,21 @@ export const deleteBrand = createServerFn({ method: "POST" })
 				throw new ApiError("Brand not found", 404);
 			}
 
-			// Check if any products are using this brand
-			const productsUsingBrand = await db
-				.select({ id: products.id })
-				.from(products)
-				.where(eq(products.brandSlug, existingBrand[0].slug))
-				.limit(1);
+			const brandSlug = existingBrand[0].slug;
+
+			// Check products and collections in parallel (independent queries)
+			const [productsUsingBrand, collectionsUsingBrand] = await Promise.all([
+				db
+					.select({ id: products.id })
+					.from(products)
+					.where(eq(products.brandSlug, brandSlug))
+					.limit(1),
+				db
+					.select({ id: collections.id })
+					.from(collections)
+					.where(eq(collections.brandSlug, brandSlug))
+					.limit(1),
+			]);
 
 			if (productsUsingBrand.length > 0) {
 				throw new ApiError(
@@ -38,14 +51,6 @@ export const deleteBrand = createServerFn({ method: "POST" })
 				);
 			}
 
-			// Check if any collections belong to this brand
-			// collections.brandSlug has onDelete: "cascade", so they'd be silently deleted
-			const collectionsUsingBrand = await db
-				.select({ id: collections.id })
-				.from(collections)
-				.where(eq(collections.brandSlug, existingBrand[0].slug))
-				.limit(1);
-
 			if (collectionsUsingBrand.length > 0) {
 				throw new ApiError(
 					"Cannot delete brand: there are collections belonging to this brand",
@@ -53,30 +58,34 @@ export const deleteBrand = createServerFn({ method: "POST" })
 				);
 			}
 
-			// Delete the brand logo from R2 if it exists
+			// Delete the brand logo from R2 if it exists (outside transaction — storage I/O)
 			const brandLogo = existingBrand[0].image;
 			if (brandLogo && !brandLogo.startsWith("staging/")) {
 				try {
 					const bucket = getStorageBucket();
-					console.log("🗑️ Deleting brand logo from R2:", brandLogo);
 					await bucket.delete(brandLogo);
-					console.log("✅ Brand logo deleted from R2 successfully");
 				} catch (deleteError) {
-					console.warn("⚠️ Failed to delete brand logo from R2:", deleteError);
-					// Don't fail the brand deletion if logo deletion fails
+					console.warn("Failed to delete brand logo from R2:", deleteError);
 				}
 			}
 
-			// Delete the brand
-			const deleteResult = await db
-				.delete(brands)
-				.where(eq(brands.id, id))
-				.returning();
+			// Delete brand + clean up orphaned junction rows in a transaction
+			await db.transaction(async (tx) => {
+				// Clean up any orphaned productBrands rows referencing this brand's slug
+				await tx
+					.delete(productBrands)
+					.where(eq(productBrands.brandSlug, brandSlug));
 
-			if (deleteResult.length === 0) {
-				setResponseStatus(404);
-				throw new Error("Brand not found");
-			}
+				// Delete the brand
+				const deleteResult = await tx
+					.delete(brands)
+					.where(eq(brands.id, id))
+					.returning();
+
+				if (deleteResult.length === 0) {
+					throw new ApiError("Brand not found", 404);
+				}
+			});
 
 			return {
 				message: "Brand deleted successfully",

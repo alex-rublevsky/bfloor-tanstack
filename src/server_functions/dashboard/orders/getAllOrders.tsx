@@ -1,19 +1,40 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
-import { eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 import { DB } from "~/db";
 import { orderItems, orders, products, productVariations } from "~/schema";
+import { ApiError } from "~/utils/ApiError";
 
-export const getAllOrders = createServerFn({ method: "GET" }).handler(
-	async () => {
+export const getAllOrders = createServerFn({ method: "GET" })
+	.inputValidator(
+		(data: { limit?: number; offset?: number } = {}) =>
+			data as { limit?: number; offset?: number },
+	)
+	.handler(async ({ data }) => {
 		try {
 			const db = DB();
+			const limit = data?.limit ?? 50;
+			const offset = data?.offset ?? 0;
 
-			// Fetch all orders
-			const ordersResult = await db.select().from(orders).all();
+			// Get total count for pagination metadata (single scalar query, cheap)
+			const [{ total }] = await db
+				.select({ total: sql<number>`count(*)` })
+				.from(orders);
+
+			// Fetch orders with LIMIT/OFFSET, sorted by newest first
+			const ordersResult = await db
+				.select()
+				.from(orders)
+				.orderBy(desc(orders.createdAt))
+				.limit(limit)
+				.offset(offset)
+				.all();
 
 			if (!ordersResult || ordersResult.length === 0) {
-				return { groupedOrders: [] };
+				return {
+					groupedOrders: [],
+					pagination: { total: 0, limit, offset, hasMore: false },
+				};
 			}
 
 			const orderIds = ordersResult.map((o) => o.id);
@@ -58,7 +79,7 @@ export const getAllOrders = createServerFn({ method: "GET" }).handler(
 					unitAmount: number;
 					discountPercentage: number | null;
 					finalAmount: number;
-					attributes: Record<string, unknown>;
+					attributes: Record<string, string>;
 					product: { name: string; images: string | null };
 					variation?: { id: number; sku: string };
 				}>
@@ -76,7 +97,9 @@ export const getAllOrders = createServerFn({ method: "GET" }).handler(
 					unitAmount: item.unitAmount,
 					discountPercentage: item.discountPercentage,
 					finalAmount: item.finalAmount,
-					attributes: item.attributes ? JSON.parse(item.attributes) : {},
+					attributes: (item.attributes
+						? JSON.parse(item.attributes)
+						: {}) as Record<string, string>,
 					product: {
 						name: item.productName || "Unknown Product",
 						images: item.productImages,
@@ -104,7 +127,7 @@ export const getAllOrders = createServerFn({ method: "GET" }).handler(
 
 			const groupedOrders: OrderGroup[] = [];
 
-			// Separate orders by status
+			// Separate orders by status (already sorted by date DESC from SQL)
 			const newOrders = ordersWithRelations.filter(
 				(order) => order.status === "pending",
 			);
@@ -112,36 +135,32 @@ export const getAllOrders = createServerFn({ method: "GET" }).handler(
 				(order) => order.status === "processed",
 			);
 
-			// Sort by date (newest first) within each group
-			const sortByDate = (
-				a: (typeof ordersWithRelations)[0],
-				b: (typeof ordersWithRelations)[0],
-			) => {
-				return (
-					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-				);
-			};
-
-			// Add groups with sorted orders
 			if (newOrders.length > 0) {
-				groupedOrders.push({
-					title: "New",
-					orders: newOrders.sort(sortByDate),
-				});
+				groupedOrders.push({ title: "New", orders: newOrders });
 			}
 
 			if (processedOrders.length > 0) {
-				groupedOrders.push({
-					title: "Processed",
-					orders: processedOrders.sort(sortByDate),
-				});
+				groupedOrders.push({ title: "Processed", orders: processedOrders });
 			}
 
-			return { groupedOrders };
+			const hasMore = offset + limit < total;
+
+			return {
+				groupedOrders,
+				pagination: {
+					total,
+					limit,
+					offset,
+					hasMore,
+				},
+			};
 		} catch (error) {
-			console.error("Error fetching dashboard orders data:", error);
-			setResponseStatus(500);
-			throw new Error("Failed to fetch dashboard orders data");
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error fetching dashboard orders data:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
-	},
-);
+	});

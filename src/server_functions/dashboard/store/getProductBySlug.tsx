@@ -20,34 +20,29 @@ export const getProductBySlug = createServerFn({ method: "GET" })
 				throw new ApiError("Invalid product ID", 400);
 			}
 
-			// Fetch product
-			const productResult = await db
-				.select()
-				.from(products)
-				.where(eq(products.id, productId))
-				.limit(1);
+			// Fetch product, store locations, and variations in parallel.
+			// Variations query is always run (returns [] for non-variation products)
+			// to avoid the serial dependency on product.hasVariations.
+			const [productResult, storeLocationResults, variationsResult] =
+				await Promise.all([
+					db.select().from(products).where(eq(products.id, productId)).limit(1),
+					db
+						.select({
+							storeLocationId: productStoreLocations.storeLocationId,
+						})
+						.from(productStoreLocations)
+						.where(eq(productStoreLocations.productId, productId)),
+					db
+						.select()
+						.from(productVariations)
+						.where(eq(productVariations.productId, productId)),
+				]);
 
 			if (!productResult[0]) {
 				throw new ApiError("Product not found", 404);
 			}
 
 			const product = productResult[0];
-
-			// Fetch store locations separately (more reliable than subquery)
-			const storeLocationResults = await db
-				.select({
-					storeLocationId: productStoreLocations.storeLocationId,
-				})
-				.from(productStoreLocations)
-				.where(eq(productStoreLocations.productId, productId));
-
-			// Fetch variations only if hasVariations = true
-			const variationsResult = product.hasVariations
-				? await db
-						.select()
-						.from(productVariations)
-						.where(eq(productVariations.productId, productId))
-				: [];
 
 			// Parse store location IDs from separate query
 			const storeLocationIds: number[] = storeLocationResults

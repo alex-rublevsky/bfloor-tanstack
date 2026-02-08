@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { DB } from "~/db";
-import { attributeValues } from "~/schema";
+import { attributeValues, productAttributes } from "~/schema";
 import { ApiError } from "~/utils/ApiError";
 import type { AttributeValue } from "./getAttributeValues";
 
@@ -20,17 +20,36 @@ export const createAttributeValue = createServerFn({ method: "POST" })
 			try {
 				const db = DB();
 
-				// Check for duplicate value for this attribute
-				const existing = await db
-					.select()
-					.from(attributeValues)
-					.where(
-						and(
-							eq(attributeValues.attributeId, data.attributeId),
-							eq(attributeValues.value, data.value),
-						),
-					)
-					.limit(1);
+				// Validate parent, check duplicate, and get max sortOrder — all in parallel
+				const [parentAttribute, existing, maxResult] = await Promise.all([
+					db
+						.select({ id: productAttributes.id })
+						.from(productAttributes)
+						.where(eq(productAttributes.id, data.attributeId))
+						.limit(1),
+					db
+						.select({ id: attributeValues.id })
+						.from(attributeValues)
+						.where(
+							and(
+								eq(attributeValues.attributeId, data.attributeId),
+								eq(attributeValues.value, data.value),
+							),
+						)
+						.limit(1),
+					db
+						.select({
+							maxSort: sql<number>`MAX(${attributeValues.sortOrder})`.as(
+								"maxSort",
+							),
+						})
+						.from(attributeValues)
+						.where(eq(attributeValues.attributeId, data.attributeId)),
+				]);
+
+				if (parentAttribute.length === 0) {
+					throw new ApiError("Parent attribute not found", 404);
+				}
 
 				if (existing.length > 0) {
 					throw new ApiError(
@@ -39,18 +58,7 @@ export const createAttributeValue = createServerFn({ method: "POST" })
 					);
 				}
 
-				// Get max sort_order for this attribute to set next value
-				const maxSortOrderResult = await db
-					.select()
-					.from(attributeValues)
-					.where(eq(attributeValues.attributeId, data.attributeId))
-					.orderBy(attributeValues.sortOrder);
-
-				const maxSortOrder =
-					maxSortOrderResult.length > 0
-						? Math.max(...maxSortOrderResult.map((v) => v.sortOrder))
-						: -1;
-
+				const maxSortOrder = maxResult[0]?.maxSort ?? -1;
 				const nextSortOrder = data.sortOrder ?? maxSortOrder + 1;
 
 				const newValue = await db

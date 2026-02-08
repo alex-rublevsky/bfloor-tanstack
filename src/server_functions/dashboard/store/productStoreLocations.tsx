@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
+import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
 import { productStoreLocations } from "~/schema";
+import { ApiError } from "~/utils/ApiError";
 
 export const getProductStoreLocations = createServerFn({ method: "GET" })
 	.inputValidator((data: { id: number }) => data)
@@ -19,25 +21,44 @@ export const updateProductStoreLocations = createServerFn({ method: "POST" })
 		(data: { productId: number; storeLocationIds: number[] }) => data,
 	)
 	.handler(async ({ data }) => {
-		const db = DB();
+		try {
+			const db = DB();
 
-		// Delete existing relationships
-		await db
-			.delete(productStoreLocations)
-			.where(eq(productStoreLocations.productId, data.productId));
+			if (Number.isNaN(data.productId) || data.productId <= 0) {
+				throw new ApiError("Invalid product ID", 400);
+			}
 
-		// Insert new relationships
-		if (data.storeLocationIds.length > 0) {
-			const insertData = data.storeLocationIds.map(
-				(storeLocationId: number) => ({
-					productId: data.productId,
-					storeLocationId,
-					createdAt: new Date(),
-				}),
-			);
+			// Delete + re-insert in a transaction so they're atomic
+			await db.transaction(async (tx) => {
+				await tx
+					.delete(productStoreLocations)
+					.where(eq(productStoreLocations.productId, data.productId));
 
-			await db.insert(productStoreLocations).values(insertData);
+				if (data.storeLocationIds.length > 0) {
+					const insertData = data.storeLocationIds
+						.filter(
+							(id): id is number => typeof id === "number" && !Number.isNaN(id),
+						)
+						.map((storeLocationId) => ({
+							productId: data.productId,
+							storeLocationId,
+							createdAt: new Date(),
+						}));
+
+					if (insertData.length > 0) {
+						await tx.insert(productStoreLocations).values(insertData);
+					}
+				}
+			});
+
+			return { message: "Product store locations updated" };
+		} catch (error) {
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error updating product store locations:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
-
-		return { message: "Product store locations updated" };
 	});

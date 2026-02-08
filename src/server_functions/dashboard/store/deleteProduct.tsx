@@ -27,24 +27,23 @@ export const deleteProduct = createServerFn({ method: "POST" })
 				throw new ApiError("Invalid product ID", 400);
 			}
 
-			// Check if product exists
-			const existingProduct = await db
-				.select()
-				.from(products)
-				.where(eq(products.id, productId))
-				.limit(1);
+			// Check product existence and order references in parallel
+			const [existingProduct, existingOrderItems] = await Promise.all([
+				db
+					.select({ id: products.id, images: products.images })
+					.from(products)
+					.where(eq(products.id, productId))
+					.limit(1),
+				db
+					.select({ id: orderItems.id })
+					.from(orderItems)
+					.where(eq(orderItems.productId, productId))
+					.limit(1),
+			]);
 
 			if (!existingProduct[0]) {
 				throw new ApiError("Product not found", 404);
 			}
-
-			// Check if product has been ordered — refuse to delete to preserve order history
-			// orderItems.productId has onDelete: "cascade", so deleting would destroy orders
-			const existingOrderItems = await db
-				.select({ id: orderItems.id })
-				.from(orderItems)
-				.where(eq(orderItems.productId, productId))
-				.limit(1);
 
 			if (existingOrderItems.length > 0) {
 				throw new ApiError(

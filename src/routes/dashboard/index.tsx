@@ -36,8 +36,7 @@ import {
 	productsInfiniteQueryOptions,
 } from "~/lib/queryOptions";
 import { bulkDeleteProducts } from "~/server_functions/dashboard/store/bulkDeleteProducts";
-import type { ProductWithVariations } from "~/types";
-import { seedDashboardProductCache } from "~/utils/dashboardCache";
+import type { ProductListItem } from "~/types";
 
 // Zod schema for search params validation
 const searchParamsSchema = z.object({
@@ -79,6 +78,17 @@ export const Route = createFileRoute("/dashboard/")({
 	// Strip default values from URL to keep it clean
 	search: {
 		middlewares: [stripSearchParams(defaultSearchValues)],
+	},
+	// SSR loader: prefetch reference data (categories + counts) so the sidebar renders instantly
+	// instead of showing skeleton/loading states. Products are loaded client-side by the
+	// infinite query (they depend on dynamic filter state from URL + component state).
+	loader: async ({ context: { queryClient } }) => {
+		await Promise.all([
+			queryClient.ensureQueryData(categoriesQueryOptions()),
+			queryClient.ensureQueryData(productCategoryCountsQueryOptions()),
+		]);
+
+		return {};
 	},
 });
 
@@ -364,7 +374,7 @@ function RouteComponent() {
 	}, [brands]);
 
 	// Define table columns
-	const columns: ColumnDef<ProductWithVariations>[] = useMemo(
+	const columns: ColumnDef<ProductListItem>[] = useMemo(
 		() => [
 			{
 				id: "select",
@@ -831,9 +841,7 @@ function RouteComponent() {
 									viewTransition={true}
 									preload="intent"
 									onMouseEnter={() => {
-										// Seed cache with list data for instant navigation
-										seedDashboardProductCache(queryClient, productId);
-										// Also prefetch to ensure fresh data
+										// Prefetch full product data on hover for instant edit page navigation
 										prefetchDashboardProduct(productId);
 									}}
 								>

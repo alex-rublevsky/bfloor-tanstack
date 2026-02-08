@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
-import { collections, productCollections, products } from "~/schema";
+import { brands, collections, productCollections, products } from "~/schema";
 import { ApiError } from "~/utils/ApiError";
 
 interface CollectionFormData {
@@ -34,19 +34,25 @@ export const updateCollection = createServerFn({ method: "POST" })
 				);
 			}
 
-			// Check if collection exists and for duplicate slug
-			const [existingCollection, duplicateSlug] = await Promise.all([
-				db
-					.select()
-					.from(collections)
-					.where(eq(collections.id, collectionId))
-					.limit(1),
-				db
-					.select()
-					.from(collections)
-					.where(eq(collections.slug, collectionData.slug))
-					.limit(1),
-			]);
+			// Check if collection exists, for duplicate slug, and validate brand exists
+			const [existingCollection, duplicateSlug, brandExists] =
+				await Promise.all([
+					db
+						.select()
+						.from(collections)
+						.where(eq(collections.id, collectionId))
+						.limit(1),
+					db
+						.select()
+						.from(collections)
+						.where(eq(collections.slug, collectionData.slug))
+						.limit(1),
+					db
+						.select({ slug: brands.slug })
+						.from(brands)
+						.where(eq(brands.slug, collectionData.brandSlug))
+						.limit(1),
+				]);
 
 			if (!existingCollection[0]) {
 				throw new ApiError("Коллекция не найдена", 404);
@@ -54,6 +60,13 @@ export const updateCollection = createServerFn({ method: "POST" })
 
 			if (duplicateSlug[0] && duplicateSlug[0].id !== collectionId) {
 				throw new ApiError("A collection with this slug already exists", 409);
+			}
+
+			if (brandExists.length === 0) {
+				throw new ApiError(
+					"Brand not found: the specified brandSlug does not exist",
+					400,
+				);
 			}
 
 			const oldSlug = existingCollection[0].slug;

@@ -6,7 +6,7 @@
  */
 
 import type { QueryClient } from "@tanstack/react-query";
-import type { ProductWithVariations } from "~/types";
+import type { ProductListItem } from "~/types";
 
 /**
  * Get all cached products from dashboard infinite query
@@ -16,17 +16,17 @@ import type { ProductWithVariations } from "~/types";
  */
 export const getDashboardProductsFromInfiniteCache = (
 	queryClient: QueryClient,
-): ProductWithVariations[] => {
+): ProductListItem[] => {
 	// Get all dashboard infinite query data from cache
 	const queries = queryClient.getQueriesData<{
-		pages: Array<{ products: ProductWithVariations[] }>;
+		pages: Array<{ products: ProductListItem[] }>;
 	}>({
 		queryKey: ["bfloorDashboardProductsInfinite"],
 		exact: false,
 	});
 
 	// Flatten all products from all queries into a single array
-	const allProducts: ProductWithVariations[] = [];
+	const allProducts: ProductListItem[] = [];
 
 	for (const [, data] of queries) {
 		if (!data?.pages) continue;
@@ -51,7 +51,7 @@ export const getDashboardProductsFromInfiniteCache = (
 export const getCachedDashboardProduct = (
 	queryClient: QueryClient,
 	productId: number,
-): ProductWithVariations | null => {
+): ProductListItem | null => {
 	const cachedProducts = getDashboardProductsFromInfiniteCache(queryClient);
 	return cachedProducts.find((product) => product.id === productId) ?? null;
 };

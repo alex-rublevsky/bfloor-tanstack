@@ -1,8 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
-import { eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { DB } from "~/db";
-import { categories } from "~/schema";
 import { ApiError } from "~/utils/ApiError";
 
 interface CategoryOrderUpdate {
@@ -13,6 +12,7 @@ interface CategoryOrderUpdate {
 /**
  * Bulk update category order values.
  * Used by the drag-and-drop reordering UI in the dashboard.
+ * Uses a single CASE/WHEN SQL statement instead of N individual UPDATEs.
  */
 export const updateCategoryOrder = createServerFn({ method: "POST" })
 	.inputValidator((data: { updates: CategoryOrderUpdate[] }) => data)
@@ -25,15 +25,13 @@ export const updateCategoryOrder = createServerFn({ method: "POST" })
 				throw new ApiError("No updates provided", 400);
 			}
 
-			// All order updates in a single transaction for atomicity
-			await db.transaction(async (tx) => {
-				for (const update of updates) {
-					await tx
-						.update(categories)
-						.set({ order: update.order })
-						.where(eq(categories.id, update.id));
-				}
-			});
+			// Single query: UPDATE categories SET "order" = CASE id WHEN ... END WHERE id IN (...)
+			const ids = updates.map((u) => u.id);
+			const whenClauses = updates.map((u) => sql`WHEN ${u.id} THEN ${u.order}`);
+
+			await db.run(
+				sql`UPDATE categories SET "order" = CASE id ${sql.join(whenClauses, sql` `)} END WHERE id IN ${ids}`,
+			);
 
 			return {
 				message: "Category order updated successfully",

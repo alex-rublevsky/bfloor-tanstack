@@ -1,9 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
-import type { ProductWithVariations } from "~/types";
+import type { ProductListItem } from "~/types";
 
 type StoreCacheEntry = {
 	cacheKey: string;
-	products: ProductWithVariations[];
+	products: ProductListItem[];
 };
 
 const storeCacheByClient = new WeakMap<QueryClient, StoreCacheEntry>();
@@ -14,7 +14,7 @@ const storeCacheByClient = new WeakMap<QueryClient, StoreCacheEntry>();
  */
 export const getStoreProductsFromInfiniteCache = (
 	queryClient: QueryClient,
-): ProductWithVariations[] => {
+): ProductListItem[] => {
 	const allProductQueries = queryClient.getQueryCache().findAll({
 		predicate: (query) => {
 			const key = query.queryKey[0];
@@ -39,11 +39,11 @@ export const getStoreProductsFromInfiniteCache = (
 		return cached.products;
 	}
 
-	const productMap = new Map<number, ProductWithVariations>();
+	const productMap = new Map<number, ProductListItem>();
 
 	for (const query of allProductQueries) {
 		const data = query.state.data as
-			| { pages?: Array<{ products?: ProductWithVariations[] }> }
+			| { pages?: Array<{ products?: ProductListItem[] }> }
 			| undefined;
 		if (!data?.pages?.length) continue;
 

@@ -1,13 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllProductAttributes } from "~/server_functions/dashboard/attributes/getAllProductAttributes";
+import { productAttributesQueryOptions } from "~/lib/queryOptions";
 import type { ProductAttribute } from "~/types";
 
 export function useProductAttributes() {
-	return useQuery({
-		queryKey: ["productAttributes"],
-		queryFn: () => getAllProductAttributes(),
-		staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-	});
+	return useQuery(productAttributesQueryOptions());
 }
 
 /**

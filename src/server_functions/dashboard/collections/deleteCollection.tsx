@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
-import { collections, products } from "~/schema";
+import { collections, productCollections, products } from "~/schema";
 import { ApiError } from "~/utils/ApiError";
 
 export const deleteCollection = createServerFn({ method: "POST" })
@@ -27,13 +27,13 @@ export const deleteCollection = createServerFn({ method: "POST" })
 				throw new ApiError("Коллекция не найдена", 404);
 			}
 
+			const collectionSlug = existingCollection[0].slug;
+
 			// Check if any products reference this collection
-			// products.collectionSlug has onDelete: "set null" so products won't be deleted,
-			// but productCollections junction rows will cascade-delete, affecting storefront filtering
 			const productsUsingCollection = await db
 				.select({ id: products.id })
 				.from(products)
-				.where(eq(products.collectionSlug, existingCollection[0].slug))
+				.where(eq(products.collectionSlug, collectionSlug))
 				.limit(1);
 
 			if (productsUsingCollection.length > 0) {
@@ -43,8 +43,16 @@ export const deleteCollection = createServerFn({ method: "POST" })
 				);
 			}
 
-			// Delete collection
-			await db.delete(collections).where(eq(collections.id, collectionId));
+			// Delete collection + clean up orphaned junction rows in a transaction
+			await db.transaction(async (tx) => {
+				// Clean up any orphaned productCollections rows referencing this slug
+				await tx
+					.delete(productCollections)
+					.where(eq(productCollections.collectionSlug, collectionSlug));
+
+				// Delete the collection
+				await tx.delete(collections).where(eq(collections.id, collectionId));
+			});
 
 			return {
 				message: "Коллекция удалена успешно!",

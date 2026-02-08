@@ -23,7 +23,7 @@ import { useEnrichedCart } from "~/hooks/useEnrichedCart";
 import { useCart } from "~/lib/cartContext";
 import { createOrder } from "~/server_functions/dashboard/orders/orderCreation";
 import { sendOrderEmails } from "~/server_functions/sendOrderEmails";
-import type { ProductWithVariations } from "~/types";
+import type { ProductListItem } from "~/types";
 import { parseImages } from "~/utils/productParsing";
 import { getStoreProductsFromInfiniteCache } from "~/utils/storeCache";
 
@@ -98,7 +98,7 @@ function CheckoutScreen() {
 		mutationFn: async (orderData: {
 			customerInfo: CustomerInfo;
 			cartItems: EnrichedCartItem[];
-			products: ProductWithVariations[];
+			products: ProductListItem[];
 		}) => {
 			const orderResult = await createOrder({ data: orderData });
 			if (!orderResult.success) {
@@ -227,7 +227,7 @@ function CheckoutScreen() {
 		orderMutation.mutate({
 			customerInfo,
 			cartItems: enrichedItems,
-			products: products as unknown as ProductWithVariations[],
+			products: products as unknown as ProductListItem[],
 		});
 	};
 

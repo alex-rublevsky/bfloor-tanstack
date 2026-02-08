@@ -13,7 +13,7 @@ import {
 	productsByTagInfiniteQueryOptions,
 	recentlyVisitedProductsInfiniteQueryOptions,
 } from "~/lib/queryOptions";
-import type { ProductWithVariations } from "~/types";
+import type { ProductListItem } from "~/types";
 import { getStoreProductsFromInfiniteCache } from "~/utils/storeCache";
 import { EmblaArrowButtons } from "../shared/EmblaArrowButtons";
 import ProductCard from "../store/ProductCard";
@@ -70,9 +70,9 @@ export default function ProductSlider({
 			const productQueries = queryClient
 				.getQueryCache()
 				.findAll({ queryKey: ["bfloorProduct"] });
-			const productCacheMap = new Map<number, ProductWithVariations>();
+			const productCacheMap = new Map<number, ProductListItem>();
 			for (const query of productQueries) {
-				const product = query.state.data as ProductWithVariations | undefined;
+				const product = query.state.data as ProductListItem | undefined;
 				if (product?.id) {
 					productCacheMap.set(product.id, product);
 				}
@@ -86,7 +86,7 @@ export default function ProductSlider({
 						null
 					);
 				})
-				.filter((product): product is ProductWithVariations =>
+				.filter((product): product is ProductListItem =>
 					Boolean(product?.isActive),
 				);
 		}
@@ -94,7 +94,7 @@ export default function ProductSlider({
 		const allProducts =
 			data?.pages
 				?.flatMap((page) => page?.products ?? [])
-				?.filter((product: ProductWithVariations) => product.isActive) ?? [];
+				?.filter((product: ProductListItem) => product.isActive) ?? [];
 		return allProducts;
 	}, [mode, data, queryClient, recentlyVisitedProductIds]);
 
@@ -301,7 +301,7 @@ export default function ProductSlider({
 					{/* Carousel Viewport */}
 					<div className="embla__viewport" ref={emblaRef}>
 						<div className="embla__container">
-							{products.map((product: ProductWithVariations) => (
+							{products.map((product: ProductListItem) => (
 								<div className="embla__slide" key={product.id}>
 									<div className="px-1 md:px-1.5">
 										<ProductCard

@@ -33,6 +33,22 @@ export const createProductCategory = createServerFn({ method: "POST" })
 				throw new ApiError("A category with this slug already exists", 409);
 			}
 
+			// Validate that parentSlug exists if provided (no FK constraint on this column)
+			if (categoryData.parentSlug) {
+				const parentCategory = await db
+					.select({ slug: categories.slug })
+					.from(categories)
+					.where(eq(categories.slug, categoryData.parentSlug))
+					.limit(1);
+
+				if (parentCategory.length === 0) {
+					throw new ApiError(
+						"Parent category not found: the specified parentSlug does not exist",
+						400,
+					);
+				}
+			}
+
 			// Move staging images to final location before saving (in same request)
 			let finalImage = categoryData.image || "";
 			if (finalImage?.startsWith("staging/")) {

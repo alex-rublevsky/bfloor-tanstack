@@ -23,12 +23,19 @@ export const createProductAttribute = createServerFn({ method: "POST" })
 					);
 				}
 
-				// Check if attribute with this name already exists
-				const existingByName = await db
-					.select()
-					.from(productAttributes)
-					.where(eq(productAttributes.name, data.name))
-					.limit(1);
+				// Check name and slug uniqueness in parallel
+				const [existingByName, existingBySlug] = await Promise.all([
+					db
+						.select({ id: productAttributes.id })
+						.from(productAttributes)
+						.where(eq(productAttributes.name, data.name))
+						.limit(1),
+					db
+						.select({ id: productAttributes.id })
+						.from(productAttributes)
+						.where(eq(productAttributes.slug, data.slug))
+						.limit(1),
+				]);
 
 				if (existingByName.length > 0) {
 					throw new ApiError(
@@ -36,13 +43,6 @@ export const createProductAttribute = createServerFn({ method: "POST" })
 						409,
 					);
 				}
-
-				// Check if attribute with this slug already exists
-				const existingBySlug = await db
-					.select()
-					.from(productAttributes)
-					.where(eq(productAttributes.slug, data.slug))
-					.limit(1);
 
 				if (existingBySlug.length > 0) {
 					throw new ApiError(

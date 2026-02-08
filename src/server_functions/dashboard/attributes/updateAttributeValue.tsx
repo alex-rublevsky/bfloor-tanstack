@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { and, eq, ne } from "drizzle-orm";
 import { DB } from "~/db";
-import { attributeValues } from "~/schema";
+import { attributeValues, variationAttributes } from "~/schema";
 import { ApiError } from "~/utils/ApiError";
 import { updateAttributeValueInProducts } from "~/utils/updateAttributeValueInProducts";
 import type { AttributeValue } from "./getAttributeValues";
@@ -83,8 +83,9 @@ export const updateAttributeValue = createServerFn({ method: "POST" })
 				// Wrap product JSON updates + attributeValues row update in a transaction
 				// so both succeed or both roll back
 				const updated = await db.transaction(async (tx) => {
-					// If value is being renamed, propagate to product JSON columns first
+					// If value is being renamed, propagate to all referencing tables
 					if (data.data.value && data.data.value !== oldValue) {
+						// Propagate to products.productAttributes JSON
 						await updateAttributeValueInProducts(
 							tx as unknown as Parameters<
 								typeof updateAttributeValueInProducts
@@ -93,6 +94,17 @@ export const updateAttributeValue = createServerFn({ method: "POST" })
 							oldValue,
 							data.data.value,
 						);
+
+						// Propagate to variationAttributes.value
+						await tx
+							.update(variationAttributes)
+							.set({ value: data.data.value })
+							.where(
+								and(
+									eq(variationAttributes.attributeId, attributeId.toString()),
+									eq(variationAttributes.value, oldValue),
+								),
+							);
 					}
 
 					return await tx

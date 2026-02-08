@@ -9,10 +9,7 @@ import {
 	products,
 	productVariations,
 } from "~/schema";
-import {
-	parseProductAttributes,
-	parseVariationAttributes,
-} from "~/utils/productParsing";
+import { parseVariationAttributes } from "~/utils/productParsing";
 import { buildFts5Query } from "~/utils/search/queryExpander";
 
 export const getAllProducts = createServerFn({ method: "GET" })
@@ -242,11 +239,27 @@ export const getAllProducts = createServerFn({ method: "GET" })
 				orderSql = sql.raw(`CASE ${caseStatements} ELSE 9999 END`);
 			}
 
+			// Select only columns consumed by ProductCard/dashboard table (ProductListItem type).
+			// Every field here is actually read by at least one consumer.
+			const listColumns = {
+				id: products.id,
+				name: products.name,
+				slug: products.slug,
+				images: products.images,
+				price: products.price,
+				discount: products.discount,
+				isActive: products.isActive,
+				hasVariations: products.hasVariations,
+				categorySlug: products.categorySlug,
+				brandSlug: products.brandSlug,
+				viewCount: products.viewCount,
+			};
+
 			// Fetch products first (no join) to avoid row explosion from variations
 			const pagedProducts =
 				offsetValue !== undefined && pageLimit
 					? await db
-							.select()
+							.select(listColumns)
 							.from(products)
 							.where(finalWhereCondition)
 							.orderBy(orderSql)
@@ -254,7 +267,7 @@ export const getAllProducts = createServerFn({ method: "GET" })
 							.offset(offsetValue)
 							.all()
 					: await db
-							.select()
+							.select(listColumns)
 							.from(products)
 							.where(finalWhereCondition)
 							.orderBy(orderSql)
@@ -302,35 +315,10 @@ export const getAllProducts = createServerFn({ method: "GET" })
 					}))
 					.sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
 
-				// Keep images as JSON string (same format as stored in DB)
-				// ProductCard uses parseImages() which expects JSON string or array
-				// This matches the behavior of getStoreData which works correctly
-
-				// Parse productAttributes - now standardized as array format
-				const productAttributesArray = parseProductAttributes(
-					product.productAttributes,
-				);
-
-				// Process tags - convert JSON string to array format
-				let tagsArray: string[] = [];
-				if (product.tags) {
-					try {
-						const parsed = JSON.parse(product.tags);
-						if (Array.isArray(parsed)) {
-							tagsArray = parsed;
-						}
-					} catch {
-						// If parsing fails, use empty array
-						tagsArray = [];
-					}
-				}
-
 				return {
 					...product,
 					// Keep images as JSON string - parseImages() in ProductCard will handle parsing
 					images: product.images || "",
-					productAttributes: JSON.stringify(productAttributesArray),
-					tags: JSON.stringify(tagsArray),
 					variations: variationsWithAttributes,
 				};
 			});

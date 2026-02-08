@@ -32,12 +32,16 @@ import { useProductAttributes } from "~/hooks/useProductAttributes";
 import { useRecentlyVisitedProducts } from "~/hooks/useRecentlyVisitedProducts";
 import { useVariationSelection } from "~/hooks/useVariationSelection";
 import { useCart } from "~/lib/cartContext";
-import { productQueryOptions, userDataQueryOptions } from "~/lib/queryOptions";
+import {
+	productAttributesQueryOptions,
+	productQueryOptions,
+	userDataQueryOptions,
+} from "~/lib/queryOptions";
 import type {
 	ProductAttribute,
+	ProductListItem,
 	ProductVariationWithAttributes,
 	ProductWithDetails,
-	ProductWithVariations,
 	VariationAttribute,
 } from "~/types";
 import { formatContentForDisplay } from "~/utils/contentUtils";
@@ -87,7 +91,7 @@ const findAttributeByIdOrSlugOrName = (
 const getCachedProductFromStore = (
 	queryClient: ReturnType<typeof useQueryClient>,
 	productSlug: string,
-): ProductWithVariations | null => {
+): ProductListItem | null => {
 	// Use optimized Map-based cache utility (O(1) ID lookup, then O(n) slug search)
 	// This is much faster than the previous O(n×m) nested loop through pages
 	const cachedProducts = getStoreProductsFromInfiniteCache(queryClient);
@@ -242,9 +246,13 @@ export const Route = createFileRoute("/product/$productId")({
 			queryClient,
 			params.productId,
 		);
-		const product = await queryClient.ensureQueryData(
-			productQueryOptions(params.productId, cachedProduct),
-		);
+		// Prefetch product data and attributes in parallel
+		const [product] = await Promise.all([
+			queryClient.ensureQueryData(
+				productQueryOptions(params.productId, cachedProduct),
+			),
+			queryClient.ensureQueryData(productAttributesQueryOptions()),
+		]);
 		return { product };
 	},
 
@@ -668,7 +676,7 @@ function ProductPage() {
 
 	// Use variation selection hook with URL state for product page
 	const { selectedVariation, selectedAttributes } = useVariationSelection({
-		product: productWithDetails as unknown as ProductWithVariations | null,
+		product: productWithDetails as unknown as ProductListItem | null,
 		search, // Providing search enables URL state mode
 		onVariationChange: () => setQuantity(1), // Reset quantity when variation changes
 		attributes: attributes || [], // Pass database attributes for slug conversion
@@ -1133,7 +1141,7 @@ function ProductPage() {
 											{productWithDetails?.hasVariations && (
 												<VariationSelector
 													product={
-														productWithDetails as unknown as ProductWithVariations
+														productWithDetails as unknown as ProductListItem
 													}
 													selectedAttributes={selectedAttributes}
 													search={search}
@@ -1270,7 +1278,7 @@ function ProductPage() {
 													// Use selectedVariation directly (already has all attributes)
 													// Fallback to first variation if no selection
 													const productWithVariations =
-														productWithDetails as unknown as ProductWithVariations;
+														productWithDetails as unknown as ProductListItem;
 													const variationToShow:
 														| ProductVariationWithAttributes
 														| undefined =
@@ -1623,9 +1631,7 @@ function ProductPage() {
 									{/* Variation Selector */}
 									{productWithDetails?.hasVariations && (
 										<VariationSelector
-											product={
-												productWithDetails as unknown as ProductWithVariations
-											}
+											product={productWithDetails as unknown as ProductListItem}
 											selectedAttributes={selectedAttributes}
 											search={search}
 											onAttributeChange={handleAttributeChange}
@@ -1757,7 +1763,7 @@ function ProductPage() {
 														// Use selectedVariation directly (already has all attributes)
 														// Fallback to first variation if no selection
 														const productWithVariations =
-															productWithDetails as unknown as ProductWithVariations;
+															productWithDetails as unknown as ProductListItem;
 														const variationToShow:
 															| ProductVariationWithAttributes
 															| undefined =

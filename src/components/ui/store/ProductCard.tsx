@@ -14,8 +14,8 @@ import { useVariationSelection } from "~/hooks/useVariationSelection";
 import { useCart } from "~/lib/cartContext";
 import type {
 	ProductAttribute,
+	ProductListItem,
 	ProductVariationWithAttributes,
-	ProductWithVariations,
 	VariationAttribute,
 } from "~/types";
 import { parseImages } from "~/utils/productParsing";
@@ -74,7 +74,7 @@ const calculateAttributeNames = (
 
 // Helper function to get default variation for a product
 const getDefaultVariation = (
-	product: ProductWithVariations,
+	product: ProductListItem,
 ): ProductVariationWithAttributes | null => {
 	if (!product?.variations || !product.hasVariations) return null;
 
@@ -128,7 +128,7 @@ const ProductCard = memo(
 		product,
 		disableViewTransition = false,
 	}: {
-		product: ProductWithVariations;
+		product: ProductListItem;
 		disableViewTransition?: boolean;
 	}) => {
 		const [isAddingToCart, setIsAddingToCart] = useState(false);

@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { DB } from "~/db";
 import { orders } from "~/schema";
 import { ApiError } from "~/utils/ApiError";
@@ -35,23 +35,11 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 				);
 			}
 
-			// Check if order exists
-			const existingOrder = await db
-				.select()
-				.from(orders)
-				.where(eq(orders.id, orderId))
-				.limit(1);
-
-			if (!existingOrder[0]) {
-				throw new ApiError("Order not found", 404);
-			}
-
-			// Update order status
-			const updateData: { status: string; completedAt?: Date } = { status };
-
-			// If marking as processed and not already completed, set completedAt
-			if (status === "processed" && !existingOrder[0].completedAt) {
-				updateData.completedAt = new Date();
+			// Single UPDATE with COALESCE — no need for a separate SELECT
+			// completedAt is only set on first "processed" transition (COALESCE keeps existing value)
+			const updateData: Record<string, unknown> = { status };
+			if (status === "processed") {
+				updateData.completedAt = sql`COALESCE(${orders.completedAt}, ${new Date()})`;
 			}
 
 			const updatedOrder = await db
@@ -59,6 +47,10 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 				.set(updateData)
 				.where(eq(orders.id, orderId))
 				.returning();
+
+			if (updatedOrder.length === 0) {
+				throw new ApiError("Order not found", 404);
+			}
 
 			return {
 				success: true,

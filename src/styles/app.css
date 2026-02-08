@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Enable cross-document view transitions for MPA */
+@view-transition {
+	navigation: auto;
+}
+
 /* Variable Font Declaration */
 @font-face {
 	font-family: "Overused Grotesk";
@@ -926,17 +931,26 @@ section.no-padding > h2 {
 /* ----------------------------------------------------------------------------
    Product Info Container (detail page overlay)
    ---------------------------------------------------------------------------- */
+
+/* This element needs view-transition-name for proper z-index stacking.
+   The backdrop-filter is removed before snapshot via JavaScript in __root.tsx,
+   and the OLD snapshot is hidden when leaving the page. */
+
 ::view-transition-group(product-info-container) {
-	z-index: 100;
+	z-index: 9999; /* Above everything else for proper stacking */
 	isolation: isolate;
 }
 
-::view-transition-old(product-info-container),
+/* Hide OLD snapshot when leaving product page (no matching element on destination) */
+::view-transition-old(product-info-container) {
+	animation: none;
+	opacity: 0;
+	visibility: hidden;
+}
+
+/* Allow NEW snapshot to animate in naturally when entering product page */
 ::view-transition-new(product-info-container) {
 	border-radius: 0.5rem;
-	animation-duration: var(--vt-duration);
-	animation-timing-function: var(--vt-easing);
-	z-index: 100;
 	overflow: hidden;
 }
 

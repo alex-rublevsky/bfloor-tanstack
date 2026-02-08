@@ -9,7 +9,7 @@ import {
 	products,
 	productVariations,
 } from "~/schema";
-import type { Product, ProductVariationWithAttributes } from "~/types";
+import type { ProductVariationWithAttributes } from "~/types";
 import { parseVariationAttributes } from "~/utils/productParsing";
 import { buildFts5Query } from "~/utils/search/queryExpander";
 
@@ -219,10 +219,26 @@ export const getStoreData = createServerFn({ method: "GET" })
 						.all()
 				: Promise.resolve([]);
 
+			// Select only columns consumed by ProductCard/list views (ProductListItem type).
+			// Every field here is actually read by at least one consumer.
+			const productListColumns = {
+				id: products.id,
+				name: products.name,
+				slug: products.slug,
+				images: products.images,
+				price: products.price,
+				discount: products.discount,
+				isActive: products.isActive,
+				hasVariations: products.hasVariations,
+				categorySlug: products.categorySlug,
+				brandSlug: products.brandSlug,
+				viewCount: products.viewCount,
+			};
+
 			const productsPromise =
 				offsetValue !== undefined && pageLimit
 					? db
-							.select()
+							.select(productListColumns)
 							.from(products)
 							.where(finalWhereCondition)
 							.orderBy(orderSql)
@@ -230,7 +246,7 @@ export const getStoreData = createServerFn({ method: "GET" })
 							.offset(offsetValue)
 							.all()
 					: db
-							.select()
+							.select(productListColumns)
 							.from(products)
 							.where(finalWhereCondition)
 							.orderBy(orderSql)
@@ -316,7 +332,7 @@ export const getStoreData = createServerFn({ method: "GET" })
 				}
 			}
 
-			const productsArray = pagedProductsTrimmed.map((product: Product) => ({
+			const productsArray = pagedProductsTrimmed.map((product) => ({
 				...product,
 				variations: variationsByProduct.get(product.id) || [],
 			}));

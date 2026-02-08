@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
-import { collections } from "~/schema";
+import { brands, collections } from "~/schema";
 import { ApiError } from "~/utils/ApiError";
 
 interface CollectionFormData {
@@ -30,15 +30,29 @@ export const createCollection = createServerFn({ method: "POST" })
 				);
 			}
 
-			// Check for duplicate slug
-			const duplicateSlug = await db
-				.select()
-				.from(collections)
-				.where(eq(collections.slug, collectionData.slug))
-				.limit(1);
+			// Validate that the brand exists (FK enforcement is inert on Turso)
+			const [duplicateSlug, brandExists] = await Promise.all([
+				db
+					.select()
+					.from(collections)
+					.where(eq(collections.slug, collectionData.slug))
+					.limit(1),
+				db
+					.select({ slug: brands.slug })
+					.from(brands)
+					.where(eq(brands.slug, collectionData.brandSlug))
+					.limit(1),
+			]);
 
 			if (duplicateSlug[0]) {
 				throw new ApiError("A collection with this slug already exists", 409);
+			}
+
+			if (brandExists.length === 0) {
+				throw new ApiError(
+					"Brand not found: the specified brandSlug does not exist",
+					400,
+				);
 			}
 
 			// Insert collection

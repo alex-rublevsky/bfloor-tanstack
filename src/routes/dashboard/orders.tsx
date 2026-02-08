@@ -1,7 +1,7 @@
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import DeleteConfirmationDialog from "~/components/ui/dashboard/ConfirmationDialog";
 import { OrderCard } from "~/components/ui/dashboard/OrderCard";
@@ -17,6 +17,8 @@ import {
 } from "~/server_functions/dashboard/orders/deleteOrder";
 import { updateOrderStatus } from "~/server_functions/dashboard/orders/updateOrderStatus";
 import { simpleSearchSchema } from "~/utils/searchSchemas";
+
+const ORDERS_PAGE_SIZE = 50;
 
 export interface OrderItem {
 	id: number;
@@ -98,9 +100,23 @@ function OrderList() {
 	const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 	const [showOrderDrawer, setShowOrderDrawer] = useState(false);
 
-	// Fetch orders (already grouped and sorted by server)
-	// Data is guaranteed to be loaded by the loader
-	const { data } = useSuspenseQuery(dashboardOrdersQueryOptions());
+	// Pagination state
+	const [loadedPages, setLoadedPages] = useState(1);
+	const currentLimit = ORDERS_PAGE_SIZE * loadedPages;
+
+	// Fetch orders with current pagination (already grouped and sorted by server)
+	// Data is guaranteed to be loaded by the loader for the first page
+	const { data } = useSuspenseQuery(
+		dashboardOrdersQueryOptions(currentLimit, 0),
+	);
+
+	// Check if there are more orders to load
+	const hasMore = data.pagination?.hasMore ?? false;
+	const totalOrders = data.pagination?.total ?? 0;
+
+	const loadMore = useCallback(() => {
+		setLoadedPages((prev) => prev + 1);
+	}, []);
 
 	const refetch = () => {
 		queryClient.invalidateQueries({
@@ -354,6 +370,15 @@ function OrderList() {
 							</div>
 						),
 					)}
+				</div>
+			)}
+
+			{/* Load More */}
+			{hasMore && (
+				<div className="flex justify-center px-4 py-4">
+					<Button variant="outline" onClick={loadMore}>
+						Загрузить ещё (показано {allOrders.length} из {totalOrders})
+					</Button>
 				</div>
 			)}
 

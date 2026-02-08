@@ -3,6 +3,7 @@ import { setResponseStatus } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { DB } from "~/db";
 import { orderItems, orders, products } from "~/schema";
+import { ApiError } from "~/utils/ApiError";
 
 export const getOrderBySlug = createServerFn({ method: "GET" })
 	.inputValidator((data: { orderId: string }) => data)
@@ -13,8 +14,7 @@ export const getOrderBySlug = createServerFn({ method: "GET" })
 			const orderIdNum = parseInt(orderId, 10);
 
 			if (Number.isNaN(orderIdNum)) {
-				setResponseStatus(400);
-				throw new Error("Invalid order ID");
+				throw new ApiError("Invalid order ID", 400);
 			}
 
 			// Fetch order with all related data
@@ -84,8 +84,12 @@ export const getOrderBySlug = createServerFn({ method: "GET" })
 
 			return orderWithRelations;
 		} catch (error) {
-			console.error("Error fetching order:", error);
-			setResponseStatus(500);
-			throw new Error("Failed to fetch order");
+			if (error instanceof ApiError) {
+				setResponseStatus(error.status);
+			} else {
+				console.error("Error fetching order:", error);
+				setResponseStatus(500);
+			}
+			throw error;
 		}
 	});

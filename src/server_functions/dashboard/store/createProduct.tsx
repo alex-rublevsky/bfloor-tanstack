@@ -156,7 +156,7 @@ export const createProduct = createServerFn({ method: "POST" })
 						collectionSlug: productData.collectionSlug || null,
 						isActive: productData.isActive,
 						isFeatured: productData.isFeatured,
-						discount: productData.discount || null,
+						discount: productData.discount ?? null,
 						hasVariations: productData.hasVariations,
 						images: imagesJson,
 						productAttributes: attributesJson,

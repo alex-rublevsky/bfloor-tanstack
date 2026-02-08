@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { DB } from "~/db";
 import { orderItems, orders } from "~/schema";
-import type { ProductWithVariations } from "~/types";
+import type { ProductListItem } from "~/types";
 
 // TypeScript interfaces
 interface CartItem {
@@ -26,7 +26,7 @@ interface CustomerInfo {
 interface OrderCreationRequest {
 	customerInfo: CustomerInfo;
 	cartItems: CartItem[];
-	products: ProductWithVariations[];
+	products: ProductListItem[];
 }
 
 export const createOrder = createServerFn({ method: "POST" })
@@ -88,7 +88,7 @@ export const createOrder = createServerFn({ method: "POST" })
 async function createOrderInternal(
 	customerInfo: CustomerInfo,
 	cartItems: CartItem[],
-	products: ProductWithVariations[],
+	products: ProductListItem[],
 ) {
 	const db = DB();
 	// Create a map for O(1) lookups

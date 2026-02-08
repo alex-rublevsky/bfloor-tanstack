@@ -22,30 +22,25 @@ export const Route = createFileRoute("/store/$categorySlug")({
 	loader: async ({ params, context: { queryClient } }) => {
 		const slug = params.categorySlug;
 
-		// Resolve slug: category first (takes precedence), then brand if not found
-		// Uses ensureQueryData for caching (7 days staleTime, 14 days gcTime)
-		// - If cached → returns instantly
-		// - If stale → returns cached, refetches in background
-		// - If not found → queryOptions converts to notFound() automatically
-		try {
-			const category = await queryClient.ensureQueryData(
-				categoryQueryOptions(slug),
-			);
-			if (category?.isActive) {
-				return { type: "category" as const, category };
-			}
-		} catch {
-			// Category not found or inactive, try brand
+		// Fetch category and brand in parallel using Promise.allSettled.
+		// Previously sequential: on brand pages, the category lookup had to fail first (~50-100ms wasted).
+		// Now both resolve in parallel. Category still takes precedence if both match.
+		const [categoryResult, brandResult] = await Promise.allSettled([
+			queryClient.ensureQueryData(categoryQueryOptions(slug)),
+			queryClient.ensureQueryData(brandQueryOptions(slug)),
+		]);
+
+		// Category takes precedence
+		if (
+			categoryResult.status === "fulfilled" &&
+			categoryResult.value?.isActive
+		) {
+			return { type: "category" as const, category: categoryResult.value };
 		}
 
 		// Fallback to brand
-		try {
-			const brand = await queryClient.ensureQueryData(brandQueryOptions(slug));
-			if (brand?.isActive) {
-				return { type: "brand" as const, brand };
-			}
-		} catch {
-			// Brand not found or inactive
+		if (brandResult.status === "fulfilled" && brandResult.value?.isActive) {
+			return { type: "brand" as const, brand: brandResult.value };
 		}
 
 		throw notFound();

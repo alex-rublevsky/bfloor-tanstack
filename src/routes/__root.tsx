@@ -11,7 +11,7 @@ import {
 } from "@tanstack/react-router";
 
 import type * as React from "react";
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary";
 import { NotFound } from "~/components/NotFound";
 import { Footer } from "~/components/ui/shared/Footer";
@@ -93,6 +93,59 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+	// Handle view transitions: remove backdrop-filter before snapshot
+	useEffect(() => {
+		const originalStartViewTransition = document.startViewTransition;
+
+		if (!originalStartViewTransition) return;
+
+		document.startViewTransition = (callback) => {
+			const overlay = document.querySelector(
+				".product-info-overlay",
+			) as HTMLElement;
+			const isLeavingProductPage =
+				overlay && !window.location.pathname.startsWith("/product/");
+
+			if (overlay) {
+				if (isLeavingProductPage) {
+					// When LEAVING product page: remove view-transition-name to skip animation
+					// This prevents the blurred box from appearing during transition
+					overlay.style.viewTransitionName = "none";
+				} else {
+					// When ON product page: keep view-transition-name for z-index stacking
+					// Remove backdrop-filter before snapshot
+					overlay.style.backdropFilter = "none";
+					// biome-ignore lint/suspicious/noExplicitAny: webkitBackdropFilter not in TypeScript types
+					(overlay.style as any).webkitBackdropFilter = "none";
+					overlay.style.background =
+						"oklch(from var(--background) l c h / 0.95)";
+					void overlay.offsetHeight; // Force reflow
+				}
+			}
+
+			// Call original
+			const transition = originalStartViewTransition.call(document, callback);
+
+			// Restore after transition
+			if (overlay) {
+				transition.finished.finally(() => {
+					overlay.style.viewTransitionName = "";
+					overlay.style.backdropFilter = "";
+					// biome-ignore lint/suspicious/noExplicitAny: webkitBackdropFilter not in TypeScript types
+					(overlay.style as any).webkitBackdropFilter = "";
+					overlay.style.background = "";
+				});
+			}
+
+			return transition;
+		};
+
+		// Cleanup: restore original function
+		return () => {
+			document.startViewTransition = originalStartViewTransition;
+		};
+	}, []);
+
 	return (
 		<QueryClientProvider client={queryClient}>
 			<CartProvider>

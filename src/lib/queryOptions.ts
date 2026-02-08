@@ -347,10 +347,10 @@ export const dashboardProductQueryOptions = (productId: number) =>
  * - Refetches on window focus to show latest orders
  * - Manual invalidation after order status updates
  */
-export const dashboardOrdersQueryOptions = () =>
+export const dashboardOrdersQueryOptions = (limit = 50, offset = 0) =>
 	queryOptions({
-		queryKey: ["bfloorDashboardOrders"],
-		queryFn: async () => getAllOrders(),
+		queryKey: ["bfloorDashboardOrders", { limit, offset }],
+		queryFn: async () => getAllOrders({ data: { limit, offset } }),
 		staleTime: 1000 * 60 * 60 * 24, // 1 day - orders are dynamic but cacheable
 		gcTime: 1000 * 60 * 60 * 24 * 3, // 3 days - keep in memory
 		retry: 3,

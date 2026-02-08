@@ -76,9 +76,12 @@ export const Route = createFileRoute("/dashboard/attributes")({
 	component: AttributesPage,
 	pendingComponent: AttributesPageSkeleton,
 	validateSearch: zodValidator(simpleSearchSchema),
-	// Loader prefetches attributes (fast) before component renders
+	// Loader prefetches attributes and their values in parallel
 	loader: async ({ context: { queryClient } }) => {
-		await queryClient.ensureQueryData(productAttributesQueryOptions());
+		await Promise.all([
+			queryClient.ensureQueryData(productAttributesQueryOptions()),
+			queryClient.ensureQueryData(allAttributeValuesByAttributeQueryOptions()),
+		]);
 	},
 });
 

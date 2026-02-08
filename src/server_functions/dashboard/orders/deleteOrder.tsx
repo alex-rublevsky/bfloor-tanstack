@@ -16,21 +16,18 @@ export const deleteOrder = createServerFn({ method: "POST" })
 				throw new ApiError("Invalid order ID", 400);
 			}
 
-			// Check if order exists
-			const existingOrder = await db
-				.select()
-				.from(orders)
-				.where(eq(orders.id, orderId))
-				.limit(1);
-
-			if (!existingOrder[0]) {
-				throw new ApiError("Order not found", 404);
-			}
-
 			// Delete order items + order in a single transaction
+			// Use .returning() on the order DELETE to verify it existed
 			await db.transaction(async (tx) => {
 				await tx.delete(orderItems).where(eq(orderItems.orderId, orderId));
-				await tx.delete(orders).where(eq(orders.id, orderId));
+				const deleted = await tx
+					.delete(orders)
+					.where(eq(orders.id, orderId))
+					.returning({ id: orders.id });
+
+				if (deleted.length === 0) {
+					throw new ApiError("Order not found", 404);
+				}
 			});
 
 			return {

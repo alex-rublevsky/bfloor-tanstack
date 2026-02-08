@@ -17,9 +17,13 @@ export const deleteProductCategory = createServerFn({ method: "POST" })
 				throw new ApiError("Invalid category ID", 400);
 			}
 
-			// Check if category exists
+			// Check if category exists (only fetch needed columns)
 			const existingCategory = await db
-				.select()
+				.select({
+					id: categories.id,
+					slug: categories.slug,
+					image: categories.image,
+				})
 				.from(categories)
 				.where(eq(categories.id, id))
 				.limit(1);
@@ -28,14 +32,21 @@ export const deleteProductCategory = createServerFn({ method: "POST" })
 				throw new ApiError("Category not found", 404);
 			}
 
-			// Check if any products are using this category
-			// CRITICAL: categories.slug has onDelete: "cascade" on products,
-			// so deleting a category would silently delete all its products
-			const productsUsingCategory = await db
-				.select({ id: products.id })
-				.from(products)
-				.where(eq(products.categorySlug, existingCategory[0].slug))
-				.limit(1);
+			const categorySlug = existingCategory[0].slug;
+
+			// Check products and child categories in parallel (independent queries)
+			const [productsUsingCategory, childCategories] = await Promise.all([
+				db
+					.select({ id: products.id })
+					.from(products)
+					.where(eq(products.categorySlug, categorySlug))
+					.limit(1),
+				db
+					.select({ id: categories.id })
+					.from(categories)
+					.where(eq(categories.parentSlug, categorySlug))
+					.limit(1),
+			]);
 
 			if (productsUsingCategory.length > 0) {
 				throw new ApiError(
@@ -44,7 +55,14 @@ export const deleteProductCategory = createServerFn({ method: "POST" })
 				);
 			}
 
-			// Delete the category image from storage if it exists
+			if (childCategories.length > 0) {
+				throw new ApiError(
+					"Cannot delete category: there are child categories using this category as parent",
+					409,
+				);
+			}
+
+			// Delete the category image from storage if it exists (outside transaction — storage I/O)
 			const categoryImage = existingCategory[0].image;
 			if (categoryImage && !categoryImage.startsWith("staging/")) {
 				try {
@@ -55,7 +73,6 @@ export const deleteProductCategory = createServerFn({ method: "POST" })
 						"Failed to delete category image from storage:",
 						deleteError,
 					);
-					// Don't fail the category deletion if image deletion fails
 				}
 			}
 

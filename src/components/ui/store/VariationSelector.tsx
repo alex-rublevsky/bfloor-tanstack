@@ -3,11 +3,11 @@ import {
 	getAttributeDisplayName,
 	useProductAttributes,
 } from "~/hooks/useProductAttributes";
-import type { ProductWithVariations, VariationAttribute } from "~/types";
+import type { ProductListItem, VariationAttribute } from "~/types";
 import { sortVariationsForDisplay } from "~/utils/variationSort";
 
 interface VariationSelectorProps {
-	product: ProductWithVariations;
+	product: ProductListItem;
 	selectedAttributes: Record<string, string> | null;
 	search: Record<string, string | undefined>;
 	onAttributeChange: (attributeId: string, value: string) => void;

@@ -97,13 +97,12 @@ export const Route = createFileRoute("/dashboard/collections")({
 	component: RouteComponent,
 	validateSearch: zodValidator(simpleSearchSchema),
 
-	// Loader prefetches collections and brands (fast) before component renders
-	// Counts will load separately and stream in
+	// Loader prefetches collections, brands, and counts in parallel
 	loader: async ({ context: { queryClient } }) => {
-		// Only prefetch collections and brands (fast), not counts (slower)
 		await Promise.all([
 			queryClient.ensureQueryData(collectionsQueryOptions()),
 			queryClient.ensureQueryData(brandsQueryOptions()),
+			queryClient.ensureQueryData(productCollectionCountsQueryOptions()),
 		]);
 	},
 });

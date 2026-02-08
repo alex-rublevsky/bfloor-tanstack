@@ -90,8 +90,13 @@
 		background: oklch(from var(--background) l c h / 0.8);
 		-webkit-backdrop-filter: blur(8px);
 		backdrop-filter: blur(8px);
+		/* NO transition - must be instant for view transitions to capture without blur */
 	}
 }
+
+/* Note: backdrop-filter blur will be baked into view transition snapshots.
+   The ::view-transition-old(product-info-container) is hidden in app.css
+   to prevent the blurred box from appearing when leaving the product page. */
 
 /* Reveal animation for product info overlay on initial page load */
 /* This creates a smooth fade-in effect when the page first loads */

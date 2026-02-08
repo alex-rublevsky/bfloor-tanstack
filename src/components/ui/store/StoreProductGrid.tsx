@@ -19,7 +19,7 @@ import {
 	allFilterOptionsQueryOptions,
 	storeDataInfiniteQueryOptions,
 } from "~/lib/queryOptions";
-import type { Brand, ProductWithVariations } from "~/types";
+import type { Brand, ProductListItem } from "~/types";
 import {
 	defaultStoreSearchValues,
 	isValidSort,
@@ -88,7 +88,7 @@ const VirtualizedProductListWindow = memo(
 		hasNextPage,
 		isFetchingNextPage,
 	}: {
-		displayProducts: ProductWithVariations[];
+		displayProducts: ProductListItem[];
 		columnsPerRow: number;
 		scrollEntry: { scrollY?: number } | null | undefined;
 		cacheKey: string;
@@ -218,7 +218,7 @@ const VirtualizedProductListContainer = memo(
 		isFetchingNextPage,
 		scrollRef,
 	}: {
-		displayProducts: ProductWithVariations[];
+		displayProducts: ProductListItem[];
 		columnsPerRow: number;
 		cacheKey: string;
 		fetchNextPage: () => void;
@@ -329,7 +329,7 @@ VirtualizedProductListContainer.displayName = "VirtualizedProductListContainer";
 
 // Chooses window or container virtualizer based on scrollRef
 function VirtualizedProductList(props: {
-	displayProducts: ProductWithVariations[];
+	displayProducts: ProductListItem[];
 	columnsPerRow: number;
 	scrollEntry: { scrollY?: number } | null | undefined;
 	cacheKey: string;
@@ -650,10 +650,10 @@ export const StoreProductGrid = memo(function StoreProductGrid({
 
 	// Merge products from all pages (same as dashboard)
 	// Price filtering is now done server-side, so no need for client-side filtering
-	const displayProducts = useMemo<ProductWithVariations[]>(
+	const displayProducts = useMemo<ProductListItem[]>(
 		() =>
 			storeData?.pages
-				?.flatMap((page) => (page?.products ?? []) as ProductWithVariations[])
+				?.flatMap((page) => (page?.products ?? []) as ProductListItem[])
 				?.filter(Boolean) ?? [],
 		[storeData?.pages],
 	);

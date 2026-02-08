@@ -38,7 +38,7 @@ export interface ProductVariationWithAttributes {
 	attributes: VariationAttribute[];
 }
 
-// Extended product type with variations
+// Extended product type with variations (full data — for detail/edit pages)
 export interface ProductWithVariations {
 	// Base Product fields
 	id: number;
@@ -68,10 +68,28 @@ export interface ProductWithVariations {
 	variations?: ProductVariationWithAttributes[];
 }
 
+// Slim product type for list/card views — only the fields actually read by
+// ProductCard, dashboard table, ProductSlider, storeCache, orderCreation, etc.
+// A full ProductWithVariations is assignable to ProductListItem (structural typing).
+export interface ProductListItem {
+	id: number;
+	name: string;
+	slug: string;
+	images: string | null;
+	price: number;
+	discount: number | null;
+	isActive: boolean;
+	hasVariations: boolean;
+	categorySlug: string | null;
+	brandSlug: string | null;
+	viewCount: number;
+	variations?: ProductVariationWithAttributes[];
+}
+
 // Product group for dashboard
 export interface ProductGroup {
 	title: string;
-	products: ProductWithVariations[];
+	products: ProductListItem[];
 	categorySlug?: string;
 }
 

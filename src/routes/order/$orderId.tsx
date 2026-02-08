@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Badge } from "~/components/ui/shared/Badge";
 import { Button } from "~/components/ui/shared/Button";
@@ -8,6 +8,7 @@ import {
 	getAttributeDisplayName,
 	useProductAttributes,
 } from "~/hooks/useProductAttributes";
+import { productAttributesQueryOptions } from "~/lib/queryOptions";
 import { formatDate } from "~/lib/utils";
 import { getOrderBySlug } from "~/server_functions/dashboard/orders/getOrderBySlug";
 
@@ -21,11 +22,34 @@ function getFirstImage(images: string | null): string | null {
 	return imageArray.length > 0 ? imageArray[0] : null;
 }
 
+const orderQueryOptions = (orderId: string) => ({
+	queryKey: ["bfloorOrder", orderId],
+	queryFn: async () => {
+		try {
+			return await getOrderBySlug({ data: { orderId } });
+		} catch (error) {
+			if (error instanceof Error && error.message === "Order not found") {
+				throw notFound();
+			}
+			throw error;
+		}
+	},
+	staleTime: 1000 * 60 * 5, // 5 minutes — orders change infrequently
+});
+
 export const Route = createFileRoute("/order/$orderId")({
 	component: OrderPage,
 	validateSearch: (search: Record<string, unknown>) => ({
 		new: search.new === "true" || search.new === true,
 	}),
+
+	// Prefetch order data + attributes in parallel before render
+	loader: async ({ context: { queryClient }, params }) => {
+		await Promise.all([
+			queryClient.ensureQueryData(orderQueryOptions(params.orderId)),
+			queryClient.ensureQueryData(productAttributesQueryOptions()),
+		]);
+	},
 });
 
 function OrderPage() {
@@ -33,50 +57,8 @@ function OrderPage() {
 	const search = Route.useSearch();
 	const { data: attributes } = useProductAttributes();
 
-	const {
-		isPending,
-		data: order,
-		isError,
-	} = useQuery({
-		queryKey: ["bfloorOrder", orderId],
-		queryFn: async () => {
-			try {
-				return await getOrderBySlug({ data: { orderId } });
-			} catch (error) {
-				if (error instanceof Error && error.message === "Order not found") {
-					throw notFound();
-				}
-				throw error;
-			}
-		},
-	});
-
-	//TODO: update this to use a skeleton
-	if (isPending) {
-		return (
-			<div className="flex min-h-screen items-center justify-center bg-gray-50">
-				<div className="text-center">
-					<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-					<p className="text-gray-600">Loading order details...</p>
-				</div>
-			</div>
-		);
-	}
-
-	if (isError || !order) {
-		return (
-			<div className="flex min-h-screen items-center justify-center bg-gray-50">
-				<div className="text-center">
-					<h1 className="mb-2 font-bold text-2xl text-gray-900">
-						Order Not Found
-					</h1>
-					<p className="text-gray-600">
-						The order you're looking for doesn't exist.
-					</p>
-				</div>
-			</div>
-		);
-	}
+	// Data is guaranteed to be available by the loader (SSR prefetch)
+	const { data: order } = useSuspenseQuery(orderQueryOptions(orderId));
 
 	const isNewOrder = search.new === true;
 

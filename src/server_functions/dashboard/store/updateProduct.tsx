@@ -235,7 +235,7 @@ export const updateProduct = createServerFn({ method: "POST" })
 				if ("isFeatured" in changes)
 					mainUpdates.isFeatured = changes.isFeatured;
 				if ("discount" in changes)
-					mainUpdates.discount = changes.discount || null;
+					mainUpdates.discount = changes.discount ?? null;
 				if ("hasVariations" in changes)
 					mainUpdates.hasVariations = changes.hasVariations;
 				if ("dimensions" in changes)
@@ -397,6 +397,38 @@ export const updateProduct = createServerFn({ method: "POST" })
 									collectionSlug: changes.collectionSlug,
 									createdAt: new Date(),
 								});
+							}
+						})(),
+					);
+				}
+
+				// If hasVariations toggled to false but "variations" isn't in changes,
+				// we still need to clean up all existing variations to prevent orphans
+				if (
+					"hasVariations" in changes &&
+					!changes.hasVariations &&
+					!("variations" in changes)
+				) {
+					junctionOps.push(
+						(async () => {
+							const existingRows = await tx
+								.select({ id: productVariations.id })
+								.from(productVariations)
+								.where(eq(productVariations.productId, productId));
+							const existingIds = existingRows.map((r) => r.id);
+
+							if (existingIds.length > 0) {
+								await tx
+									.delete(variationAttributes)
+									.where(
+										inArray(
+											variationAttributes.productVariationId,
+											existingIds,
+										),
+									);
+								await tx
+									.delete(productVariations)
+									.where(inArray(productVariations.id, existingIds));
 							}
 						})(),
 					);

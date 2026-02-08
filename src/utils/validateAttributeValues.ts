@@ -1,11 +1,12 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import type { DbContext } from "~/db";
 import { attributeValues } from "~/schema";
 import { getAttributeMappings } from "./attributeMapping";
 
 /**
- * Validates that standardized attribute values exist in attribute_values table
- * Returns array of validation errors (empty if all valid)
+ * Validates that standardized attribute values exist in attribute_values table.
+ * Uses a single batch query instead of per-value lookups for efficiency.
+ * Returns array of validation errors (empty if all valid).
  */
 export async function validateAttributeValues(
 	db: DbContext,
@@ -27,72 +28,39 @@ export async function validateAttributeValues(
 		Array.from(slugToId.entries()).map(([slug, id]) => [slug, id.toString()]),
 	);
 
-	// Process each attribute
-	for (const attr of attributes) {
-		if (!attr.value || !attr.value.trim()) {
-			continue; // Skip empty values
-		}
+	// Collect all standardized attribute IDs that need validation
+	const standardizedAttrIds: number[] = [];
+	const attrEntries: Array<{
+		originalAttrId: string;
+		numericAttrId: number;
+		attrDef: (typeof attributeDefinitions)[0];
+		valuesToCheck: string[];
+	}> = [];
 
-		// Find attribute ID (could be numeric ID string or slug)
+	for (const attr of attributes) {
+		if (!attr.value || !attr.value.trim()) continue;
+
+		// Resolve attribute ID (could be numeric string or slug)
 		let attributeId: number | null = null;
 		const numericId = parseInt(attr.attributeId, 10);
 		if (!Number.isNaN(numericId) && attributeMap.has(attr.attributeId)) {
 			attributeId = numericId;
 		} else if (slugToIdMap.has(attr.attributeId)) {
 			const idFromSlug = slugToIdMap.get(attr.attributeId);
-			if (idFromSlug) {
-				attributeId = parseInt(idFromSlug, 10);
-			}
+			if (idFromSlug) attributeId = parseInt(idFromSlug, 10);
 		}
 
-		if (!attributeId) {
-			// Attribute doesn't exist - skip validation
-			continue;
-		}
+		if (!attributeId) continue;
 
 		const attributeDef = attributeMap.get(attributeId.toString());
-		if (!attributeDef) {
-			continue;
-		}
+		if (!attributeDef) continue;
 
-		// Check if attribute is standardized
 		const isStandardized =
 			attributeDef.valueType === "standardized" ||
 			attributeDef.valueType === "both";
+		if (!isStandardized) continue;
 
-		if (!isStandardized) {
-			// Free-text attribute - no validation needed
-			continue;
-		}
-
-		// For standardized attributes, first check if there are any standardized values defined
-		// If no standardized values exist, treat as free-text (allows migration from old data)
-		try {
-			const availableValues = await db
-				.select()
-				.from(attributeValues)
-				.where(
-					and(
-						eq(attributeValues.attributeId, attributeId),
-						eq(attributeValues.isActive, true),
-					),
-				)
-				.limit(1);
-
-			// If no standardized values are defined, skip validation (treat as free-text)
-			if (availableValues.length === 0) {
-				continue;
-			}
-		} catch (dbError) {
-			// If we can't check for available values, skip validation to avoid blocking
-			console.error(
-				`Error checking available values for attribute ${attr.attributeId}:`,
-				dbError,
-			);
-			continue;
-		}
-
-		// Handle comma-separated values for multi-value attributes
+		// Parse comma-separated values
 		const valuesToCheck = attr.value.includes(",")
 			? attr.value
 					.split(",")
@@ -100,38 +68,60 @@ export async function validateAttributeValues(
 					.filter(Boolean)
 			: [attr.value.trim()];
 
-		// Check each value exists in attribute_values table
-		for (const valueToCheck of valuesToCheck) {
-			try {
-				const validValues = await db
-					.select()
-					.from(attributeValues)
-					.where(
-						and(
-							eq(attributeValues.attributeId, attributeId),
-							eq(attributeValues.value, valueToCheck),
-							eq(attributeValues.isActive, true),
-						),
-					)
-					.limit(1);
+		standardizedAttrIds.push(attributeId);
+		attrEntries.push({
+			originalAttrId: attr.attributeId,
+			numericAttrId: attributeId,
+			attrDef: attributeDef,
+			valuesToCheck,
+		});
+	}
 
-				if (validValues.length === 0) {
-					errors.push({
-						attributeId: attr.attributeId,
-						value: valueToCheck,
-						error: `Значение "${valueToCheck}" не входит в список стандартизированных значений для атрибута "${attributeDef.name}"`,
-					});
-				}
-			} catch (dbError) {
-				// If database query fails, log error but don't block validation
-				console.error(
-					`Error validating attribute value "${valueToCheck}" for attribute ${attr.attributeId}:`,
-					dbError,
-				);
+	if (standardizedAttrIds.length === 0) {
+		return errors;
+	}
+
+	// Single batch query: fetch ALL active values for ALL relevant attributes at once
+	const uniqueAttrIds = [...new Set(standardizedAttrIds)];
+	let allValidValues: Array<{ attributeId: number; value: string }>;
+
+	try {
+		allValidValues = await db
+			.select({
+				attributeId: attributeValues.attributeId,
+				value: attributeValues.value,
+			})
+			.from(attributeValues)
+			.where(
+				and(
+					inArray(attributeValues.attributeId, uniqueAttrIds),
+					eq(attributeValues.isActive, true),
+				),
+			);
+	} catch (dbError) {
+		console.error("Error fetching attribute values for validation:", dbError);
+		return errors; // Can't validate — don't block
+	}
+
+	// Build a lookup set: "attributeId:value" for O(1) checks
+	const validSet = new Set(
+		allValidValues.map((r) => `${r.attributeId}:${r.value}`),
+	);
+
+	// Build a set of attribute IDs that have at least one standardized value defined
+	const attrIdsWithValues = new Set(allValidValues.map((r) => r.attributeId));
+
+	// Validate each entry against the batch-fetched data
+	for (const entry of attrEntries) {
+		// If no standardized values are defined for this attribute, skip (treat as free-text)
+		if (!attrIdsWithValues.has(entry.numericAttrId)) continue;
+
+		for (const valueToCheck of entry.valuesToCheck) {
+			if (!validSet.has(`${entry.numericAttrId}:${valueToCheck}`)) {
 				errors.push({
-					attributeId: attr.attributeId,
+					attributeId: entry.originalAttrId,
 					value: valueToCheck,
-					error: `Ошибка при проверке значения "${valueToCheck}" для атрибута "${attributeDef.name}"`,
+					error: `Значение "${valueToCheck}" не входит в список стандартизированных значений для атрибута "${entry.attrDef.name}"`,
 				});
 			}
 		}

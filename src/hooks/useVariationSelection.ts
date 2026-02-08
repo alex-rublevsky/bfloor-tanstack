@@ -2,14 +2,14 @@ import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
 	ProductAttribute,
+	ProductListItem,
 	ProductVariationWithAttributes,
-	ProductWithVariations,
 	VariationAttribute,
 } from "~/types";
 import { sortVariationsForDisplay } from "~/utils/variationSort";
 
 interface UseVariationSelectionProps {
-	product: ProductWithVariations | null;
+	product: ProductListItem | null;
 	search?: Record<string, string | undefined>; // If provided, uses URL state
 	onVariationChange?: () => void;
 	attributes?: ProductAttribute[]; // Database attributes for slug conversion

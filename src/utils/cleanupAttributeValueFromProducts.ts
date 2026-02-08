@@ -9,10 +9,8 @@ import { productAttributes, products } from "~/schema";
  *   - Legacy object format: {"thickness": "3mm", "5": "Wood"}
  * Comma-separated multi-values within a single entry are supported.
  *
- * @param db - Database connection or transaction context
- * @param attributeId - Numeric ID of the attribute
- * @param valueToRemove - The value string to remove
- * @returns Number of products updated
+ * Optimized: pre-filters with SQL LIKE to only fetch products that *might*
+ * contain the value, reducing the number of rows to parse in JS.
  */
 export async function cleanupAttributeValueFromProducts(
 	db: DbContext,
@@ -21,7 +19,7 @@ export async function cleanupAttributeValueFromProducts(
 ): Promise<{ updatedCount: number; productIds: number[] }> {
 	// Get the attribute slug for legacy object-format lookup
 	const attribute = await db
-		.select()
+		.select({ slug: productAttributes.slug })
 		.from(productAttributes)
 		.where(eq(productAttributes.id, attributeId))
 		.limit(1);
@@ -33,19 +31,25 @@ export async function cleanupAttributeValueFromProducts(
 	const attributeSlug = attribute[0].slug;
 	const attrIdStr = attributeId.toString();
 
-	// Get all products with non-null attributes
-	const allProducts = await db
+	// Only fetch products whose JSON likely contains the value (SQL LIKE pre-filter)
+	const candidateProducts = await db
 		.select({
 			id: products.id,
 			productAttributes: products.productAttributes,
 		})
 		.from(products)
-		.where(sql`${products.productAttributes} IS NOT NULL`);
+		.where(
+			sql`${products.productAttributes} IS NOT NULL AND ${products.productAttributes} LIKE ${`%${valueToRemove}%`}`,
+		);
 
-	const updatedProductIds: number[] = [];
-	let updateCount = 0;
+	if (candidateProducts.length === 0) {
+		return { updatedCount: 0, productIds: [] };
+	}
 
-	for (const product of allProducts) {
+	// Parse and update in JS, then batch all updates
+	const updates: Array<{ id: number; json: string | null }> = [];
+
+	for (const product of candidateProducts) {
 		if (!product.productAttributes) continue;
 
 		try {
@@ -53,7 +57,6 @@ export async function cleanupAttributeValueFromProducts(
 			let changed = false;
 
 			if (Array.isArray(parsed)) {
-				// New array format: [{attributeId: "5", value: "Wood,Oak"}, ...]
 				const updatedArray: typeof parsed = [];
 
 				for (const entry of parsed) {
@@ -62,7 +65,6 @@ export async function cleanupAttributeValueFromProducts(
 						continue;
 					}
 
-					// Handle comma-separated multi-values
 					const values = entry.value
 						.split(",")
 						.map((v: string) => v.trim())
@@ -78,13 +80,11 @@ export async function cleanupAttributeValueFromProducts(
 					);
 
 					if (updatedValues.length > 0) {
-						// Keep entry with remaining values
 						updatedArray.push({
 							...entry,
 							value: updatedValues.join(","),
 						});
 					}
-					// If no values left, entry is dropped entirely
 					changed = true;
 				}
 
@@ -92,7 +92,6 @@ export async function cleanupAttributeValueFromProducts(
 					parsed = updatedArray;
 				}
 			} else if (typeof parsed === "object" && parsed !== null) {
-				// Legacy object format: {"thickness": "3mm"} or {"5": "Wood"}
 				const currentValue = parsed[attributeSlug] || parsed[attrIdStr];
 				if (!currentValue) continue;
 
@@ -123,13 +122,16 @@ export async function cleanupAttributeValueFromProducts(
 			}
 
 			if (changed) {
-				await db
-					.update(products)
-					.set({ productAttributes: JSON.stringify(parsed) })
-					.where(eq(products.id, product.id));
+				const jsonStr =
+					Array.isArray(parsed) && parsed.length === 0
+						? null
+						: typeof parsed === "object" &&
+								!Array.isArray(parsed) &&
+								Object.keys(parsed).length === 0
+							? null
+							: JSON.stringify(parsed);
 
-				updatedProductIds.push(product.id);
-				updateCount++;
+				updates.push({ id: product.id, json: jsonStr });
 			}
 		} catch (error) {
 			console.warn(
@@ -139,5 +141,20 @@ export async function cleanupAttributeValueFromProducts(
 		}
 	}
 
-	return { updatedCount: updateCount, productIds: updatedProductIds };
+	// Execute all updates in parallel
+	if (updates.length > 0) {
+		await Promise.all(
+			updates.map((upd) =>
+				db
+					.update(products)
+					.set({ productAttributes: upd.json })
+					.where(eq(products.id, upd.id)),
+			),
+		);
+	}
+
+	return {
+		updatedCount: updates.length,
+		productIds: updates.map((upd) => upd.id),
+	};
 }

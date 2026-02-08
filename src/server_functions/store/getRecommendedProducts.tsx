@@ -29,9 +29,24 @@ export const getRecommendedProducts = createServerFn({ method: "GET" })
 			// Build where clause: only active and featured products
 			const whereCondition = sql`${products.isActive} = 1 AND ${products.isFeatured} = 1`;
 
+			// Select only columns consumed by ProductCard/list views (ProductListItem type).
+			const productListColumns = {
+				id: products.id,
+				name: products.name,
+				slug: products.slug,
+				images: products.images,
+				price: products.price,
+				discount: products.discount,
+				isActive: products.isActive,
+				hasVariations: products.hasVariations,
+				categorySlug: products.categorySlug,
+				brandSlug: products.brandSlug,
+				viewCount: products.viewCount,
+			};
+
 			// Fetch products ordered by name (consistent ordering for caching)
 			const productsResult = await db
-				.select()
+				.select(productListColumns)
 				.from(products)
 				.where(whereCondition)
 				.orderBy(products.name)
