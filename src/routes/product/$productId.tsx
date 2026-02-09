@@ -313,7 +313,7 @@ function AddToCartSection({
 				{/* Discount Row */}
 				<div className="flex items-baseline gap-4">
 					<div className="text-left">Скидка</div>
-					<span className="whitespace-nowrap font-digital-mono text-xl line-through">
+					<span className="relative whitespace-nowrap font-digital-mono text-muted-foreground! text-xl after:absolute after:inset-x-0 after:top-1/2 after:h-[1.5px] after:bg-current">
 						<NumberFlow
 							value={Math.round(originalTotalPrice)}
 							format={{ useGrouping: true }}
@@ -435,7 +435,7 @@ function MobileFixedCartBar({
 					{/* Discount Row */}
 					<div className="flex flex-wrap items-baseline gap-2">
 						<div className="whitespace-nowrap text-left">Скидка</div>
-						<span className="whitespace-nowrap font-digital-mono text-base line-through">
+						<span className="relative whitespace-nowrap font-digital-mono text-base text-muted-foreground! after:absolute after:inset-x-0 after:top-1/2 after:h-[1.5px] after:bg-current">
 							<NumberFlow
 								value={Math.round(originalTotalPrice)}
 								format={{ useGrouping: true }}
@@ -1041,7 +1041,7 @@ function ProductPage() {
 														</span>
 													</div>
 													{currentDiscount && currentDiscount > 0 && (
-														<div className="mb-1 font-digital-mono text-base text-muted-foreground line-through">
+														<div className="relative mb-1 font-digital-mono text-base text-muted-foreground! after:absolute after:inset-x-0 after:top-1/2 after:h-[1.5px] after:bg-current">
 															<NumberFlow
 																value={Math.round(currentPrice)}
 																format={{ useGrouping: true }}
@@ -1533,7 +1533,7 @@ function ProductPage() {
 													</span>
 												</div>
 												{currentDiscount && currentDiscount > 0 && (
-													<div className="mb-1 font-digital-mono text-base text-muted-foreground line-through">
+													<div className="relative mb-1 font-digital-mono text-base text-muted-foreground! after:absolute after:inset-x-0 after:top-1/2 after:h-[1.5px] after:bg-current">
 														<NumberFlow
 															value={Math.round(currentPrice)}
 															format={{ useGrouping: true }}

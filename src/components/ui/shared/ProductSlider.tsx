@@ -26,6 +26,10 @@ import "./product-slider.css";
  */
 const carouselSnapCache = new Map<string, number>();
 
+/** Last selected tag for the "tabs" carousel — restored on remount. */
+// eslint-disable-next-line prefer-const -- mutated inside component render
+let lastSelectedTag: ProductTag | null = null;
+
 type ProductSliderMode = "simple" | "tabs" | "recentlyVisited";
 
 interface ProductSliderProps {
@@ -42,7 +46,7 @@ export default function ProductSlider({
 	recentlyVisitedProductIds = [],
 }: ProductSliderProps) {
 	const [selectedTag, setSelectedTag] = useState<ProductTag | null>(
-		mode === "tabs" ? tags[0] : null,
+		mode === "tabs" ? (lastSelectedTag ?? tags[0]) : null,
 	);
 	const listenForScrollRef = useRef(true);
 	const hasMoreToLoadRef = useRef(true);
@@ -121,11 +125,11 @@ export default function ProductSlider({
 		return allProducts;
 	}, [mode, data, queryClient, recentlyVisitedProductIds]);
 
-	// Sync refs with current values — read inside event handlers so the
-	// listeners stay stable and never go stale
+	// Sync refs / module cache with current values
 	hasMoreToLoadRef.current = hasNextPage ?? false;
 	fetchNextPageRef.current = fetchNextPage;
 	isFetchingNextPageRef.current = isFetchingNextPage;
+	if (mode === "tabs" && selectedTag) lastSelectedTag = selectedTag;
 
 	const [emblaRef, emblaApi] = useEmblaCarousel(
 		{
