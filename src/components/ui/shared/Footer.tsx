@@ -13,7 +13,7 @@ export function Footer() {
 				<p className="text-center">
 					Понравился сайт?{" "}
 					<Link
-						href="https://www.rublevsky.studio"
+						href="https://t.me/alexrublevsky"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="text-accent!"
