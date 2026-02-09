@@ -1078,61 +1078,62 @@ function ProductPage() {
 
 												{/* Quantity Selector */}
 												<div className="flex @[38ch]:w-auto w-full min-w-[20ch] flex-1 flex-col self-stretch">
-													<div className="flex w-full flex-1 items-stretch gap-0.5">
+													<div className="relative flex w-full flex-1 items-center justify-center rounded-lg bg-muted px-1 py-1">
+														{/* Minus button */}
 														<Button
 															type="button"
+															variant="quantity"
 															onClick={decrementQuantity}
 															disabled={quantity <= 1}
-															className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted hover:bg-secondary active:bg-muted-hover disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:text-primary hover:[&_svg]:text-[var(--muted)]"
 														>
-															<Icon name="minus" size={20} />
+															<Icon name="minus" size={14} />
 														</Button>
-														<div className="flex flex-1 items-center justify-center rounded-lg bg-muted px-0.5 py-1 text-center">
-															<div className="flex w-full flex-col items-center justify-center gap-1">
-																{productWithDetails?.squareMetersPerPack && (
-																	<div className="flex w-full flex-col items-center justify-center gap-0">
-																		<div className="whitespace-nowrap font-digital-mono font-normal text-foreground text-xl sm:text-2xl">
-																			<NumberFlow
-																				value={
-																					quantity *
-																					productWithDetails.squareMetersPerPack
-																				}
-																				format={{
-																					minimumFractionDigits: 0,
-																					maximumFractionDigits: 3,
-																				}}
-																			/>
-																		</div>
-																		<div className="-mt-1 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
-																			Площадь{" "}
-																			<span className="text-foreground">
-																				м²
-																			</span>
-																		</div>
+
+														{/* Center content */}
+														<div className="flex flex-1 flex-col items-center justify-center gap-1">
+															{productWithDetails?.squareMetersPerPack && (
+																<div className="flex w-full flex-col items-center justify-center gap-0">
+																	<div className="whitespace-nowrap font-digital-mono font-normal text-foreground text-xl sm:text-2xl">
+																		<NumberFlow
+																			value={
+																				quantity *
+																				productWithDetails.squareMetersPerPack
+																			}
+																			format={{
+																				minimumFractionDigits: 0,
+																				maximumFractionDigits: 3,
+																			}}
+																		/>
+																	</div>
+																	<div className="-mt-1 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
+																		Площадь{" "}
+																		<span className="text-foreground">м²</span>
+																	</div>
+																</div>
+															)}
+															<div className="flex w-full flex-col items-center justify-center gap-0 pb-0.5">
+																<Input
+																	type="number"
+																	min={1}
+																	value={quantity}
+																	onChange={handleQuantityChange}
+																	className="field-sizing-content m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] border-0 bg-transparent p-0 text-center font-digital-mono font-normal text-xl shadow-none [appearance:textfield] focus-visible:ring-0 focus-visible:ring-offset-0 sm:text-2xl [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+																/>
+																{isFlooringProduct && (
+																	<div className="-mt-3.5 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
+																		Упаковок
 																	</div>
 																)}
-																<div className="flex w-full flex-col items-center justify-center gap-0 pb-0.5">
-																	<Input
-																		type="number"
-																		min={1}
-																		value={quantity}
-																		onChange={handleQuantityChange}
-																		className="field-sizing-content m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] border-0 bg-transparent p-0 text-center font-digital-mono font-normal text-xl shadow-none [appearance:textfield] focus-visible:ring-0 focus-visible:ring-offset-0 sm:text-2xl [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-																	/>
-																	{isFlooringProduct && (
-																		<div className="-mt-3.5 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
-																			Упаковок
-																		</div>
-																	)}
-																</div>
 															</div>
 														</div>
+
+														{/* Plus button */}
 														<Button
 															type="button"
+															variant="quantity"
 															onClick={incrementQuantity}
-															className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted hover:bg-secondary active:bg-muted-hover [&_svg]:text-primary hover:[&_svg]:text-[var(--muted)]"
 														>
-															<Icon name="plus" size={20} />
+															<Icon name="plus" size={14} />
 														</Button>
 													</div>
 												</div>
@@ -1516,9 +1517,9 @@ function ProductPage() {
 								</div>
 
 								{/* Wrapper for Price, Quantity, and Add to Cart */}
-								<div className="min-w-0 space-y-4 rounded-lg border border-border p-2">
+								<div className="@container min-w-0 space-y-4 rounded-lg border border-border p-2">
 									{/* Price and Quantity */}
-									<div className="@container">
+									<div>
 										<div className="flex w-full min-w-0 flex-wrap items-stretch gap-0">
 											{/* Price Box */}
 											<div className="flex @[38ch]:w-auto w-full flex-col @[38ch]:items-start items-center justify-center rounded-lg bg-muted px-4 py-3 @[38ch]:text-left text-center">
@@ -1570,59 +1571,62 @@ function ProductPage() {
 
 											{/* Quantity Selector */}
 											<div className="flex @[38ch]:w-auto w-full min-w-[20ch] flex-1 flex-col self-stretch">
-												<div className="flex w-full flex-1 items-stretch gap-0.5">
+												<div className="relative flex w-full flex-1 items-center justify-center rounded-lg bg-muted px-1 py-1">
+													{/* Minus button */}
 													<Button
 														type="button"
+														variant="quantity"
 														onClick={decrementQuantity}
 														disabled={quantity <= 1}
-														className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted hover:bg-secondary active:bg-muted-hover disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:text-primary hover:[&_svg]:text-[var(--muted)]"
 													>
-														<Icon name="minus" size={20} />
+														<Icon name="minus" size={14} />
 													</Button>
-													<div className="flex flex-1 items-center justify-center rounded-lg bg-muted px-0.5 py-1 text-center">
-														<div className="flex w-full flex-col items-center justify-center gap-1">
-															{productWithDetails?.squareMetersPerPack && (
-																<div className="flex w-full flex-col items-center justify-center gap-0">
-																	<div className="whitespace-nowrap font-digital-mono font-normal text-foreground text-xl sm:text-2xl">
-																		<NumberFlow
-																			value={
-																				quantity *
-																				productWithDetails.squareMetersPerPack
-																			}
-																			format={{
-																				minimumFractionDigits: 0,
-																				maximumFractionDigits: 3,
-																			}}
-																		/>
-																	</div>
-																	<div className="-mt-1 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
-																		Площадь{" "}
-																		<span className="text-foreground">м²</span>
-																	</div>
+
+													{/* Center content */}
+													<div className="flex flex-1 flex-col items-center justify-center gap-1">
+														{productWithDetails?.squareMetersPerPack && (
+															<div className="flex w-full flex-col items-center justify-center gap-0">
+																<div className="whitespace-nowrap font-digital-mono font-normal text-foreground text-xl sm:text-2xl">
+																	<NumberFlow
+																		value={
+																			quantity *
+																			productWithDetails.squareMetersPerPack
+																		}
+																		format={{
+																			minimumFractionDigits: 0,
+																			maximumFractionDigits: 3,
+																		}}
+																	/>
+																</div>
+																<div className="-mt-1 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
+																	Площадь{" "}
+																	<span className="text-foreground">м²</span>
+																</div>
+															</div>
+														)}
+														<div className="flex w-full flex-col items-center justify-center gap-0 pb-0.5">
+															<Input
+																type="number"
+																min={1}
+																value={quantity}
+																onChange={handleQuantityChange}
+																className="field-sizing-content m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] border-0 bg-transparent p-0 text-center font-digital-mono font-normal text-xl shadow-none [appearance:textfield] focus-visible:ring-0 focus-visible:ring-offset-0 sm:text-2xl [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+															/>
+															{isFlooringProduct && (
+																<div className="-mt-3.5 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
+																	Упаковок
 																</div>
 															)}
-															<div className="flex w-full flex-col items-center justify-center gap-0 pb-0.5">
-																<Input
-																	type="number"
-																	min={1}
-																	value={quantity}
-																	onChange={handleQuantityChange}
-																	className="field-sizing-content m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] border-0 bg-transparent p-0 text-center font-digital-mono font-normal text-xl shadow-none [appearance:textfield] focus-visible:ring-0 focus-visible:ring-offset-0 sm:text-2xl [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-																/>
-																{isFlooringProduct && (
-																	<div className="-mt-3.5 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
-																		Упаковок
-																	</div>
-																)}
-															</div>
 														</div>
 													</div>
+
+													{/* Plus button */}
 													<Button
 														type="button"
+														variant="quantity"
 														onClick={incrementQuantity}
-														className="flex h-full min-w-10 flex-1 cursor-pointer items-center justify-center self-stretch rounded-[15px] bg-muted hover:bg-secondary active:bg-muted-hover [&_svg]:text-primary hover:[&_svg]:text-[var(--muted)]"
 													>
-														<Icon name="plus" size={20} />
+														<Icon name="plus" size={14} />
 													</Button>
 												</div>
 											</div>
