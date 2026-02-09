@@ -35,7 +35,7 @@ export const createBrand = createServerFn({ method: "POST" })
 
 			// Move staging images to final location before saving (in same request)
 			let finalLogo = brandData.logo || "";
-			if (finalLogo?.startsWith("staging/")) {
+			if (finalLogo?.startsWith("images/staging/")) {
 				const bucket = getStorageBucket();
 				const moveResult = await moveStagingImagesWithBucket(bucket, {
 					imagePaths: [finalLogo],

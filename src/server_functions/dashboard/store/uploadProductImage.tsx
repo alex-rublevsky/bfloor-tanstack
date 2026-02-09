@@ -23,7 +23,7 @@ async function cleanupOldStagingFiles(
 	folder: string,
 ): Promise<void> {
 	try {
-		const stagingPrefix = `staging/${folder}/`;
+		const stagingPrefix = `images/staging/${folder}/`;
 		const cutoffTime = Date.now() - STAGING_CLEANUP_AGE_MS;
 
 		// List all objects in the staging folder
@@ -176,17 +176,16 @@ export const uploadProductImage = createServerFn({ method: "POST" })
 			// Create directory path with proper structure
 			let directoryPath = folder;
 
+			// All uploads go under the "images/" prefix in the bucket.
 			if (isStaging) {
-				// Staging folder structure: staging/{folder}/{sessionId}/
+				// Staging folder structure: images/staging/{folder}/{sessionId}/
 				// This allows easy cleanup by session and by folder type
 				const stagingSessionId = sessionId || `session-${Date.now()}`;
-				directoryPath = `staging/${folder}/${stagingSessionId}`;
+				directoryPath = `images/staging/${folder}/${stagingSessionId}`;
 			} else if (folder === "country-flags") {
-				// Country flags go directly in their respective folder, no subdirectories
-				directoryPath = folder;
+				directoryPath = "images/country-flags";
 			} else if (folder === "brands") {
-				// Brand logos go in the top-level 'Brands' folder
-				directoryPath = "Brands";
+				directoryPath = "images/brands";
 			} else if (
 				categorySlug &&
 				productName &&
@@ -195,14 +194,12 @@ export const uploadProductImage = createServerFn({ method: "POST" })
 			) {
 				const sanitizedCategorySlug = sanitizeFilename(categorySlug);
 				const sanitizedProductName = sanitizeFilename(productName);
-				directoryPath = `${folder}/${sanitizedCategorySlug}/${sanitizedProductName}`;
+				directoryPath = `images/${folder}/${sanitizedCategorySlug}/${sanitizedProductName}`;
 			} else if (slug?.trim()) {
-				// Fallback to old structure for backward compatibility (only for products)
-				directoryPath = `${folder}/${slug}`;
+				directoryPath = `images/${folder}/${slug}`;
 			} else {
-				// Use timestamp-based folder for new products without proper data
 				const timestamp = Date.now();
-				directoryPath = `${folder}/temp-${timestamp}`;
+				directoryPath = `images/${folder}/temp-${timestamp}`;
 			}
 
 			// Check if file exists and find available name

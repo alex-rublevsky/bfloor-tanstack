@@ -1,0 +1,78 @@
+/* Popular Products - 2-row grid section on home page */
+
+.popular-products-section {
+	padding-bottom: 3rem;
+}
+
+/* Header row */
+.popular-products__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.5rem;
+	gap: 1rem;
+}
+
+.popular-products__header h2 {
+	margin: 0;
+}
+
+/* 2-row responsive grid */
+.popular-products__grid {
+	display: grid;
+	gap: 0.5rem;
+	/* Mobile: 2 columns */
+	grid-template-columns: repeat(2, 1fr);
+}
+
+/* Mobile collapsed state: show only first 4 items (2 cols × 2 rows) */
+.popular-products__grid--collapsed .popular-products__item:nth-child(n + 5) {
+	display: none;
+}
+
+/* Each item takes full grid cell */
+.popular-products__item {
+	min-width: 0; /* Prevent overflow */
+}
+
+/* Loading state */
+.popular-products__loading {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 3rem 1rem;
+	text-align: center;
+}
+
+/* "Show more" button container - mobile only */
+.popular-products__show-more {
+	display: flex;
+	justify-content: center;
+	margin-top: 1rem;
+}
+
+/* Tablet: 3 columns — show all items, hide show-more */
+@media (min-width: 640px) {
+	.popular-products__grid {
+		grid-template-columns: repeat(4, 1fr);
+		gap: 0.75rem;
+	}
+
+	/* On tablet+ always show all items, even when collapsed class is present */
+	.popular-products__grid--collapsed .popular-products__item:nth-child(n + 5) {
+		display: block;
+	}
+
+	/* Hide show-more button on tablet+ */
+	.popular-products__show-more {
+		display: none;
+	}
+}
+
+/* Desktop: 6 columns (12 products = exactly 2 rows) */
+@media (min-width: 1024px) {
+	.popular-products__grid {
+		grid-template-columns: repeat(6, 1fr);
+		gap: 1rem;
+	}
+}

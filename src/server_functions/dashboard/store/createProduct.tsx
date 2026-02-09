@@ -100,7 +100,7 @@ export const createProduct = createServerFn({ method: "POST" })
 					.filter(Boolean);
 
 				const hasStagingImages = imagePaths.some((path) =>
-					path.startsWith("staging/"),
+					path.startsWith("images/staging/"),
 				);
 
 				if (hasStagingImages) {
@@ -116,7 +116,7 @@ export const createProduct = createServerFn({ method: "POST" })
 					if (moveResult?.pathMap) {
 						const updatedPaths = imagePaths
 							.map((path) => moveResult.pathMap?.[path] ?? path)
-							.filter((p) => !p.startsWith("staging/"));
+							.filter((p) => !p.startsWith("images/staging/"));
 						movedImagePaths = Object.values(moveResult.pathMap);
 						imagesJson =
 							updatedPaths.length > 0 ? JSON.stringify(updatedPaths) : "";

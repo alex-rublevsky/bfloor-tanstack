@@ -362,6 +362,26 @@ export const orderItems = sqliteTable(
 	],
 );
 
+// News articles
+export const news = sqliteTable(
+	"news",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		name: text("name").notNull(), // Title of the news article
+		slug: text("slug").notNull().unique(),
+		image: text("image"), // Cover image path in R2 storage
+		body: text("body"), // Markdown content
+		publishedAt: integer("published_at", { mode: "timestamp" }),
+		isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+		createdAt: integer("created_at", { mode: "timestamp" }),
+	},
+	(table) => [
+		index("idx_news_active").on(table.isActive),
+		index("idx_news_active_published").on(table.isActive, table.publishedAt),
+		index("idx_news_slug").on(table.slug),
+	],
+);
+
 // Inquiries
 // export const inquiries = sqliteTable('inquiries', {
 //   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -449,6 +469,8 @@ export const schema = {
 	productStoreLocations,
 	productBrands,
 	productCollections,
+	// News tables
+	news,
 	// Order tables
 	orders,
 	orderItems,

@@ -51,7 +51,7 @@ export const createProductCategory = createServerFn({ method: "POST" })
 
 			// Move staging images to final location before saving (in same request)
 			let finalImage = categoryData.image || "";
-			if (finalImage?.startsWith("staging/")) {
+			if (finalImage?.startsWith("images/staging/")) {
 				const bucket = getStorageBucket();
 				const moveResult = await moveStagingImagesWithBucket(bucket, {
 					imagePaths: [finalImage],

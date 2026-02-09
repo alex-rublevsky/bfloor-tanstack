@@ -5,6 +5,7 @@ import { DB } from "~/db";
 import { brands, collections, productBrands, products } from "~/schema";
 import { ApiError } from "~/utils/ApiError";
 import { getStorageBucket } from "~/utils/storage";
+import { getProductImageStorageKey } from "../store/moveStagingImages";
 
 export const deleteBrand = createServerFn({ method: "POST" })
 	.inputValidator((data: { id: number }) => data)
@@ -59,11 +60,13 @@ export const deleteBrand = createServerFn({ method: "POST" })
 			}
 
 			// Delete the brand logo from R2 if it exists (outside transaction — storage I/O)
+			// DB stores path without "images/" prefix, but bucket key includes it
 			const brandLogo = existingBrand[0].image;
-			if (brandLogo && !brandLogo.startsWith("staging/")) {
+			if (brandLogo && !brandLogo.startsWith("images/staging/")) {
 				try {
 					const bucket = getStorageBucket();
-					await bucket.delete(brandLogo);
+					const storageKey = getProductImageStorageKey(brandLogo);
+					await bucket.delete(storageKey);
 				} catch (deleteError) {
 					console.warn("Failed to delete brand logo from R2:", deleteError);
 				}

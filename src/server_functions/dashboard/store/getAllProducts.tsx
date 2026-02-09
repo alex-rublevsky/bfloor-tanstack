@@ -81,6 +81,7 @@ export const getAllProducts = createServerFn({ method: "GET" })
 				typeof data.maxPrice === "number" ? data.maxPrice : undefined;
 			const tagFilter = data.tag && data.tag.length > 0 ? data.tag : undefined;
 			const hasDiscountFilter = data.hasDiscount === true;
+			const excludeDiscountedFilter = data.hasDiscount === false;
 			const isFeaturedFilter = data.isFeatured === true;
 			const productIdsFilter =
 				Array.isArray(data.productIds) && data.productIds.length > 0
@@ -165,6 +166,12 @@ export const getAllProducts = createServerFn({ method: "GET" })
 				// Filter products where discount is not null and greater than 0
 				conditions.push(
 					sql`${products.discount} IS NOT NULL AND ${products.discount} > 0`,
+				);
+			}
+			if (excludeDiscountedFilter) {
+				// Exclude products that have a discount (for sections that coexist with a discounts carousel)
+				conditions.push(
+					sql`(${products.discount} IS NULL OR ${products.discount} <= 0)`,
 				);
 			}
 			if (isFeaturedFilter) {

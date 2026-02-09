@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseStatus } from "@tanstack/react-start/server";
 import { getStorageBucket } from "~/utils/storage";
+import { getProductImageStorageKey } from "./moveStagingImages";
 
 interface GetImageMetadataInput {
 	filename: string; // Full path in R2 (e.g., "products/category/product/image.jpg")
@@ -26,8 +27,11 @@ export const getImageMetadata = createServerFn({ method: "POST" })
 
 			const bucket = getStorageBucket();
 
+			// Resolve the correct bucket key (adds images/ prefix if needed)
+			const storageKey = getProductImageStorageKey(filename);
+
 			// Use HEAD request to get metadata without downloading the file
-			const object = await bucket.head(filename);
+			const object = await bucket.head(storageKey);
 
 			if (!object) {
 				// File doesn't exist

@@ -17,15 +17,19 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as StoreRouteRouteImport } from './routes/store/route'
 import { Route as ProductRouteRouteImport } from './routes/product/route'
+import { Route as NewsRouteRouteImport } from './routes/news/route'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoreIndexRouteImport } from './routes/store/index'
+import { Route as NewsIndexRouteImport } from './routes/news/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as StoreCheckoutRouteImport } from './routes/store/checkout'
 import { Route as StoreCategorySlugRouteImport } from './routes/store/$categorySlug'
 import { Route as ProductProductIdRouteImport } from './routes/product/$productId'
 import { Route as OrderOrderIdRouteImport } from './routes/order/$orderId'
+import { Route as NewsNewsSlugRouteImport } from './routes/news/$newsSlug'
 import { Route as DashboardOrdersRouteImport } from './routes/dashboard/orders'
+import { Route as DashboardNewsRouteImport } from './routes/dashboard/news'
 import { Route as DashboardMiscRouteImport } from './routes/dashboard/misc'
 import { Route as DashboardCollectionsRouteImport } from './routes/dashboard/collections'
 import { Route as DashboardCategoriesRouteImport } from './routes/dashboard/categories'
@@ -75,6 +79,11 @@ const ProductRouteRoute = ProductRouteRouteImport.update({
   path: '/product',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NewsRouteRoute = NewsRouteRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRouteRoute = DashboardRouteRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -89,6 +98,11 @@ const StoreIndexRoute = StoreIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => StoreRouteRoute,
+} as any)
+const NewsIndexRoute = NewsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => NewsRouteRoute,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
@@ -115,9 +129,19 @@ const OrderOrderIdRoute = OrderOrderIdRouteImport.update({
   path: '/order/$orderId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NewsNewsSlugRoute = NewsNewsSlugRouteImport.update({
+  id: '/$newsSlug',
+  path: '/$newsSlug',
+  getParentRoute: () => NewsRouteRoute,
+} as any)
 const DashboardOrdersRoute = DashboardOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardNewsRoute = DashboardNewsRouteImport.update({
+  id: '/news',
+  path: '/news',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
 const DashboardMiscRoute = DashboardMiscRouteImport.update({
@@ -165,6 +189,7 @@ const DashboardProductsProductIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/news': typeof NewsRouteRouteWithChildren
   '/product': typeof ProductRouteRouteWithChildren
   '/store': typeof StoreRouteRouteWithChildren
   '/about': typeof AboutRoute
@@ -178,12 +203,15 @@ export interface FileRoutesByFullPath {
   '/dashboard/categories': typeof DashboardCategoriesRoute
   '/dashboard/collections': typeof DashboardCollectionsRoute
   '/dashboard/misc': typeof DashboardMiscRoute
+  '/dashboard/news': typeof DashboardNewsRoute
   '/dashboard/orders': typeof DashboardOrdersRoute
+  '/news/$newsSlug': typeof NewsNewsSlugRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
   '/store/$categorySlug': typeof StoreCategorySlugRoute
   '/store/checkout': typeof StoreCheckoutRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/news/': typeof NewsIndexRoute
   '/store/': typeof StoreIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/products/new': typeof DashboardProductsNewRoute
@@ -203,12 +231,15 @@ export interface FileRoutesByTo {
   '/dashboard/categories': typeof DashboardCategoriesRoute
   '/dashboard/collections': typeof DashboardCollectionsRoute
   '/dashboard/misc': typeof DashboardMiscRoute
+  '/dashboard/news': typeof DashboardNewsRoute
   '/dashboard/orders': typeof DashboardOrdersRoute
+  '/news/$newsSlug': typeof NewsNewsSlugRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
   '/store/$categorySlug': typeof StoreCategorySlugRoute
   '/store/checkout': typeof StoreCheckoutRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/news': typeof NewsIndexRoute
   '/store': typeof StoreIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/products/new': typeof DashboardProductsNewRoute
@@ -218,6 +249,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/news': typeof NewsRouteRouteWithChildren
   '/product': typeof ProductRouteRouteWithChildren
   '/store': typeof StoreRouteRouteWithChildren
   '/about': typeof AboutRoute
@@ -231,12 +263,15 @@ export interface FileRoutesById {
   '/dashboard/categories': typeof DashboardCategoriesRoute
   '/dashboard/collections': typeof DashboardCollectionsRoute
   '/dashboard/misc': typeof DashboardMiscRoute
+  '/dashboard/news': typeof DashboardNewsRoute
   '/dashboard/orders': typeof DashboardOrdersRoute
+  '/news/$newsSlug': typeof NewsNewsSlugRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
   '/store/$categorySlug': typeof StoreCategorySlugRoute
   '/store/checkout': typeof StoreCheckoutRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/news/': typeof NewsIndexRoute
   '/store/': typeof StoreIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/products/new': typeof DashboardProductsNewRoute
@@ -247,6 +282,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/news'
     | '/product'
     | '/store'
     | '/about'
@@ -260,12 +296,15 @@ export interface FileRouteTypes {
     | '/dashboard/categories'
     | '/dashboard/collections'
     | '/dashboard/misc'
+    | '/dashboard/news'
     | '/dashboard/orders'
+    | '/news/$newsSlug'
     | '/order/$orderId'
     | '/product/$productId'
     | '/store/$categorySlug'
     | '/store/checkout'
     | '/dashboard/'
+    | '/news/'
     | '/store/'
     | '/api/auth/$'
     | '/dashboard/products/new'
@@ -285,12 +324,15 @@ export interface FileRouteTypes {
     | '/dashboard/categories'
     | '/dashboard/collections'
     | '/dashboard/misc'
+    | '/dashboard/news'
     | '/dashboard/orders'
+    | '/news/$newsSlug'
     | '/order/$orderId'
     | '/product/$productId'
     | '/store/$categorySlug'
     | '/store/checkout'
     | '/dashboard'
+    | '/news'
     | '/store'
     | '/api/auth/$'
     | '/dashboard/products/new'
@@ -299,6 +341,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/news'
     | '/product'
     | '/store'
     | '/about'
@@ -312,12 +355,15 @@ export interface FileRouteTypes {
     | '/dashboard/categories'
     | '/dashboard/collections'
     | '/dashboard/misc'
+    | '/dashboard/news'
     | '/dashboard/orders'
+    | '/news/$newsSlug'
     | '/order/$orderId'
     | '/product/$productId'
     | '/store/$categorySlug'
     | '/store/checkout'
     | '/dashboard/'
+    | '/news/'
     | '/store/'
     | '/api/auth/$'
     | '/dashboard/products/new'
@@ -327,6 +373,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
+  NewsRouteRoute: typeof NewsRouteRouteWithChildren
   ProductRouteRoute: typeof ProductRouteRouteWithChildren
   StoreRouteRoute: typeof StoreRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
@@ -397,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -417,6 +471,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/store/'
       preLoaderRoute: typeof StoreIndexRouteImport
       parentRoute: typeof StoreRouteRoute
+    }
+    '/news/': {
+      id: '/news/'
+      path: '/'
+      fullPath: '/news/'
+      preLoaderRoute: typeof NewsIndexRouteImport
+      parentRoute: typeof NewsRouteRoute
     }
     '/dashboard/': {
       id: '/dashboard/'
@@ -453,11 +514,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrderOrderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/news/$newsSlug': {
+      id: '/news/$newsSlug'
+      path: '/$newsSlug'
+      fullPath: '/news/$newsSlug'
+      preLoaderRoute: typeof NewsNewsSlugRouteImport
+      parentRoute: typeof NewsRouteRoute
+    }
     '/dashboard/orders': {
       id: '/dashboard/orders'
       path: '/orders'
       fullPath: '/dashboard/orders'
       preLoaderRoute: typeof DashboardOrdersRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/news': {
+      id: '/dashboard/news'
+      path: '/news'
+      fullPath: '/dashboard/news'
+      preLoaderRoute: typeof DashboardNewsRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/misc': {
@@ -525,6 +600,7 @@ interface DashboardRouteRouteChildren {
   DashboardCategoriesRoute: typeof DashboardCategoriesRoute
   DashboardCollectionsRoute: typeof DashboardCollectionsRoute
   DashboardMiscRoute: typeof DashboardMiscRoute
+  DashboardNewsRoute: typeof DashboardNewsRoute
   DashboardOrdersRoute: typeof DashboardOrdersRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardProductsNewRoute: typeof DashboardProductsNewRoute
@@ -537,6 +613,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardCategoriesRoute: DashboardCategoriesRoute,
   DashboardCollectionsRoute: DashboardCollectionsRoute,
   DashboardMiscRoute: DashboardMiscRoute,
+  DashboardNewsRoute: DashboardNewsRoute,
   DashboardOrdersRoute: DashboardOrdersRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardProductsNewRoute: DashboardProductsNewRoute,
@@ -545,6 +622,20 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
   DashboardRouteRouteChildren,
+)
+
+interface NewsRouteRouteChildren {
+  NewsNewsSlugRoute: typeof NewsNewsSlugRoute
+  NewsIndexRoute: typeof NewsIndexRoute
+}
+
+const NewsRouteRouteChildren: NewsRouteRouteChildren = {
+  NewsNewsSlugRoute: NewsNewsSlugRoute,
+  NewsIndexRoute: NewsIndexRoute,
+}
+
+const NewsRouteRouteWithChildren = NewsRouteRoute._addFileChildren(
+  NewsRouteRouteChildren,
 )
 
 interface ProductRouteRouteChildren {
@@ -578,6 +669,7 @@ const StoreRouteRouteWithChildren = StoreRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
+  NewsRouteRoute: NewsRouteRouteWithChildren,
   ProductRouteRoute: ProductRouteRouteWithChildren,
   StoreRouteRoute: StoreRouteRouteWithChildren,
   AboutRoute: AboutRoute,

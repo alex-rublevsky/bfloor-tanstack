@@ -24,7 +24,7 @@ export const cleanupStagingImages = createServerFn({ method: "POST" })
 
 			// Filter to only staging images
 			const stagingImages = imagePaths.filter((path) =>
-				path.startsWith("staging/"),
+				path.startsWith("images/staging/"),
 			);
 
 			if (stagingImages.length === 0) {

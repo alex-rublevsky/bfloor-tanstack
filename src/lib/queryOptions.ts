@@ -24,6 +24,7 @@ import { getProductCategoryCounts } from "~/server_functions/dashboard/categorie
 import { getAllCollections } from "~/server_functions/dashboard/collections/getAllCollections";
 import { getProductCollectionCounts } from "~/server_functions/dashboard/collections/getProductCollectionCounts";
 import { getAllBrands } from "~/server_functions/dashboard/getAllBrands";
+import { getAllNews } from "~/server_functions/dashboard/news/getAllNews";
 import { getAllOrders } from "~/server_functions/dashboard/orders/getAllOrders";
 import { getAllFilterOptionsDashboard } from "~/server_functions/dashboard/store/getAllFilterOptions";
 import { getAllProducts } from "~/server_functions/dashboard/store/getAllProducts";
@@ -32,8 +33,10 @@ import { getAllFilterOptions } from "~/server_functions/store/getAllFilterOption
 import { getStoreData } from "~/server_functions/store/getAllProducts";
 import { getBrandBySlug } from "~/server_functions/store/getBrandBySlug";
 import { getCategoryBySlug } from "~/server_functions/store/getCategoryBySlug";
+import { getNewsBySlug } from "~/server_functions/store/getNewsBySlug";
 import { getProductBySlug } from "~/server_functions/store/getProductBySlug";
 import { getProductDetailsBySlug } from "~/server_functions/store/getProductDetailsBySlug";
+import { getPublishedNews } from "~/server_functions/store/getPublishedNews";
 import { getRecommendedProducts } from "~/server_functions/store/getRecommendedProducts";
 import type { ProductWithDetails } from "~/types";
 import { getUserData } from "~/utils/auth-server-func";
@@ -836,6 +839,37 @@ export const productsByTagInfiniteQueryOptions = (tag: string) =>
  */
 
 /**
+ * Popular products query options (sorted by viewCount DESC)
+ * Used for: Home page "Popular Products" grid section
+ *
+ * Cache Strategy: Aggressive caching for homepage showcase
+ * - Popular products cached for 3 days (view counts change gradually)
+ * - Kept in memory for 7 days
+ * - No automatic refetching - manual invalidation if needed
+ * - Fetches top 12 products for 2-row grid display (6 columns on desktop)
+ * - Excludes discounted products (they appear in the separate discounts carousel)
+ *   to avoid duplicate viewTransitionNames on the home page
+ */
+export const popularProductsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["bfloorPopularProducts"],
+		queryFn: async () =>
+			getAllProducts({
+				data: {
+					sort: "best-selling",
+					hasDiscount: false,
+					limit: 12,
+					page: 1,
+				},
+			}),
+		staleTime: 1000 * 60 * 60 * 24 * 3, // 3 days - view counts change gradually
+		gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days - keep in memory
+		retry: 3,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
+	});
+
+/**
  * Discounted products infinite query options
  * Used for: ProductSlider component (simple mode) with pagination and infinite scrolling
  *
@@ -1006,6 +1040,84 @@ export const storeLocationsQueryOptions = () =>
 		},
 		staleTime: 1000 * 60 * 60 * 24 * 7, // 7 days - store locations rarely change
 		gcTime: 1000 * 60 * 60 * 24 * 14, // 14 days - keep in memory
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
+	});
+
+/**
+ * =============================================================================
+ * NEWS QUERIES
+ * =============================================================================
+ */
+
+/**
+ * All news query options (Dashboard - includes inactive)
+ * Used for: /dashboard/news route
+ *
+ * Cache Strategy: Moderate caching for semi-static content
+ * - News cached for 1 day (news changes more often than products)
+ * - Kept in memory for 3 days
+ * - Manual invalidation after CRUD operations
+ */
+export const newsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["bfloorNews"],
+		queryFn: async () => getAllNews(),
+		staleTime: 1000 * 60 * 60 * 24, // 1 day - news is semi-static
+		gcTime: 1000 * 60 * 60 * 24 * 3, // 3 days - keep in memory
+		retry: 3,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
+	});
+
+/**
+ * Published news query options (Store - active only)
+ * Used for: Home page carousel and /news listing page
+ *
+ * Cache Strategy: Aggressive caching for public-facing content
+ * - Published news cached for 3 days (changes are infrequent)
+ * - Kept in memory for 7 days
+ * - No automatic refetching - manual invalidation after edits
+ */
+export const publishedNewsQueryOptions = () =>
+	queryOptions({
+		queryKey: ["bfloorPublishedNews"],
+		queryFn: async () => getPublishedNews(),
+		staleTime: 1000 * 60 * 60 * 24 * 3, // 3 days - published news is semi-static
+		gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days - keep in memory
+		retry: 3,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
+	});
+
+/**
+ * News article by slug query options
+ * Used for: /news/$newsSlug detail page
+ *
+ * Cache Strategy: Aggressive caching for individual articles
+ * - Individual articles cached for 3 days
+ * - Kept in memory for 7 days
+ * - Fail fast for 404s (no retry)
+ */
+export const newsBySlugQueryOptions = (slug: string) =>
+	queryOptions({
+		queryKey: ["bfloorNewsArticle", slug],
+		queryFn: async () => {
+			try {
+				return await getNewsBySlug({ data: slug });
+			} catch (error) {
+				if (
+					error instanceof Error &&
+					error.message === "News article not found"
+				) {
+					throw notFound();
+				}
+				throw error;
+			}
+		},
+		retry: false, // Don't retry on error - fail fast for 404s
+		staleTime: 1000 * 60 * 60 * 24 * 3, // 3 days - articles are semi-static
+		gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days - keep in memory
 		refetchOnWindowFocus: false,
 		refetchOnMount: false,
 	});

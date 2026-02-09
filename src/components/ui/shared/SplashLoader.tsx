@@ -2,7 +2,6 @@ import type { QueryClient } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { flushSync } from "react-dom";
-import { PRODUCT_TAGS } from "~/constants/units";
 import { Logo } from "./Logo";
 
 const MIN_DISPLAY = 100; // ms — minimum splash display time
@@ -97,12 +96,15 @@ function waitForCriticalData(
 			const categoryCounts = queryClient.getQueryData([
 				"productCategoryCounts",
 			]);
-			const firstTagProducts = queryClient.getQueryData([
-				"bfloorProductsByTagInfinite",
-				PRODUCT_TAGS[0],
-			]);
-
-			if (categoryCounts && firstTagProducts) {
+			// const _publishedNews = queryClient.getQueryData(["bfloorPublishedNews"]);
+			// const _popularProducts = queryClient.getQueryData([
+			//"bfloorPopularProducts",
+			//]);
+			if (
+				categoryCounts
+				//&& publishedNews
+				//popularProducts
+			) {
 				resolve();
 				return;
 			}

@@ -1,15 +1,18 @@
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import useEmblaCarousel from "embla-carousel-react";
 import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-	getProductTagName,
-	PRODUCT_TAGS,
-	type ProductTag,
-} from "~/constants/units";
+import { useEffect, useMemo, useRef } from "react";
+// [TABS VARIATION COMMENTED OUT] - useState was only used for selectedTag
+// import { useEffect, useMemo, useRef, useState } from "react";
+// [TABS VARIATION COMMENTED OUT]
+// import {
+// 	getProductTagName,
+// 	PRODUCT_TAGS,
+// 	type ProductTag,
+// } from "~/constants/units";
 import {
 	discountedProductsInfiniteQueryOptions,
-	productsByTagInfiniteQueryOptions,
+	// productsByTagInfiniteQueryOptions,
 	recentlyVisitedProductsInfiniteQueryOptions,
 } from "~/lib/queryOptions";
 import type { ProductListItem } from "~/types";
@@ -27,36 +30,42 @@ import "./product-slider.css";
 const carouselSnapCache = new Map<string, number>();
 
 /** Last selected tag for the "tabs" carousel — restored on remount. */
-// eslint-disable-next-line prefer-const -- mutated inside component render
-let lastSelectedTag: ProductTag | null = null;
+// [TABS VARIATION COMMENTED OUT]
+// // eslint-disable-next-line prefer-const -- mutated inside component render
+// let lastSelectedTag: ProductTag | null = null;
 
-type ProductSliderMode = "simple" | "tabs" | "recentlyVisited";
+type ProductSliderMode = "simple" | /* "tabs" | */ "recentlyVisited";
 
 interface ProductSliderProps {
 	mode?: ProductSliderMode;
 	title: string;
-	tags?: readonly ProductTag[];
+	// [TABS VARIATION COMMENTED OUT]
+	// tags?: readonly ProductTag[];
 	recentlyVisitedProductIds?: number[];
 }
 
 export default function ProductSlider({
 	mode = "simple",
 	title,
-	tags = PRODUCT_TAGS,
+	// [TABS VARIATION COMMENTED OUT]
+	// tags = PRODUCT_TAGS,
 	recentlyVisitedProductIds = [],
 }: ProductSliderProps) {
-	const [selectedTag, setSelectedTag] = useState<ProductTag | null>(
-		mode === "tabs" ? (lastSelectedTag ?? tags[0]) : null,
-	);
+	// [TABS VARIATION COMMENTED OUT]
+	// const [selectedTag, setSelectedTag] = useState<ProductTag | null>(
+	// 	mode === "tabs" ? (lastSelectedTag ?? tags[0]) : null,
+	// );
 	const listenForScrollRef = useRef(true);
 	const hasMoreToLoadRef = useRef(true);
 	const queryClient = useQueryClient();
 
 	// Stable cache key for snap position persistence
-	const cacheKey =
-		mode === "tabs"
-			? `product-slider-tabs-${selectedTag}`
-			: `product-slider-${mode}`;
+	// [TABS VARIATION COMMENTED OUT]
+	// const cacheKey =
+	// 	mode === "tabs"
+	// 		? `product-slider-tabs-${selectedTag}`
+	// 		: `product-slider-${mode}`;
+	const cacheKey = `product-slider-${mode}`;
 
 	// Read saved snap position once on mount (ref keeps the value stable across
 	// re-renders so the Embla options object doesn't trigger unnecessary reInits)
@@ -71,23 +80,26 @@ export default function ProductSlider({
 
 	// Determine which query to use
 	const queryOptions = useMemo(() => {
-		if (mode === "tabs" && selectedTag) {
-			return productsByTagInfiniteQueryOptions(selectedTag);
-		}
+		// [TABS VARIATION COMMENTED OUT]
+		// if (mode === "tabs" && selectedTag) {
+		// 	return productsByTagInfiniteQueryOptions(selectedTag);
+		// }
 		if (mode === "recentlyVisited") {
 			return recentlyVisitedProductsInfiniteQueryOptions(
 				recentlyVisitedProductIds,
 			);
 		}
 		return discountedProductsInfiniteQueryOptions();
-	}, [mode, selectedTag, recentlyVisitedProductIds]);
+	}, [mode, recentlyVisitedProductIds]);
 
 	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useInfiniteQuery({
 			...(queryOptions as ReturnType<
 				typeof discountedProductsInfiniteQueryOptions
 			>),
-			enabled: mode !== "recentlyVisited" && !(mode === "tabs" && !selectedTag),
+			enabled: mode !== "recentlyVisited",
+			// [TABS VARIATION COMMENTED OUT]
+			// enabled: mode !== "recentlyVisited" && !(mode === "tabs" && !selectedTag),
 		});
 
 	// Merge products from all pages
@@ -129,7 +141,8 @@ export default function ProductSlider({
 	hasMoreToLoadRef.current = hasNextPage ?? false;
 	fetchNextPageRef.current = fetchNextPage;
 	isFetchingNextPageRef.current = isFetchingNextPage;
-	if (mode === "tabs" && selectedTag) lastSelectedTag = selectedTag;
+	// [TABS VARIATION COMMENTED OUT]
+	// if (mode === "tabs" && selectedTag) lastSelectedTag = selectedTag;
 
 	const [emblaRef, emblaApi] = useEmblaCarousel(
 		{
@@ -233,13 +246,14 @@ export default function ProductSlider({
 		}
 	}, [isFetchingNextPage, products.length]);
 
+	// [TABS VARIATION COMMENTED OUT]
 	// When tag changes, restore the cached position for that tab (or start at 0)
-	useEffect(() => {
-		if (emblaApi && mode === "tabs" && selectedTag) {
-			const savedSnap = carouselSnapCache.get(cacheKey) ?? 0;
-			emblaApi.scrollTo(savedSnap, true);
-		}
-	}, [emblaApi, selectedTag, mode, cacheKey]);
+	// useEffect(() => {
+	// 	if (emblaApi && mode === "tabs" && selectedTag) {
+	// 		const savedSnap = carouselSnapCache.get(cacheKey) ?? 0;
+	// 		emblaApi.scrollTo(savedSnap, true);
+	// 	}
+	// }, [emblaApi, selectedTag, mode, cacheKey]);
 
 	// Reinitialize Embla when products load to ensure proper layout.
 	// This fixes issues where items stack vertically due to initialization timing.
@@ -275,40 +289,42 @@ export default function ProductSlider({
 			<div className="product-slider__header">
 				<div className="product-slider__header-content">
 					<h2>{title}</h2>
-					{mode === "tabs" && (
-						<div className="product-slider__tags">
-							{tags.map((tag) => {
-								const productCount = undefined;
+					{/* [TABS VARIATION COMMENTED OUT]
+				{mode === "tabs" && (
+					<div className="product-slider__tags">
+						{tags.map((tag) => {
+							const productCount = undefined;
 
-								return (
-									<button
-										key={tag}
-										type="button"
-										onClick={() => setSelectedTag(tag)}
-										onMouseEnter={() => {
-											// Prefetch products for this tag on hover
-											queryClient.prefetchInfiniteQuery(
-												productsByTagInfiniteQueryOptions(tag),
-											);
-										}}
-										className={`product-slider__tag-button ${
-											selectedTag === tag
-												? "product-slider__tag-button--active"
-												: ""
-										}`}
-										disabled={tag === selectedTag && productCount === 0}
-									>
-										{getProductTagName(tag)}
-										{productCount !== undefined && productCount > 0 && (
-											<span className="product-slider__tag-count">
-												({productCount})
-											</span>
-										)}
-									</button>
-								);
-							})}
-						</div>
-					)}
+							return (
+								<button
+									key={tag}
+									type="button"
+									onClick={() => setSelectedTag(tag)}
+									onMouseEnter={() => {
+										// Prefetch products for this tag on hover
+										queryClient.prefetchInfiniteQuery(
+											productsByTagInfiniteQueryOptions(tag),
+										);
+									}}
+									className={`product-slider__tag-button ${
+										selectedTag === tag
+											? "product-slider__tag-button--active"
+											: ""
+									}`}
+									disabled={tag === selectedTag && productCount === 0}
+								>
+									{getProductTagName(tag)}
+									{productCount !== undefined && productCount > 0 && (
+										<span className="product-slider__tag-count">
+											({productCount})
+										</span>
+									)}
+								</button>
+							);
+						})}
+					</div>
+				)}
+				*/}
 				</div>
 
 				{/* Carousel Controls - shown when products are loaded */}
@@ -330,11 +346,16 @@ export default function ProductSlider({
 			{!isLoading && products.length === 0 && (
 				<div className="product-slider__empty">
 					<p className="text-muted-foreground">
+						{/* [TABS VARIATION COMMENTED OUT]
 						{mode === "tabs"
 							? "Нет товаров для выбранной категории"
 							: mode === "recentlyVisited"
 								? "Нет просмотренных товаров"
 								: "Нет товаров"}
+						*/}
+						{mode === "recentlyVisited"
+							? "Нет просмотренных товаров"
+							: "Нет товаров"}
 					</p>
 				</div>
 			)}

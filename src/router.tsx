@@ -69,15 +69,30 @@ export function getRouter() {
 	});
 
 	// Track product views on actual navigation (not prefetch)
+	// Only count views when the user navigates from a store category page (/store/{slug})
+	// NOT from: homepage popular/discounted carousels, recently visited slider, direct URL, etc.
+	let previousPathname = "";
+
 	router.subscribe("onResolved", () => {
 		const { pathname } = router.state.location;
 		const { matches } = router.state;
+
+		// Capture the previous path before updating (for next navigation)
+		const cameFrom = previousPathname;
+		previousPathname = pathname;
 
 		// Only track public product pages (exclude dashboard)
 		if (
 			pathname.startsWith("/dashboard/") ||
 			!pathname.startsWith("/product/")
 		) {
+			return;
+		}
+
+		// Only count views when navigating from a store category/brand page (/store/{slug})
+		// This excludes: homepage (/), product pages (/product/*), direct URL access, etc.
+		// "/store/" prefix ensures we match "/store/laminate" but NOT "/store" (the main store page without a slug)
+		if (!cameFrom.startsWith("/store/")) {
 			return;
 		}
 

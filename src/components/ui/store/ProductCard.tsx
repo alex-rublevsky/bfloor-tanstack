@@ -127,10 +127,21 @@ const ProductCard = memo(
 	({
 		product,
 		disableViewTransition = false,
+		viewTransitionPrefix,
 	}: {
 		product: ProductListItem;
 		disableViewTransition?: boolean;
+		/** Optional prefix to make viewTransitionNames unique across page sections (e.g. "popular").
+		 *  Produces names like `product-image-popular-{slug}` instead of `product-image-{slug}`.
+		 *  Elements with prefixed names won't animate to the detail page (which uses unprefixed names)
+		 *  but will gracefully cross-fade via the default view transition. */
+		viewTransitionPrefix?: string;
 	}) => {
+		// View transition name segment: "product-image-{slug}" or "product-image-{prefix}-{slug}"
+		const vtSlug = viewTransitionPrefix
+			? `${viewTransitionPrefix}-${product.slug}`
+			: product.slug;
+
 		const [isAddingToCart, setIsAddingToCart] = useState(false);
 		// Track hover state to determine which image is visible
 		// When hovering on desktop with 2+ images, the second image is shown
@@ -322,7 +333,7 @@ const ProductCard = memo(
 															// When hovering with multiple images, the secondary image gets the transition name
 															!isHovering || imageArray.length === 1
 															? {
-																	viewTransitionName: `product-image-${product.slug}`,
+																	viewTransitionName: `product-image-${vtSlug}`,
 																}
 															: undefined
 												}
@@ -363,7 +374,7 @@ const ProductCard = memo(
 																// This ensures smooth transition from the visible hovered image to the detail page
 																isHovering
 																? {
-																		viewTransitionName: `product-image-${product.slug}`,
+																		viewTransitionName: `product-image-${vtSlug}`,
 																	}
 																: undefined
 													}
@@ -468,7 +479,7 @@ const ProductCard = memo(
 													disableViewTransition
 														? undefined
 														: {
-																viewTransitionName: `product-price-${product.slug}`,
+																viewTransitionName: `product-price-${vtSlug}`,
 															}
 												}
 											>
@@ -489,7 +500,7 @@ const ProductCard = memo(
 											disableViewTransition
 												? undefined
 												: {
-														viewTransitionName: `product-name-${product.slug}`,
+														viewTransitionName: `product-name-${vtSlug}`,
 													}
 										}
 									>

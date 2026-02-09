@@ -1,10 +1,13 @@
+import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
 import { Image } from "~/components/ui/shared/Image";
 import { EmblaArrowButtons } from "../../shared/EmblaArrowButtons";
-import { EmblaDotButtons } from "../../shared/EmblaDotButtons";
 import { ExternalLink, Google, TwoGis, Yandex } from "../../shared/Icon";
+import { ProgressDots } from "../../shared/ProgressDots";
 import "../../shared/image-gallery.css";
 import "./testimonial.css";
+
+const AUTOPLAY_DELAY = 5000; // ms per slide
 
 type TestimonialSource = "Google" | "Yandex" | "2GIS";
 
@@ -78,11 +81,9 @@ const testimonials: Testimonial[] = [
 ];
 
 export default function TestimonialSliderSection() {
-	const [emblaRef, emblaApi] = useEmblaCarousel({
-		loop: true,
-	});
-
-	// Navigation handled by EmblaArrowButtons and EmblaDotButtons components
+	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
+		Autoplay({ delay: AUTOPLAY_DELAY, stopOnInteraction: false }),
+	]);
 
 	const renderSourceIcon = (source: TestimonialSource) => {
 		switch (source) {
@@ -165,14 +166,12 @@ export default function TestimonialSliderSection() {
 				</div>
 			</div>
 
-			{/* Dot indicators positioned below the carousel */}
-			<div className="embla__dots-container">
-				<EmblaDotButtons
-					emblaApi={emblaApi}
-					containerClassName="embla__dots"
-					itemKey={(index) => testimonials[index].id}
-				/>
-			</div>
+			{/* Progress dot indicators */}
+			<ProgressDots
+				emblaApi={emblaApi}
+				autoplayDelay={AUTOPLAY_DELAY}
+				itemKey={(index) => testimonials[index].id}
+			/>
 		</section>
 	);
 }

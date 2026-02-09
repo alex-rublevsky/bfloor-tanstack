@@ -147,7 +147,7 @@ export const updateProduct = createServerFn({ method: "POST" })
 					.filter((img) => img.length > 0);
 
 				const hasStagingImages = imagePaths.some((path) =>
-					path.startsWith("staging/"),
+					path.startsWith("images/staging/"),
 				);
 
 				if (hasStagingImages) {
@@ -193,7 +193,7 @@ export const updateProduct = createServerFn({ method: "POST" })
 								moveResult.pathMap[path] ??
 								moveResult.pathMap[path.trim()] ??
 								path;
-							if (finalPath.startsWith("staging/")) {
+							if (finalPath.startsWith("images/staging/")) {
 								imagePaths.splice(i, 1);
 								i--;
 							} else {

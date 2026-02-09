@@ -19,8 +19,8 @@ export interface MoveStagingImagesResult {
 }
 
 /**
- * Product images are stored under the "images/" prefix in the bucket.
- * Paths in the DB are stored without the prefix (e.g. "2025/02/file.jpg").
+ * All images are stored under the "images/" prefix in the bucket.
+ * Paths in the DB are stored without the prefix (e.g. "brands/slug/file.webp").
  * Use this when deleting or otherwise addressing the object in storage.
  */
 export function getProductImageStorageKey(path: string): string {
@@ -49,18 +49,24 @@ export async function moveStagingImagesWithBucket(
 			.replace(/-+/g, "-")
 			.replace(/^-|-$/g, "");
 
-	let finalDirectoryPath = finalFolder;
+	// All final images live under the "images/" prefix in the bucket.
+	// DB stores paths without "images/" so ASSETS_BASE_URL + dbPath builds the correct URL.
+	let finalDirectoryPath: string;
 	if (finalFolder === "country-flags") {
-		finalDirectoryPath = "country-flags";
+		finalDirectoryPath = "images/country-flags";
 	} else if (finalFolder === "brands") {
-		finalDirectoryPath = "brands";
+		finalDirectoryPath = slug ? `images/brands/${slug}` : "images/brands";
 	} else if (finalFolder === "products") {
 		const now = new Date();
 		finalDirectoryPath = `images/${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}`;
+	} else if (finalFolder === "news") {
+		finalDirectoryPath = slug ? `images/news/${slug}` : "images/news";
 	} else if (categorySlug && productName) {
-		finalDirectoryPath = `${finalFolder}/${sanitizeFilename(categorySlug)}/${sanitizeFilename(productName)}`;
+		finalDirectoryPath = `images/${finalFolder}/${sanitizeFilename(categorySlug)}/${sanitizeFilename(productName)}`;
 	} else if (slug) {
-		finalDirectoryPath = `${finalFolder}/${slug}`;
+		finalDirectoryPath = `images/${finalFolder}/${slug}`;
+	} else {
+		finalDirectoryPath = `images/${finalFolder}`;
 	}
 
 	const movedImages: string[] = [];
@@ -76,7 +82,7 @@ export async function moveStagingImagesWithBucket(
 	for (const stagingPath of imagePaths) {
 		try {
 			// Check if it's a staging path
-			if (!stagingPath.startsWith("staging/")) {
+			if (!stagingPath.startsWith("images/staging/")) {
 				// Already in final location, skip but add to map
 				movedImages.push(stagingPath);
 				pathMap[stagingPath] = stagingPath;
@@ -159,12 +165,11 @@ export async function moveStagingImagesWithBucket(
 				console.log(`✅ Verified deletion from staging: ${stagingPath}`);
 			}
 
-			// For products, we upload to images/year/month/ but store path without "images/"
-			// so that ASSETS_BASE_URL + path still builds the correct URL
-			const pathToStore =
-				finalFolder === "products" && finalPathToUse.startsWith("images/")
-					? finalPathToUse.slice("images/".length)
-					: finalPathToUse;
+			// All images are uploaded under images/... prefix but DB stores without "images/"
+			// so that ASSETS_BASE_URL + dbPath builds the correct public URL
+			const pathToStore = finalPathToUse.startsWith("images/")
+				? finalPathToUse.slice("images/".length)
+				: finalPathToUse;
 			movedImages.push(pathToStore);
 			pathMap[stagingPath] = pathToStore;
 		} catch (error) {
@@ -186,7 +191,9 @@ export async function moveStagingImagesWithBucket(
 	});
 
 	// If we had staging images but none were moved successfully, that's an error
-	const stagingPaths = imagePaths.filter((p) => p.startsWith("staging/"));
+	const stagingPaths = imagePaths.filter((p) =>
+		p.startsWith("images/staging/"),
+	);
 	if (
 		stagingPaths.length > 0 &&
 		movedImages.length === 0 &&
@@ -248,7 +255,7 @@ export async function moveSingleStagingImage(
 		categorySlug?: string;
 	},
 ): Promise<string> {
-	if (!imagePath || !imagePath.startsWith("staging/")) {
+	if (!imagePath || !imagePath.startsWith("images/staging/")) {
 		return imagePath || "";
 	}
 

@@ -1,0 +1,66 @@
+/* ============================================
+   PROGRESS DOT INDICATORS
+   Shared autoplay progress ring for carousels
+============================================ */
+
+/* Circular stroke animation: draws counterclockwise from 12 o'clock */
+@keyframes progress-dot-draw {
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+/* Dot container */
+.progress-dots {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 0.25rem;
+	padding-bottom: 0.5rem;
+}
+
+/* Individual dot button — reset browser defaults */
+.progress-dot {
+	appearance: none;
+	border: none;
+	background: none;
+	padding: 0;
+	margin: 0;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
+	border-radius: 50%;
+	transition: background-color 0.2s ease;
+}
+
+/* Hover highlight — subtle circular background behind the dot */
+.progress-dot:hover {
+	background-color: color-mix(in oklch, var(--muted) 50%, transparent);
+}
+
+/* Inner dot — inactive */
+.progress-dot__fill {
+	fill: var(--muted);
+	transition: fill 0.3s ease;
+}
+
+/* Inner dot — active */
+.progress-dot__fill--active {
+	fill: var(--primary);
+	transition: fill 0.3s ease;
+}
+
+/* Progress ring stroke around active dot */
+.progress-dot__ring {
+	stroke: var(--primary);
+	/* Use fill-box so transform-origin: center refers to the element's own center */
+	transform-box: fill-box;
+	transform-origin: center;
+	/* rotate(-90deg)  → start at 12 o'clock instead of 3 o'clock
+	   scaleX(-1)      → draw counterclockwise (to the left first) */
+	transform: rotate(-90deg) scaleX(-1);
+	animation-name: progress-dot-draw;
+	animation-timing-function: linear;
+	animation-fill-mode: forwards;
+	/* animation-duration is set via inline style to match autoplay delay */
+}

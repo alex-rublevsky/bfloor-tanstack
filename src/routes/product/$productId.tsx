@@ -311,8 +311,8 @@ function AddToCartSection({
 				transition={{ duration: 0.3, ease: "easeInOut" }}
 			>
 				{/* Discount Row */}
-				<div className="flex items-baseline gap-4">
-					<div className="text-left">Скидка</div>
+				<div className="flex flex-nowrap items-baseline gap-4">
+					<div className="shrink-0 text-left">Скидка</div>
 					<span className="relative whitespace-nowrap font-digital-mono text-muted-foreground! text-xl after:absolute after:inset-x-0 after:top-1/2 after:h-[1.5px] after:bg-current">
 						<NumberFlow
 							value={Math.round(originalTotalPrice)}
@@ -335,6 +335,7 @@ function AddToCartSection({
 						onClick={handleAddToCart}
 						disabled={!canAddToCart}
 						size={size}
+						variant="default"
 						className="h-full w-full"
 					>
 						{!canAddToCart ? "Недоступно" : "В корзину"}
@@ -342,8 +343,8 @@ function AddToCartSection({
 				</motion.div>
 
 				{/* Total Row */}
-				<div className="flex items-baseline gap-4">
-					<div className="text-left">Итого</div>
+				<div className="flex flex-nowrap items-baseline gap-4">
+					<div className="shrink-0 text-left">Итого</div>
 					<span
 						className={`${size === "lg" ? "text-4xl" : "text-2xl"} whitespace-nowrap font-bold font-digital-mono`}
 					>
@@ -361,15 +362,17 @@ function AddToCartSection({
 	// Without discount: Label above price
 	return (
 		<motion.div
-			className={`flex flex-row items-stretch gap-4 rounded-lg bg-muted p-2 ${className}`}
+			className={`flex flex-row flex-nowrap items-stretch gap-4 rounded-lg bg-muted p-2 ${className}`}
 			layout
 			transition={{ duration: 0.3, ease: "easeInOut" }}
 		>
 			{/* Price Display - stacked vertically */}
-			<div className="flex flex-col">
-				<div className="text-muted-foreground text-sm">Итого</div>
+			<div className="flex shrink-0 flex-col">
+				<div className="whitespace-nowrap text-muted-foreground text-sm">
+					Итого
+				</div>
 				<div
-					className={`${size === "lg" ? "text-4xl" : "text-2xl"} font-bold font-digital-mono`}
+					className={`${size === "lg" ? "text-4xl" : "text-2xl"} whitespace-nowrap font-bold font-digital-mono`}
 				>
 					<NumberFlow
 						value={Math.round(totalPrice)}
@@ -426,7 +429,7 @@ function MobileFixedCartBar({
 	if (currentDiscount && currentDiscount > 0) {
 		return (
 			<motion.div
-				className="grid grid-cols-[auto_1fr] grid-rows-2 items-stretch border-border border-t bg-muted shadow-lg"
+				className="grid grid-cols-[auto_1fr] grid-rows-2 items-stretch border-primary border-t bg-muted shadow-lg"
 				layout
 				transition={{ duration: 0.3, ease: "easeInOut" }}
 			>
@@ -891,10 +894,10 @@ function ProductPage() {
 							zIndex: 9999,
 						}}
 					>
-						<div className="pointer-events-auto sticky top-16 ml-auto h-fit w-full min-w-0 lg:w-2/5">
-							<div className="flex min-w-0 items-start justify-end p-8">
+						<div className="pointer-events-auto sticky top-16 ml-auto h-fit w-fit max-w-[50%]">
+							<div className="flex items-start justify-end p-6">
 								<div
-									className="product-info-overlay product-info-reveal relative w-fit min-w-0 max-w-[45vw] rounded-lg border border-border p-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]"
+									className="product-info-overlay product-info-reveal pointer-events-auto relative w-fit max-w-[48vw] rounded-lg border border-border p-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]"
 									style={{
 										viewTransitionName: "product-info-container",
 									}}
@@ -919,7 +922,7 @@ function ProductPage() {
 									)}
 									<div className="space-y-6">
 										{/* Breadcrumb Navigation */}
-										<div>
+										<div className="[contain:inline-size]">
 											<Breadcrumb>
 												<BreadcrumbList>
 													<BreadcrumbItem>
@@ -954,7 +957,7 @@ function ProductPage() {
 										</div>
 
 										{/* Product Title */}
-										<div>
+										<div className="[contain:inline-size]">
 											<h1 className="text-2xl! leading-[1.1]">
 												{productWithDetails?.name || "Product"}
 											</h1>
@@ -1025,12 +1028,12 @@ function ProductPage() {
 										</div>
 
 										{/* Wrapper for Price, Quantity, and Add to Cart */}
-										<div className="@container min-w-0 max-w-full space-y-4 rounded-lg border border-border p-2">
+										<div className="w-fit space-y-4">
 											{/* Price and Quantity */}
-											<div className="flex w-full min-w-0 flex-wrap items-stretch gap-0">
+											<div className="flex flex-nowrap items-stretch gap-0">
 												{/* Price Box */}
-												<div className="flex @[38ch]:w-auto w-full flex-col @[38ch]:items-start items-center justify-center rounded-lg bg-muted px-4 py-3 @[38ch]:text-left text-center">
-													<div className="mb-1 text-muted-foreground text-sm">
+												<div className="flex shrink-0 flex-col items-start justify-center rounded-lg bg-muted px-4 py-3 text-left">
+													<div className="mb-1 whitespace-nowrap text-muted-foreground text-sm">
 														Цена за{" "}
 														<span className="whitespace-nowrap">
 															{isFlooringProduct
@@ -1041,7 +1044,7 @@ function ProductPage() {
 														</span>
 													</div>
 													{currentDiscount && currentDiscount > 0 && (
-														<div className="relative mb-1 font-digital-mono text-base text-muted-foreground! after:absolute after:inset-x-0 after:top-1/2 after:h-[1.5px] after:bg-current">
+														<div className="relative mb-1 whitespace-nowrap font-digital-mono text-base text-muted-foreground! after:absolute after:inset-x-0 after:top-1/2 after:h-[1.5px] after:bg-current">
 															<NumberFlow
 																value={Math.round(currentPrice)}
 																format={{ useGrouping: true }}
@@ -1049,7 +1052,7 @@ function ProductPage() {
 															/>
 														</div>
 													)}
-													<div className="font-bold font-digital-mono text-3xl text-foreground leading-tight!">
+													<div className="whitespace-nowrap font-bold font-digital-mono text-3xl text-foreground leading-tight!">
 														<NumberFlow
 															value={Math.round(displayPrice)}
 															format={{ useGrouping: true }}
@@ -1058,17 +1061,8 @@ function ProductPage() {
 													</div>
 												</div>
 
-												{/* Icon divider - horizontal (shown when both blocks fit in one row) */}
-												<div className="@[38ch]:flex hidden shrink-0 items-center justify-center px-1">
-													<Icon
-														name="plus"
-														size={28}
-														className="rotate-45 text-foreground-muted"
-													/>
-												</div>
-
-												{/* Icon divider - vertical (shown when stacked) */}
-												<div className="flex @[38ch]:hidden w-full justify-center py-2">
+												{/* Icon divider */}
+												<div className="flex shrink-0 items-center justify-center px-1">
 													<Icon
 														name="plus"
 														size={28}
@@ -1077,12 +1071,13 @@ function ProductPage() {
 												</div>
 
 												{/* Quantity Selector */}
-												<div className="flex @[38ch]:w-auto w-full min-w-[20ch] flex-1 flex-col self-stretch">
-													<div className="relative flex w-full flex-1 items-center justify-center rounded-lg bg-muted px-1 py-1">
+												<div className="flex flex-col self-stretch">
+													<div className="relative flex flex-1 items-center justify-center rounded-lg bg-muted px-1 py-1">
 														{/* Minus button */}
 														<Button
 															type="button"
 															variant="quantity"
+															className="shrink-0"
 															onClick={decrementQuantity}
 															disabled={quantity <= 1}
 														>
@@ -1090,7 +1085,7 @@ function ProductPage() {
 														</Button>
 
 														{/* Center content */}
-														<div className="flex flex-1 flex-col items-center justify-center gap-1">
+														<div className="flex flex-col items-center justify-center gap-1 px-1">
 															{productWithDetails?.squareMetersPerPack && (
 																<div className="flex w-full flex-col items-center justify-center gap-0">
 																	<div className="whitespace-nowrap font-digital-mono font-normal text-foreground text-xl sm:text-2xl">
@@ -1117,7 +1112,7 @@ function ProductPage() {
 																	min={1}
 																	value={quantity}
 																	onChange={handleQuantityChange}
-																	className="field-sizing-content m-0 h-auto w-auto min-w-[4ch] max-w-[8ch] border-0 bg-transparent p-0 text-center font-digital-mono font-normal text-xl shadow-none [appearance:textfield] focus-visible:ring-0 focus-visible:ring-offset-0 sm:text-2xl [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+																	className="field-sizing-content m-0 h-auto w-auto min-w-[2ch] max-w-[8ch] border-0 bg-transparent p-0 text-center font-digital-mono font-normal text-xl shadow-none [appearance:textfield] focus-visible:ring-0 focus-visible:ring-offset-0 sm:text-2xl [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 																/>
 																{isFlooringProduct && (
 																	<div className="-mt-3.5 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
@@ -1131,6 +1126,7 @@ function ProductPage() {
 														<Button
 															type="button"
 															variant="quantity"
+															className="shrink-0"
 															onClick={incrementQuantity}
 														>
 															<Icon name="plus" size={14} />
@@ -1141,19 +1137,22 @@ function ProductPage() {
 
 											{/* Variation Selector */}
 											{productWithDetails?.hasVariations && (
-												<VariationSelector
-													product={
-														productWithDetails as unknown as ProductListItem
-													}
-													selectedAttributes={selectedAttributes}
-													search={search}
-													onAttributeChange={handleAttributeChange}
-												/>
+												<div className="[contain:inline-size]">
+													<VariationSelector
+														product={
+															productWithDetails as unknown as ProductListItem
+														}
+														selectedAttributes={selectedAttributes}
+														search={search}
+														onAttributeChange={handleAttributeChange}
+													/>
+												</div>
 											)}
 
 											{/* Price and Add to Cart */}
 											<AddToCartSection
 												size="lg"
+												className="[contain:inline-size]"
 												currentDiscount={currentDiscount}
 												originalTotalPrice={originalTotalPrice}
 												totalPrice={totalPrice}
@@ -1164,7 +1163,7 @@ function ProductPage() {
 											{/* Store Locations */}
 											{productWithDetails?.storeLocations &&
 												productWithDetails.storeLocations.length > 0 && (
-													<div className="text-sm">
+													<div className="text-sm [contain:inline-size]">
 														<span className="text-foreground-muted">
 															Доступно в магазинах:{" "}
 														</span>
@@ -1192,7 +1191,7 @@ function ProductPage() {
 
 										{/* Important Note */}
 										{productWithDetails?.importantNote && (
-											<div className="prose max-w-none">
+											<div className="prose max-w-none [contain:inline-size]">
 												<ReactMarkdown
 													components={markdownComponents}
 													rehypePlugins={rehypePlugins}

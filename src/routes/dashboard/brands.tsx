@@ -229,7 +229,7 @@ function RouteComponent() {
 			if (
 				oldLogo &&
 				oldLogo !== data.data.logo &&
-				!oldLogo.startsWith("staging/")
+				!oldLogo.startsWith("images/staging/")
 			) {
 				try {
 					console.log("🗑️ Deleting old brand logo:", oldLogo);

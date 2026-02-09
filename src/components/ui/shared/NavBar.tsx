@@ -38,6 +38,7 @@ import {
 	BadgeCheck as IconBadgeTm,
 	Box as IconBox,
 	FolderTree as IconCategory,
+	Newspaper as IconNewspaper,
 	Package as IconPackage,
 	Tags as IconTags,
 	LogOut as LogOutIcon,
@@ -67,6 +68,7 @@ const dashboardNavItems: NavItem[] = [
 	{ name: "Бренды", url: "/dashboard/brands", icon: IconBadgeTm },
 	{ name: "Коллекции", url: "/dashboard/collections", icon: IconCategory },
 	{ name: "Атрибуты", url: "/dashboard/attributes", icon: IconTags },
+	{ name: "Новости", url: "/dashboard/news", icon: IconNewspaper },
 	{ name: "Заказы", url: "/dashboard/orders", icon: IconPackage },
 	{ name: "Прочее", url: "/dashboard/misc", icon: IconCategory },
 ];

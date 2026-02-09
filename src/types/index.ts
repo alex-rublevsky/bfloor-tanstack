@@ -3,6 +3,7 @@ import type {
 	brands,
 	categories,
 	collections,
+	news,
 	orderItems,
 	orders,
 	productAttributes,
@@ -157,6 +158,20 @@ export type NewOrder = InferInsertModel<typeof orders>;
 // Order Items
 export type OrderItem = InferSelectModel<typeof orderItems>;
 export type NewOrderItem = InferInsertModel<typeof orderItems>;
+
+// News
+export type News = InferSelectModel<typeof news>;
+export type NewNews = InferInsertModel<typeof news>;
+
+export interface NewsFormData {
+	name: string;
+	slug: string;
+	image: string; // Cover image path (mapped from entity's image field)
+	body: string;
+	publishedAt: string; // ISO date string for form input
+	isActive: boolean;
+	[key: string]: unknown; // Allow additional fields for EntityFormData compatibility
+}
 
 // Form data types for frontend components
 export interface ProductFormData {

@@ -137,21 +137,6 @@ section.embla {
 	width: 35%;
 	height: 35%;
 }
-.embla__dots-container {
-	display: flex;
-	justify-content: center;
-}
-
-.embla__dots {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	align-items: center;
-	gap: 0.2rem;
-}
-
-/* Dot styles moved to shared image-gallery.css - using EmblaDotButtons component */
-
 .testimonial-card {
 	border-radius: var(--radius);
 	border: 2px solid var(--border);

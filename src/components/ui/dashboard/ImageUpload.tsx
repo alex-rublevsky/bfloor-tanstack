@@ -265,7 +265,7 @@ export function ImageUpload({
 			// Update staged images tracking - only track images that are actually in staging
 			// Images that come from currentImages (from database) are not staged
 			stagedImagesRef.current = new Set(
-				images.filter((img) => img.startsWith("staging/")),
+				images.filter((img) => img.startsWith("images/staging/")),
 			);
 		}, 500);
 	}, [currentImages]);
@@ -526,7 +526,7 @@ export function ImageUpload({
 							const newImagesString = newImages.join(", ");
 
 							// Track staged image if it's in staging folder
-							if (result.filename.startsWith("staging/")) {
+							if (result.filename.startsWith("images/staging/")) {
 								stagedImagesRef.current.add(result.filename);
 
 								// Store base64 preview data for staging images
@@ -830,7 +830,7 @@ export function ImageUpload({
 		}
 
 		// Remove from staged images if it was staged
-		if (imageToRemove.startsWith("staging/")) {
+		if (imageToRemove.startsWith("images/staging/")) {
 			stagedImagesRef.current.delete(imageToRemove);
 		}
 

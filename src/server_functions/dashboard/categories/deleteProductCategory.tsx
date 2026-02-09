@@ -5,6 +5,7 @@ import { DB } from "~/db";
 import { categories, products } from "~/schema";
 import { ApiError } from "~/utils/ApiError";
 import { getStorageBucket } from "~/utils/storage";
+import { getProductImageStorageKey } from "../store/moveStagingImages";
 
 export const deleteProductCategory = createServerFn({ method: "POST" })
 	.inputValidator((data: { id: number }) => data)
@@ -63,11 +64,13 @@ export const deleteProductCategory = createServerFn({ method: "POST" })
 			}
 
 			// Delete the category image from storage if it exists (outside transaction — storage I/O)
+			// DB stores path without "images/" prefix, but bucket key includes it
 			const categoryImage = existingCategory[0].image;
-			if (categoryImage && !categoryImage.startsWith("staging/")) {
+			if (categoryImage && !categoryImage.startsWith("images/staging/")) {
 				try {
 					const bucket = getStorageBucket();
-					await bucket.delete(categoryImage);
+					const storageKey = getProductImageStorageKey(categoryImage);
+					await bucket.delete(storageKey);
 				} catch (deleteError) {
 					console.warn(
 						"Failed to delete category image from storage:",

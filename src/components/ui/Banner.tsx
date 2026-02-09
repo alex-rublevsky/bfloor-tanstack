@@ -1,9 +1,13 @@
+import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "~/components/ui/shared/Link";
 import { ASSETS_BASE_URL } from "~/constants/urls";
 
 type EmblaOptionsType = Parameters<typeof useEmblaCarousel>[0];
+
+// Autoplay delay — 2× slower than news carousel (5 000 ms)
+const AUTOPLAY_DELAY = 10_000;
 
 type SlideImage = {
 	desktop: string;
@@ -16,43 +20,55 @@ type EmblaPropType = {
 	options?: EmblaOptionsType;
 };
 
-type PropType = {
+// ---------------------------------------------------------------------------
+// Thumb with progress line
+// ---------------------------------------------------------------------------
+const Thumb: React.FC<{
 	selected: boolean;
 	index: number;
 	onClick: () => void;
 	src: string;
-};
-
-export const Thumb: React.FC<PropType> = (props) => {
-	const { selected, index, onClick, src } = props;
-
-	return (
-		<div
-			className={"embla-thumbs__slide".concat(
-				// biome-ignore lint/nursery/useSortedClasses: Dynamic class concatenation requires space before modifier class
-				selected ? " embla-thumbs__slide--selected" : "",
-			)}
+}> = ({ selected, index, onClick, src }) => (
+	<div
+		className={"embla-thumbs__slide".concat(
+			// biome-ignore lint/nursery/useSortedClasses: Dynamic class concatenation requires space before modifier class
+			selected ? " embla-thumbs__slide--selected" : "",
+		)}
+	>
+		<button
+			onClick={onClick}
+			type="button"
+			className="embla-thumbs__slide__button aspect-3/2"
+			aria-label={`Go to slide ${index + 1}`}
 		>
-			<button
-				onClick={onClick}
-				type="button"
-				className="embla-thumbs__slide__button aspect-[3/2]"
-				aria-label={`Go to slide ${index + 1}`}
-			>
-				<img
-					src={src}
-					alt={`thumb ${index + 1}`}
-					className="embla-thumbs__slide__image"
-				/>
-			</button>
-		</div>
-	);
-};
+			<img
+				src={src}
+				alt={`thumb ${index + 1}`}
+				className="embla-thumbs__slide__image"
+			/>
 
-const EmblaCarousel: React.FC<EmblaPropType> = (props) => {
-	const { slides, options } = props;
+			{/* Progress line — bottom-aligned, only animates on the active thumb */}
+			{selected && (
+				<span
+					key={`bar-${index}`}
+					className="banner-thumb__progress"
+					style={{ animationDuration: `${AUTOPLAY_DELAY}ms` }}
+				/>
+			)}
+		</button>
+	</div>
+);
+
+// ---------------------------------------------------------------------------
+// Carousel
+// ---------------------------------------------------------------------------
+const EmblaCarousel: React.FC<EmblaPropType> = ({ slides, options }) => {
 	const [selectedIndex, setSelectedIndex] = useState(0);
-	const [emblaMainRef, emblaMainApi] = useEmblaCarousel(options);
+
+	const [emblaMainRef, emblaMainApi] = useEmblaCarousel(options, [
+		Autoplay({ delay: AUTOPLAY_DELAY, stopOnInteraction: false }),
+	]);
+
 	const [emblaThumbsRef, emblaThumbsApi] = useEmblaCarousel({
 		containScroll: "keepSnaps",
 		dragFree: true,
@@ -62,6 +78,16 @@ const EmblaCarousel: React.FC<EmblaPropType> = (props) => {
 		(index: number) => {
 			if (!emblaMainApi || !emblaThumbsApi) return;
 			emblaMainApi.scrollTo(index);
+			// Reset autoplay timer so progress bar restarts in sync
+			const autoplay = emblaMainApi.plugins()?.autoplay;
+			if (autoplay) {
+				if (typeof autoplay.reset === "function") {
+					autoplay.reset();
+				} else {
+					autoplay.stop();
+					autoplay.play();
+				}
+			}
 		},
 		[emblaMainApi, emblaThumbsApi],
 	);
@@ -76,11 +102,18 @@ const EmblaCarousel: React.FC<EmblaPropType> = (props) => {
 		if (!emblaMainApi) return;
 		onSelect();
 		emblaMainApi.on("select", onSelect).on("reInit", onSelect);
+
+		// Safety: ensure autoplay is playing (required by v9+, harmless for v8)
+		const autoplay = emblaMainApi.plugins()?.autoplay;
+		if (autoplay && typeof autoplay.play === "function") {
+			autoplay.play();
+		}
 	}, [emblaMainApi, onSelect]);
 
 	return (
 		<section className="no-padding pb-12">
 			<div className="embla">
+				{/* Main viewport */}
 				<div className="embla__viewport" ref={emblaMainRef}>
 					<div className="embla__container">
 						{slides.map((slide, index) => (
@@ -123,6 +156,7 @@ const EmblaCarousel: React.FC<EmblaPropType> = (props) => {
 					</div>
 				</div>
 
+				{/* Thumbnails */}
 				<div className="embla-thumbs">
 					<div className="embla-thumbs__viewport" ref={emblaThumbsRef}>
 						<div className="embla-thumbs__container flex">
@@ -321,6 +355,7 @@ const EmblaCarousel: React.FC<EmblaPropType> = (props) => {
 	overflow: hidden;
 	transition: var(--transition-standard);
 	box-sizing: border-box;
+	position: relative;
 }
 .embla-thumbs__slide__image {
 	width: 100%;
@@ -333,12 +368,34 @@ const EmblaCarousel: React.FC<EmblaPropType> = (props) => {
 .embla-thumbs__slide--selected .embla-thumbs__slide__button {
 	border-color: var(--accent);
 }
+
+/* ── Banner thumb progress line ── */
+@keyframes banner-thumb-fill {
+	from { transform: scaleX(0); }
+	to   { transform: scaleX(1); }
+}
+
+.banner-thumb__progress {
+	position: absolute;
+	inset-inline: 0;
+	bottom: 0;
+	height: 3px;
+	background: var(--accent);
+	transform-origin: left;
+	transform: scaleX(0);
+	animation: banner-thumb-fill linear forwards;
+	/* animation-duration set via inline style */
+	pointer-events: none;
+}
 `}</style>
 			</div>
 		</section>
 	);
 };
 
+// ---------------------------------------------------------------------------
+// Export
+// ---------------------------------------------------------------------------
 export function Banner() {
 	const SLIDES: SlideImage[] = [
 		{
