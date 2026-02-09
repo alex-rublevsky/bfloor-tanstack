@@ -1102,12 +1102,12 @@ function ProductPage() {
 																					maximumFractionDigits: 3,
 																				}}
 																			/>
-														</div>
-															<div className="-mt-1 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
-																Площадь{" "}
-																<span className="text-foreground">
-																	м²
-																</span>
+																		</div>
+																		<div className="-mt-1 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
+																			Площадь{" "}
+																			<span className="text-foreground">
+																				м²
+																			</span>
 																		</div>
 																	</div>
 																)}

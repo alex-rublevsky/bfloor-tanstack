@@ -208,10 +208,7 @@ export default function ProductSlider({
 
 		// Snap position persistence (select = arrow nav, settle = drag/momentum end)
 		const saveSnap = () => {
-			carouselSnapCache.set(
-				cacheKeyRef.current,
-				emblaApi.selectedScrollSnap(),
-			);
+			carouselSnapCache.set(cacheKeyRef.current, emblaApi.selectedScrollSnap());
 		};
 
 		emblaApi.on("scroll", onScroll);
