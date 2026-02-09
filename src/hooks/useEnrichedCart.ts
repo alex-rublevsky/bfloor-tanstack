@@ -18,6 +18,7 @@ export interface EnrichedCartItem extends CartItem {
 	images?: string | string[] | null;
 	attributes?: Record<string, string>;
 	discount?: number | null;
+	squareMetersPerPack?: number | null;
 }
 
 /**

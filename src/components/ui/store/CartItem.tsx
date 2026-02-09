@@ -125,24 +125,30 @@ export function CartItem({ item }: CartItemProps) {
 
 			{/* Price column */}
 			<div className="flex flex-col items-end">
-				{item.discount ? (
-					<div className="flex flex-col items-end">
-						<Badge variant="greenOutline" className="translate-x-2">
-							Скидка {item.discount}%
-						</Badge>
-						<span className="text-muted-foreground text-sm line-through">
-							{Math.round(item.price * item.quantity)} р
-						</span>
-						<h6>
-							{Math.round(
-								item.price * (1 - item.discount / 100) * item.quantity,
-							)}{" "}
-							р
-						</h6>
-					</div>
-				) : (
-					<h6>{Math.round(item.price * item.quantity)} р</h6>
-				)}
+				{(() => {
+					const unitPrice = item.squareMetersPerPack
+						? item.price * item.squareMetersPerPack
+						: item.price;
+					if (item.discount) {
+						return (
+							<div className="flex flex-col items-end">
+								<Badge variant="greenOutline" className="translate-x-2">
+									Скидка {item.discount}%
+								</Badge>
+								<span className="text-muted-foreground text-sm line-through">
+									{Math.round(unitPrice * item.quantity)} р
+								</span>
+								<h6>
+									{Math.round(
+										unitPrice * (1 - item.discount / 100) * item.quantity,
+									)}{" "}
+									р
+								</h6>
+							</div>
+						);
+					}
+					return <h6>{Math.round(unitPrice * item.quantity)} р</h6>;
+				})()}
 			</div>
 		</div>
 	);

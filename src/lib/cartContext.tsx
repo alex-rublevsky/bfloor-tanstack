@@ -40,6 +40,7 @@ export interface CartItem {
 	images?: string | string[] | null;
 	discount?: number | null;
 	attributes?: Record<string, string>;
+	squareMetersPerPack?: number | null;
 
 	// Staleness tracking
 	cachedAt: number;
@@ -65,6 +66,7 @@ export interface AddToCartData {
 	images?: string | string[] | null;
 	discount?: number | null;
 	attributes?: Record<string, string>;
+	squareMetersPerPack?: number | null;
 }
 
 interface CartContextType {
@@ -181,6 +183,7 @@ export function CartProvider({ children }: CartProviderProps) {
 					images: data.images,
 					discount: data.discount,
 					attributes: data.attributes,
+					squareMetersPerPack: data.squareMetersPerPack,
 					cachedAt: now,
 				};
 			} else {
@@ -198,6 +201,7 @@ export function CartProvider({ children }: CartProviderProps) {
 						images: data.images,
 						discount: data.discount,
 						attributes: data.attributes,
+						squareMetersPerPack: data.squareMetersPerPack,
 						cachedAt: now,
 					},
 				];

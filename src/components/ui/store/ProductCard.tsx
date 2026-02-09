@@ -242,6 +242,7 @@ const ProductCard = memo(
 						images: product.images,
 						discount: selectedVariation?.discount ?? product.discount,
 						attributes: variationAttributes,
+						squareMetersPerPack: product.squareMetersPerPack,
 					});
 				} catch (error) {
 					console.error("Error adding to cart:", error);
@@ -256,8 +257,14 @@ const ProductCard = memo(
 		// Memoize the prefetch handler to prevent re-creating on every render
 		// Use useCallback instead of useMemo for event handlers
 		const handleMouseEnter = useCallback(() => {
-			// Track hover state for image index in link params
-			setIsHovering(true);
+			// Only track hover state when the secondary image is actually visible:
+			// 1. Device supports hover (mouse/trackpad, not touch-only)
+			// 2. Viewport is at least md (768px) — secondary image uses `hidden md:block`
+			// Without both conditions, the view transition would target a display:none element
+			// and the product page would incorrectly open to the second image
+			if (window.matchMedia("(hover: hover) and (min-width: 768px)").matches) {
+				setIsHovering(true);
+			}
 			// Only prefetch - don't seed the cache as it causes re-renders
 			// The prefetch will fetch the full product data from the server
 			prefetchProduct(product.slug);

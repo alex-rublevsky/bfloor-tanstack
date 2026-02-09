@@ -16,6 +16,7 @@ interface CartItem {
 	discount?: number | null;
 	image?: string;
 	attributes?: Record<string, string>;
+	squareMetersPerPack?: number | null;
 }
 
 interface CustomerInfo {
@@ -131,7 +132,7 @@ async function createOrderInternal(
 				}
 			}
 
-			// 3. Validate price
+			// 3. Validate price (price per m² for flooring, or per unit)
 			const expectedPrice =
 				product.hasVariations && item.variationId
 					? product.variations?.find((v) => v.id === item.variationId)?.price
@@ -144,11 +145,15 @@ async function createOrderInternal(
 			}
 
 			// 4. Calculate amounts
+			// For flooring products, unit price = price per m² × squareMetersPerPack
 			if (item.price < 0 || item.quantity <= 0) {
 				throw new Error(`Invalid price or quantity for ${item.productName}`);
 			}
 
-			const itemSubtotal = item.price * item.quantity;
+			const unitPrice = item.squareMetersPerPack
+				? item.price * item.squareMetersPerPack
+				: item.price;
+			const itemSubtotal = unitPrice * item.quantity;
 			const itemDiscount =
 				item.discount && item.discount > 0 && item.discount <= 100
 					? itemSubtotal * (item.discount / 100)
@@ -191,24 +196,30 @@ async function createOrderInternal(
 		.returning();
 
 	// Create order items
+	// For flooring products, unit price = price per m² × squareMetersPerPack
 	await db.insert(orderItems).values(
-		cartItems.map((item) => ({
-			orderId: order.id,
-			productId: item.productId,
-			productVariationId: item.variationId ?? null,
-			quantity: item.quantity,
-			unitAmount: item.price,
-			discountPercentage: item.discount ?? null,
-			finalAmount: item.discount
-				? item.price * (1 - item.discount / 100) * item.quantity
-				: item.price * item.quantity,
-			attributes: JSON.stringify(
-				item.attributes && typeof item.attributes === "object"
-					? item.attributes
-					: {},
-			),
-			createdAt: now,
-		})),
+		cartItems.map((item) => {
+			const unitPrice = item.squareMetersPerPack
+				? item.price * item.squareMetersPerPack
+				: item.price;
+			return {
+				orderId: order.id,
+				productId: item.productId,
+				productVariationId: item.variationId ?? null,
+				quantity: item.quantity,
+				unitAmount: unitPrice,
+				discountPercentage: item.discount ?? null,
+				finalAmount: item.discount
+					? unitPrice * (1 - item.discount / 100) * item.quantity
+					: unitPrice * item.quantity,
+				attributes: JSON.stringify(
+					item.attributes && typeof item.attributes === "object"
+						? item.attributes
+						: {},
+				),
+				createdAt: now,
+			};
+		}),
 	);
 
 	return { order, orderAmounts, totalAmount };

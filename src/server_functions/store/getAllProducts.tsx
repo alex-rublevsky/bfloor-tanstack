@@ -228,6 +228,7 @@ export const getStoreData = createServerFn({ method: "GET" })
 				images: products.images,
 				price: products.price,
 				discount: products.discount,
+				squareMetersPerPack: products.squareMetersPerPack,
 				isActive: products.isActive,
 				hasVariations: products.hasVariations,
 				categorySlug: products.categorySlug,

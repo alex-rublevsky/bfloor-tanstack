@@ -10,14 +10,20 @@ export function CartSummary() {
 	const enrichedItems = useEnrichedCart(cart.items);
 
 	// Calculate cart totals with discounts
-	const subtotal = enrichedItems.reduce(
-		(total, item) => total + item.price * item.quantity,
-		0,
-	);
+	// For flooring products, unit price = price per m² × squareMetersPerPack
+	const subtotal = enrichedItems.reduce((total, item) => {
+		const unitPrice = item.squareMetersPerPack
+			? item.price * item.squareMetersPerPack
+			: item.price;
+		return total + unitPrice * item.quantity;
+	}, 0);
 
 	const discountTotal = enrichedItems.reduce((total, item) => {
 		if (item.discount) {
-			return total + (item.price * item.quantity * item.discount) / 100;
+			const unitPrice = item.squareMetersPerPack
+				? item.price * item.squareMetersPerPack
+				: item.price;
+			return total + (unitPrice * item.quantity * item.discount) / 100;
 		}
 		return total;
 	}, 0);
@@ -59,14 +65,20 @@ export function CartCheckoutButton() {
 	const navigate = useNavigate();
 
 	// Calculate total with discounts
-	const subtotal = enrichedItems.reduce(
-		(total, item) => total + item.price * item.quantity,
-		0,
-	);
+	// For flooring products, unit price = price per m² × squareMetersPerPack
+	const subtotal = enrichedItems.reduce((total, item) => {
+		const unitPrice = item.squareMetersPerPack
+			? item.price * item.squareMetersPerPack
+			: item.price;
+		return total + unitPrice * item.quantity;
+	}, 0);
 
 	const discountTotal = enrichedItems.reduce((total, item) => {
 		if (item.discount) {
-			return total + (item.price * item.quantity * item.discount) / 100;
+			const unitPrice = item.squareMetersPerPack
+				? item.price * item.squareMetersPerPack
+				: item.price;
+			return total + (unitPrice * item.quantity * item.discount) / 100;
 		}
 		return total;
 	}, 0);

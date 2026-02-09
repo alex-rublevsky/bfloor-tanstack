@@ -12,6 +12,7 @@ interface CartItem {
 	discount?: number | null;
 	image?: string;
 	attributes?: Record<string, string>;
+	squareMetersPerPack?: number | null;
 }
 
 interface Address {
@@ -392,19 +393,24 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
 				shippingMethod: data.customerInfo.shippingMethod || "Standard",
 				shippingAddress: data.customerInfo.shippingAddress,
 				billingAddress: data.customerInfo.billingAddress,
-				orderItems: data.cartItems.map((item) => ({
-					name: item.productName,
-					quantity: item.quantity,
-					price: item.discount
-						? `CA$${Math.round(item.price * (1 - item.discount / 100) * item.quantity)}`
-						: `CA$${Math.round(item.price * item.quantity)}`,
-					originalPrice: `CA$${Math.round(item.price * item.quantity)}`,
-					discount: item.discount ?? undefined,
-					image:
-						item.image && typeof item.image === "string"
-							? `https://assets.rublevsky.studio/${item.image}`
-							: undefined,
-				})),
+				orderItems: data.cartItems.map((item) => {
+					const unitPrice = item.squareMetersPerPack
+						? item.price * item.squareMetersPerPack
+						: item.price;
+					return {
+						name: item.productName,
+						quantity: item.quantity,
+						price: item.discount
+							? `CA$${Math.round(unitPrice * (1 - item.discount / 100) * item.quantity)}`
+							: `CA$${Math.round(unitPrice * item.quantity)}`,
+						originalPrice: `CA$${Math.round(unitPrice * item.quantity)}`,
+						discount: item.discount ?? undefined,
+						image:
+							item.image && typeof item.image === "string"
+								? `https://assets.rublevsky.studio/${item.image}`
+								: undefined,
+					};
+				}),
 			};
 
 			// Generate and send client confirmation email

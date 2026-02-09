@@ -805,6 +805,7 @@ function ProductPage() {
 				images: productWithDetails.images,
 				discount: selectedVariation?.discount ?? productWithDetails.discount,
 				attributes: variationAttributes,
+				squareMetersPerPack: productWithDetails.squareMetersPerPack,
 			});
 			setQuantity(1); // Reset quantity after successful add
 		} catch (error) {
@@ -1097,16 +1098,16 @@ function ProductPage() {
 																					productWithDetails.squareMetersPerPack
 																				}
 																				format={{
-																					minimumFractionDigits: 2,
-																					maximumFractionDigits: 2,
+																					minimumFractionDigits: 0,
+																					maximumFractionDigits: 3,
 																				}}
 																			/>
-																		</div>
-																		<div className="-mt-1 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
-																			Площадь{" "}
-																			<span className="text-foreground">
-																				м²
-																			</span>
+														</div>
+															<div className="-mt-1 whitespace-nowrap font-normal text-muted-foreground text-xs sm:text-sm">
+																Площадь{" "}
+																<span className="text-foreground">
+																	м²
+																</span>
 																		</div>
 																	</div>
 																)}
@@ -1589,8 +1590,8 @@ function ProductPage() {
 																				productWithDetails.squareMetersPerPack
 																			}
 																			format={{
-																				minimumFractionDigits: 2,
-																				maximumFractionDigits: 2,
+																				minimumFractionDigits: 0,
+																				maximumFractionDigits: 3,
 																			}}
 																		/>
 																	</div>

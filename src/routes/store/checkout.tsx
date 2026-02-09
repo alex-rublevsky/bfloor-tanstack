@@ -152,18 +152,23 @@ function CheckoutScreen() {
 			const orderData = {
 				orderId,
 				customerInfo,
-				items: enrichedItems.map((item, index) => ({
-					id: index,
-					productName: item.productName,
-					quantity: item.quantity,
-					unitAmount: item.price,
-					finalAmount: item.discount
-						? item.price * (1 - item.discount / 100) * item.quantity
-						: item.price * item.quantity,
-					discountPercentage: item.discount,
-					attributes: item.attributes || {},
-					image: item.images,
-				})),
+				items: enrichedItems.map((item, index) => {
+					const unitPrice = item.squareMetersPerPack
+						? item.price * item.squareMetersPerPack
+						: item.price;
+					return {
+						id: index,
+						productName: item.productName,
+						quantity: item.quantity,
+						unitAmount: unitPrice,
+						finalAmount: item.discount
+							? unitPrice * (1 - item.discount / 100) * item.quantity
+							: unitPrice * item.quantity,
+						discountPercentage: item.discount,
+						attributes: item.attributes || {},
+						image: item.images,
+					};
+				}),
 				subtotalAmount: subtotal,
 				discountAmount: totalDiscount,
 				totalAmount: total,
@@ -232,14 +237,20 @@ function CheckoutScreen() {
 	};
 
 	// Calculate cart totals
-	const subtotal = enrichedItems.reduce(
-		(total, item) => total + item.price * item.quantity,
-		0,
-	);
+	// For flooring products, unit price = price per m² × squareMetersPerPack
+	const subtotal = enrichedItems.reduce((total, item) => {
+		const unitPrice = item.squareMetersPerPack
+			? item.price * item.squareMetersPerPack
+			: item.price;
+		return total + unitPrice * item.quantity;
+	}, 0);
 
 	const totalDiscount = enrichedItems.reduce((total, item) => {
 		if (item.discount) {
-			const itemDiscount = item.price * item.quantity * (item.discount / 100);
+			const unitPrice = item.squareMetersPerPack
+				? item.price * item.squareMetersPerPack
+				: item.price;
+			const itemDiscount = unitPrice * item.quantity * (item.discount / 100);
 			return total + itemDiscount;
 		}
 		return total;
@@ -325,10 +336,15 @@ function CheckoutScreen() {
 								<div className="space-y-6">
 									{enrichedItems.map((item) => {
 										const imageArray = parseImages(item.images);
+										const unitPrice = item.squareMetersPerPack
+											? item.price * item.squareMetersPerPack
+											: item.price;
 										const itemTotal = item.discount
-											? item.price * (1 - item.discount / 100) * item.quantity
-											: item.price * item.quantity;
-										const itemArea = item.quantity * 2.159; // Placeholder - adjust based on your data
+											? unitPrice * (1 - item.discount / 100) * item.quantity
+											: unitPrice * item.quantity;
+										const itemArea = item.squareMetersPerPack
+											? item.quantity * item.squareMetersPerPack
+											: null;
 
 										return (
 											<div
@@ -353,9 +369,11 @@ function CheckoutScreen() {
 												{/* Product Details */}
 												<div className="flex flex-1 flex-col gap-2">
 													<div>
-														<p className="text-muted-foreground text-sm">
-															{item.price.toFixed(0)} | м²
-														</p>
+														{item.squareMetersPerPack ? (
+															<p className="text-muted-foreground text-sm">
+																{item.price.toFixed(0)} р/м²
+															</p>
+														) : null}
 														<Link
 															href={`/product/${item.productSlug}`}
 															className="font-medium text-base hover:underline"
@@ -390,7 +408,7 @@ function CheckoutScreen() {
 															size="compact"
 														/>
 														<span className="text-muted-foreground text-sm">
-															уп
+															{item.squareMetersPerPack ? "упак" : "шт"}
 														</span>
 													</div>
 												</div>
@@ -398,11 +416,13 @@ function CheckoutScreen() {
 												{/* Price and Area */}
 												<div className="text-right">
 													<p className="font-bold text-xl">
-														{itemTotal.toFixed(0)} р
+														{Math.round(itemTotal)} р
 													</p>
-													<p className="text-muted-foreground text-sm">
-														{itemArea.toFixed(3)} м²
-													</p>
+													{itemArea !== null && (
+														<p className="text-muted-foreground text-sm">
+															{parseFloat(itemArea.toFixed(3))} м²
+														</p>
+													)}
 												</div>
 
 												{/* Remove Button */}

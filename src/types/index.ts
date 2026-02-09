@@ -78,6 +78,7 @@ export interface ProductListItem {
 	images: string | null;
 	price: number;
 	discount: number | null;
+	squareMetersPerPack: number | null;
 	isActive: boolean;
 	hasVariations: boolean;
 	categorySlug: string | null;
